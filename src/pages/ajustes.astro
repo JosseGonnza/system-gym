@@ -41,10 +41,19 @@ import Layout from '../layouts/Layout.astro';
       <input id="rest-activo" type="checkbox" class="h-6 w-6 accent-[#8b5cf6]" />
     </label>
   </section>
+
+  <section class="card mt-4 border-bad/30">
+    <h2 class="text-base font-bold text-bad">🧨 Zona de peligro</h2>
+    <button id="btn-reset" class="btn-2 mt-3 text-bad">🗑 Borrar todos los datos</button>
+    <p class="mt-2 text-xs text-mut">
+      Borra sesiones, diario, mediciones y ajustes, y vuelve a la rutina de fábrica. Si hay algo
+      que quieras conservar, exporta antes.
+    </p>
+  </section>
 </Layout>
 
 <script>
-  import { initDB, getConfig, setConfig, exportarBackup, importarBackup } from '../lib/db';
+  import { initDB, getConfig, setConfig, exportarBackup, importarBackup, resetDB } from '../lib/db';
 
   await initDB();
 
@@ -92,6 +101,14 @@ import Layout from '../layouts/Layout.astro';
   });
 
   document.getElementById('btn-import')!.addEventListener('click', () => fileInput.click());
+
+  document.getElementById('btn-reset')!.addEventListener('click', async () => {
+    if (!confirm('¿Borrar TODOS los datos de la app? Sesiones, diario y mediciones incluidos.')) return;
+    if (!confirm('Última pregunta: esto no se puede deshacer. ¿Seguro?')) return;
+    await resetDB();
+    alert('Datos borrados. Empiezas de cero ✓');
+    location.href = '/';
+  });
 
   fileInput.addEventListener('change', async () => {
     const archivo = fileInput.files?.[0];

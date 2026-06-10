@@ -1,4 +1,4 @@
-import { get, set } from 'idb-keyval';
+import { clear, get, set } from 'idb-keyval';
 import type { BackupV1, Config, DiaDef, DiaRegistro, EjercicioDef, Mediciones, Rutina, Sesion } from './types';
 import { CONFIG_INICIAL, RUTINA_1 } from './seed';
 
@@ -97,6 +97,11 @@ export async function exportarBackup(): Promise<BackupV1> {
   const configActualizada = { ...config, ultimoExportISO: exportadoISO };
   await setConfig(configActualizada);
   return { version: 1, app: 'gym', exportadoISO, config: configActualizada, rutinas, sesiones, mediciones, diario };
+}
+
+export async function resetDB(): Promise<void> {
+  await clear();
+  await initDB();
 }
 
 export async function importarBackup(data: unknown): Promise<void> {
