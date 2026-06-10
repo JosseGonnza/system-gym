@@ -53,6 +53,11 @@ describe('progresión lineal', () => {
     expect(sugerir(muerto, [fallo100(3), fallo100(7)], INCR_MIN).peso).toBe(90);
   });
 
+  it('deload con pesos pequeños baja al menos un incremento (5 kg → 2,5, no 5 otra vez)', () => {
+    const fallo5 = (dias: number) => sesionDe(dias, [serie(5, 4, 'corta'), serie(5, 4, 'corta'), serie(5, 3, 'corta'), serie(5, 3, 'corta')]);
+    expect(sugerir(lineal, [fallo5(3), fallo5(7)], INCR_MIN).peso).toBe(2.5);
+  });
+
   it('serie marcada al fallo no cuenta como completa → repite peso', () => {
     const conFallo = sesionDe(3, [serie(60, 5, 'completada'), serie(60, 5, 'fallo'), serie(60, 5, 'completada'), serie(60, 5, 'completada')]);
     expect(sugerir(lineal, [conFallo], INCR_MIN).peso).toBe(60);

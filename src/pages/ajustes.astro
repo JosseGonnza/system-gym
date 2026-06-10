@@ -96,7 +96,7 @@ import Layout from '../layouts/Layout.astro';
     a.href = URL.createObjectURL(blob);
     a.download = `gym-backup-${backup.exportadoISO.slice(0, 10)}.json`;
     a.click();
-    URL.revokeObjectURL(a.href);
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
     await pintarUltimoExport();
   });
 

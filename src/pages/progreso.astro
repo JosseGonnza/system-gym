@@ -259,7 +259,7 @@ import Layout from '../layouts/Layout.astro';
             : 'kg';
     const puntos = historial
       .map((p) => ({ fecha: p.fecha, v: valorSesion(item.def, p, usarLastre) }))
-      .filter((x): x is { fecha: string; v: number } => x.v != null);
+      .filter((x): x is { fecha: string; v: number } => x.v != null && (!usarLastre || x.v > 0));
 
     const mejor = puntos.reduce<{ fecha: string; v: number } | null>(
       (m, p) => (m == null || p.v > m.v ? p : m),

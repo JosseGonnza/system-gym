@@ -55,7 +55,7 @@ export const RUTINA_1: Rutina = {
     {
       id: 'd5',
       nombre: 'Pierna/Espalda + brazos',
-      emoji: '🦵',
+      emoji: '🦾',
       ejercicios: [
         { ranuraId: 'd5-frontal', nombre: 'Sentadilla frontal', tipoProgresion: 'lineal', series: 4, repsObjetivo: 6, incrementoKg: 2.5, restSeg: 180 },
         { ranuraId: 'd5-remo-mancuerna', nombre: 'Remo con mancuerna', tipoProgresion: 'doble', series: 3, repsObjetivo: [8, 12], incrementoKg: 2.5, restSeg: 90 },

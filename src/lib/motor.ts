@@ -90,7 +90,8 @@ export function sugerir(e: EjercicioDef, historial: PuntoHistorial[], incremento
       hechas(previo).some((s) => s.peso === pesoUlt) &&
       !todasCompletas(previo, e);
     if (falloPrevio) {
-      const peso = redondear(pesoUlt * 0.9, incr);
+      // El redondeo al disco puede dejar el −10% en el mismo peso: forzar bajar ≥1 incremento
+      const peso = Math.max(incr, Math.min(redondear(pesoUlt * 0.9, incr), pesoUlt - incr));
       return {
         ...VACIA,
         peso,

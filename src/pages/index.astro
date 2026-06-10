@@ -39,6 +39,12 @@ import Layout from '../layouts/Layout.astro';
     </div>
   </section>
 
+  <a
+    id="aviso-backup"
+    href="/ajustes"
+    class="card mt-4 hidden border-warn/40 text-sm font-semibold text-warn"
+  ></a>
+
   <dialog id="dlg-descanso" class="m-auto w-[88%] max-w-sm rounded-2xl border border-warn/40 bg-surface p-5 text-ink backdrop:bg-black/70">
     <p class="text-3xl">⚠️</p>
     <h3 class="mt-2 text-lg font-extrabold">Ya llevas 2 descansos esta semana</h3>
@@ -86,15 +92,31 @@ import Layout from '../layouts/Layout.astro';
   let diario = await getDiario();
 
   const hoy = hoyISO();
-  const manana = hoyISO(new Date(Date.now() + 86_400_000));
+  const mananaDate = new Date();
+  mananaDate.setDate(mananaDate.getDate() + 1);
+  const manana = hoyISO(mananaDate);
   const entrenadoHoy = sesiones.some((s) => s.fecha === hoy && s.estado === 'finalizada');
 
   $('fecha').textContent = new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
-  $('manana-fecha').textContent = new Date(Date.now() + 86_400_000).toLocaleDateString('es-ES', {
+  $('manana-fecha').textContent = mananaDate.toLocaleDateString('es-ES', {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
   });
+
+  const finalizadasTotal = sesiones.filter((s) => s.estado === 'finalizada').length;
+  const diasSinExport = config.ultimoExportISO
+    ? Math.floor((Date.now() - Date.parse(config.ultimoExportISO)) / 86_400_000)
+    : null;
+  if (finalizadasTotal > 0 && (diasSinExport === null || diasSinExport >= 7)) {
+    const aviso = $('aviso-backup');
+    aviso.textContent =
+      diasSinExport === null
+        ? '💾 Aún no has exportado ningún backup. Toca aquí y guárdalo en Drive o en el PC.'
+        : `💾 Hace ${diasSinExport} días que no exportas backup. Toca aquí — son 10 segundos.`;
+    aviso.classList.remove('hidden');
+    aviso.classList.add('block');
+  }
 
   const numeroDe = (dia: DiaDef) => rutina.dias.findIndex((d) => d.id === dia.id) + 1;
   const tituloDe = (dia: DiaDef) => `${dia.emoji} Día ${numeroDe(dia)} — ${dia.nombre}`;

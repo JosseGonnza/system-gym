@@ -445,54 +445,78 @@ import Layout from '../layouts/Layout.astro';
   }
 
   // ---------- Rest timer ----------
+  // Basado en reloj de pared: con la pantalla bloqueada los intervals se congelan,
+  // así que el fin es un timestamp y se resincroniza al volver a la app.
   let restInterval: ReturnType<typeof setInterval> | undefined;
-  let restRestante = 0;
+  let restFinMs = 0;
+  let audioCtx: AudioContext | null = null;
 
-  function pintarRest() {
-    const m = Math.floor(restRestante / 60);
-    const s = restRestante % 60;
+  function pitido() {
+    navigator.vibrate?.([200, 100, 200]);
+    try {
+      if (!audioCtx) return;
+      const osc = audioCtx.createOscillator();
+      osc.frequency.value = 880;
+      osc.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.25);
+    } catch {
+      /* sin audio, la vibración basta */
+    }
+  }
+
+  function pintarRest(restante: number) {
+    const m = Math.floor(restante / 60);
+    const s = restante % 60;
     $('rest-tiempo').textContent = `${m}:${String(s).padStart(2, '0')}`;
   }
 
   function pararRest() {
     clearInterval(restInterval);
+    restFinMs = 0;
     $('rest-bar').classList.add('hidden');
     $('rest-bar').classList.remove('flex');
   }
 
+  function tickRest() {
+    if (!restFinMs) return;
+    const restante = Math.ceil((restFinMs - Date.now()) / 1000);
+    if (restante <= 0) {
+      pararRest();
+      pitido();
+    } else {
+      pintarRest(restante);
+    }
+  }
+
   function empezarRest(e: EjercicioDef) {
     if (!config.restTimerActivo) return;
+    // Crear el AudioContext aquí (gesto del usuario) para que el pitido no quede bloqueado
+    if (!audioCtx) {
+      try {
+        audioCtx = new AudioContext();
+      } catch {
+        audioCtx = null;
+      }
+    }
     clearInterval(restInterval);
-    restRestante = e.restSeg;
+    restFinMs = Date.now() + e.restSeg * 1000;
     $('rest-nombre').textContent = `· ${e.nombre}`;
     $('rest-bar').classList.remove('hidden');
     $('rest-bar').classList.add('flex');
-    pintarRest();
-    restInterval = setInterval(() => {
-      restRestante--;
-      if (restRestante <= 0) {
-        pararRest();
-        navigator.vibrate?.([200, 100, 200]);
-        try {
-          const ctx = new AudioContext();
-          const osc = ctx.createOscillator();
-          osc.frequency.value = 880;
-          osc.connect(ctx.destination);
-          osc.start();
-          osc.stop(ctx.currentTime + 0.25);
-        } catch {
-          /* sin audio, la vibración basta */
-        }
-      } else {
-        pintarRest();
-      }
-    }, 1000);
+    tickRest();
+    restInterval = setInterval(tickRest, 500);
   }
+
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) tickRest();
+  });
 
   $('rest-saltar').addEventListener('click', pararRest);
   $('rest-mas').addEventListener('click', () => {
-    restRestante += 15;
-    pintarRest();
+    if (!restFinMs) return;
+    restFinMs += 15_000;
+    tickRest();
   });
 
   // ---------- Acciones ----------
@@ -554,6 +578,8 @@ import Layout from '../layouts/Layout.astro';
       `${borrador.fecha}T12:00:00`,
     ).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric' })} en borrador. ¿La retomas?`;
     const dlg = $('dlg-borrador') as HTMLDialogElement;
+    // Sin escape: cerrar sin decidir dejaría la pantalla vacía y borradores duplicados
+    dlg.addEventListener('cancel', (ev) => ev.preventDefault());
     dlg.showModal();
     $('dlg-borrador-retomar').addEventListener('click', () => {
       dlg.close();
