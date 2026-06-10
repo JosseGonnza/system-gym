@@ -1,6 +1,13 @@
 export type TipoProgresion = 'lineal' | 'doble' | 'pesoCorporal' | 'tiempo' | 'libre';
 export type EstadoSerie = 'completada' | 'fallo' | 'corta';
 export type EstadoSesion = 'finalizada' | 'borrador';
+export type Jornada = 'manana' | 'tarde' | 'libre';
+
+export interface DiaRegistro {
+  jornada?: Jornada;
+  descanso?: boolean;
+  diaElegidoId?: string;
+}
 
 export interface EjercicioDef {
   ranuraId: string;
@@ -79,4 +86,5 @@ export interface BackupV1 {
   rutinas: Rutina[];
   sesiones: Sesion[];
   mediciones: Mediciones;
+  diario: Record<string, DiaRegistro>;
 }
