@@ -27,6 +27,7 @@ export const setRutinas = (r: Rutina[]) => set(K.rutinas, r);
 export const getSesiones = () => get(K.sesiones) as Promise<Sesion[]>;
 export const setSesiones = (s: Sesion[]) => set(K.sesiones, s);
 export const getMediciones = () => get(K.mediciones) as Promise<Mediciones>;
+export const setMediciones = (m: Mediciones) => set(K.mediciones, m);
 export const getDiario = () => get(K.diario) as Promise<Record<string, DiaRegistro>>;
 
 export async function patchDia(fecha: string, patch: Partial<DiaRegistro>): Promise<Record<string, DiaRegistro>> {
