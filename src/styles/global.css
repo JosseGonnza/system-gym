@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #0a0712;
+  --color-surface: #141024;
+  --color-surface2: #1d1633;
+  --color-line: #2d2349;
+  --color-vio: #8b5cf6;
+  --color-vio-hi: #a78bfa;
+  --color-vio-soft: #c4b5fd;
+  --color-ink: #ede9fb;
+  --color-mut: #938aae;
+  --color-ok: #34d399;
+  --color-warn: #fbbf24;
+  --color-bad: #f87171;
+}
+
+html {
+  color-scheme: dark;
+  background: var(--color-bg);
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  @apply bg-bg text-ink antialiased;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+.card {
+  @apply bg-surface border border-line rounded-2xl p-4;
+}
+
+.glow {
+  box-shadow: 0 0 24px rgb(139 92 246 / 0.25), 0 0 4px rgb(139 92 246 / 0.3);
+}
+
+.btn {
+  @apply block w-full text-center bg-vio text-white font-bold rounded-xl py-3.5 text-base transition active:scale-[.98];
+}
+
+.btn-2 {
+  @apply block w-full text-center bg-surface2 border border-line text-ink font-semibold rounded-xl py-3.5 text-base transition active:scale-[.98];
+}

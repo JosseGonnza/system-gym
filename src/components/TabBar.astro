@@ -1,0 +1,28 @@
+---
+const path = Astro.url.pathname;
+const tabs = [
+  { href: '/', label: 'Hoy', icon: '🗓️' },
+  { href: '/entreno', label: 'Entreno', icon: '🏋️' },
+  { href: '/dieta', label: 'Dieta', icon: '🍱' },
+  { href: '/progreso', label: 'Progreso', icon: '📊' },
+];
+const activo = (href: string) => (href === '/' ? path === '/' : path.startsWith(href));
+---
+
+<nav class="fixed inset-x-0 bottom-0 z-10 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
+  <div class="mx-auto grid max-w-md grid-cols-4">
+    {
+      tabs.map((t) => (
+        <a
+          href={t.href}
+          class={`flex flex-col items-center gap-0.5 py-2.5 text-xs font-semibold ${activo(t.href) ? 'text-vio-hi' : 'text-mut'}`}
+        >
+          <span class={`text-2xl leading-none ${activo(t.href) ? 'drop-shadow-[0_0_10px_rgba(167,139,250,.8)]' : ''}`}>
+            {t.icon}
+          </span>
+          {t.label}
+        </a>
+      ))
+    }
+  </div>
+</nav>

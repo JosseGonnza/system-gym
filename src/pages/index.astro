@@ -1,0 +1,52 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Hoy">
+  <p id="fecha" class="-mt-1 mb-4 text-sm font-medium capitalize text-mut"></p>
+
+  <section class="card glow border-vio/40">
+    <p class="mb-1 text-xs font-bold uppercase tracking-widest text-vio-hi">Entreno sugerido</p>
+    <h2 id="dia-nombre" class="text-xl font-extrabold">Cargando…</h2>
+    <ul id="dia-ejercicios" class="mt-3 space-y-1.5 text-sm text-mut"></ul>
+  </section>
+
+  <section class="card mt-4 opacity-50">
+    <p class="text-sm font-semibold">🚧 Próximos bloques</p>
+    <p class="mt-1 text-xs text-mut">
+      Selector de jornada con pauta horaria · contador de descansos · tarjeta 🌙 Mañana
+    </p>
+  </section>
+</Layout>
+
+<script>
+  import { initDB, getConfig, getRutinas, diaSugerido, formatObjetivo } from '../lib/db';
+
+  document.getElementById('fecha')!.textContent = new Date().toLocaleDateString('es-ES', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  });
+
+  await initDB();
+  const config = await getConfig();
+  const rutinas = await getRutinas();
+  const rutina = rutinas.find((r) => r.id === config.rutinaActivaId) ?? rutinas[0];
+  const dia = diaSugerido(config, rutina);
+  const numero = rutina.dias.findIndex((d) => d.id === dia.id) + 1;
+
+  document.getElementById('dia-nombre')!.textContent = `${dia.emoji} Día ${numero} — ${dia.nombre}`;
+
+  const ul = document.getElementById('dia-ejercicios')!;
+  for (const e of dia.ejercicios) {
+    const li = document.createElement('li');
+    li.className = 'flex justify-between gap-3';
+    const nombre = document.createElement('span');
+    nombre.textContent = e.nombre;
+    const objetivo = document.createElement('span');
+    objetivo.className = 'shrink-0 font-semibold text-vio-soft';
+    objetivo.textContent = formatObjetivo(e);
+    li.append(nombre, objetivo);
+    ul.append(li);
+  }
+</script>

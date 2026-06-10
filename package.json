@@ -1,0 +1,26 @@
+{
+  "name": "app",
+  "type": "module",
+  "version": "0.0.1",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.3.0",
+    "astro": "^5.18.2",
+    "idb-keyval": "^6.2.5",
+    "tailwindcss": "^4.3.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.9",
+    "@vite-pwa/astro": "^1.2.0",
+    "typescript": "^5.9.3",
+    "vite": "^6.4.3"
+  }
+}

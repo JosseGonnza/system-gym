@@ -1,0 +1,102 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Ajustes">
+  <section class="card">
+    <h2 class="text-base font-bold">💾 Copia de seguridad</h2>
+    <p id="ultimo-export" class="mt-1 text-sm text-mut">—</p>
+    <div class="mt-3 space-y-2">
+      <button id="btn-export" class="btn">⬇️ Exportar JSON</button>
+      <button id="btn-import" class="btn-2">⬆️ Importar JSON</button>
+      <input type="file" id="file-import" accept="application/json,.json" class="hidden" />
+    </div>
+    <p class="mt-3 text-xs text-mut">
+      El export es tu red de seguridad: guárdalo en Drive o en el PC. Es también lo que le pasas a
+      Claude cada mes para revisar el progreso.
+    </p>
+  </section>
+
+  <section class="card mt-4">
+    <h2 class="text-base font-bold">⚙️ Motor de progresión</h2>
+    <label class="mt-3 block text-sm font-medium" for="incremento">Incremento mínimo (kg)</label>
+    <div class="mt-1.5 flex items-center gap-2">
+      <input
+        id="incremento"
+        type="number"
+        step="1.25"
+        min="0.5"
+        max="10"
+        inputmode="decimal"
+        class="w-28 rounded-xl border border-line bg-surface2 px-3 py-2.5 text-lg font-bold"
+      />
+      <span id="incremento-ok" class="text-sm font-semibold text-ok opacity-0 transition-opacity">✓ Guardado</span>
+    </div>
+    <p class="mt-2 text-xs text-mut">
+      Pendiente confirmar el disco mínimo del gym. Si hay discos de 1,25 kg, cámbialo aquí y el
+      motor lo usará en las sugerencias.
+    </p>
+  </section>
+</Layout>
+
+<script>
+  import { initDB, getConfig, setConfig, exportarBackup, importarBackup } from '../lib/db';
+
+  await initDB();
+
+  const elUltimo = document.getElementById('ultimo-export')!;
+  const inputIncremento = document.getElementById('incremento') as HTMLInputElement;
+  const okIncremento = document.getElementById('incremento-ok')!;
+  const fileInput = document.getElementById('file-import') as HTMLInputElement;
+
+  async function pintarUltimoExport() {
+    const config = await getConfig();
+    elUltimo.textContent = config.ultimoExportISO
+      ? `Último backup: ${new Date(config.ultimoExportISO).toLocaleString('es-ES', { dateStyle: 'medium', timeStyle: 'short' })}`
+      : 'Todavía no has exportado ningún backup.';
+  }
+
+  await pintarUltimoExport();
+  inputIncremento.value = String((await getConfig()).incrementoMinimoKg);
+
+  inputIncremento.addEventListener('change', async () => {
+    const valor = Number(inputIncremento.value);
+    if (!Number.isFinite(valor) || valor <= 0) return;
+    const config = await getConfig();
+    await setConfig({ ...config, incrementoMinimoKg: valor });
+    okIncremento.classList.remove('opacity-0');
+    setTimeout(() => okIncremento.classList.add('opacity-0'), 1500);
+  });
+
+  document.getElementById('btn-export')!.addEventListener('click', async () => {
+    const backup = await exportarBackup();
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `gym-backup-${backup.exportadoISO.slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    await pintarUltimoExport();
+  });
+
+  document.getElementById('btn-import')!.addEventListener('click', () => fileInput.click());
+
+  fileInput.addEventListener('change', async () => {
+    const archivo = fileInput.files?.[0];
+    if (!archivo) return;
+    try {
+      const datos = JSON.parse(await archivo.text());
+      const fecha = datos?.exportadoISO
+        ? new Date(datos.exportadoISO).toLocaleDateString('es-ES', { dateStyle: 'medium' })
+        : 'fecha desconocida';
+      if (!confirm(`Esto SUSTITUYE todos los datos actuales por el backup del ${fecha}. ¿Continuar?`)) return;
+      await importarBackup(datos);
+      alert('Backup importado ✓');
+      location.href = '/';
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'No se pudo leer el archivo');
+    } finally {
+      fileInput.value = '';
+    }
+  });
+</script>
