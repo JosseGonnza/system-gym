@@ -22,3 +22,9 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# backups personales de la app (datos privados, nunca al repo)
+gym-backup-*.json
+
+# editor
+.vscode/

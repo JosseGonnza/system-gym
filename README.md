@@ -1,43 +1,54 @@
-# Astro Starter Kit: Minimal
+<img width="100%" src="https://capsule-render.vercel.app/api?type=waving&color=FF5733&animation=fadeIn&height=120&section=header"/>
+
+
+# 💪 System GYM
+
+> PWA de entrenamiento construida **con IA (Claude Code)** en
+> **menos de una hora** de trabajo, para resolver un problema 100% personal:
+> saber qué toca hoy, progresar de cargas sin pensar y no perder ni una serie.
+
+Tema oscuro con violetas y glow, rollo "Sistema": una app que
+te incita a subir de nivel. Sin backend, sin cuentas, sin tracking — todos los
+datos viven en el IndexedDB de tu móvil.
+
+## Qué hace
+
+- **🗓️ Hoy** — jornada de trabajo (mañana/tarde/libre) con su pauta horaria,
+  entreno sugerido según la secuencia (cero deuda de días saltados), contador de
+  descansos semanal con aviso, y tarjeta 🌙 Mañana con la hora de la alarma.
+- **🏋️ Entreno** — tarjetas de ejercicio una a una, 3 estados por serie
+  (✓ completada · 🔥 al fallo · ✗ corta), rest timer a prueba de pantalla
+  bloqueada, y **motor de progresión automática**: lineal con deload, doble
+  progresión, peso corporal → lastre, isométricos por tiempo, y guardia de
+  parón (+14 días). Destello «⬆ NUEVO RÉCORD» al superar marcas.
+- **🍱 Dieta** — macros objetivo y platos plantilla de consulta rápida.
+- **📊 Progreso** — peso con media semanal contra objetivo, cintura y marcas
+  por ejercicio con gráficos SVG sin dependencias.
+
+La sesión se autoguarda en cada toque: si se cierra la app a mitad de entreno,
+sigue como borrador retomable. Export/import JSON como copia de seguridad.
+
+## Cómo está hecha
+
+- **Astro 5 + Tailwind 4 + TypeScript** → PWA instalable y offline.
+- **IndexedDB** (`idb-keyval`) como única persistencia.
+- **33 tests** (Vitest) cubren el motor de progresión y la lógica semanal.
+- Construida por bloques con Claude Code: la IA picaba código, el humano decidía.
+
+## Correrla en local
 
 ```sh
-npm create astro@latest -- --template minimal
+npm install
+npm run dev      # desarrollo
+npm test         # tests del motor
+npm run build    # producción (dist/)
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+## Aviso
 
-## 🚀 Project Structure
+Es una app personal: la rutina, los horarios y los macros que trae de fábrica
+son los míos. Si la quieres usar, haz fork y toca `src/lib/seed.ts` (rutina y
+config) y `src/lib/horarios.ts` (pautas por turno).
 
-Inside of your Astro project, you'll see the following folders and files:
+<img width="100%" src="https://capsule-render.vercel.app/api?type=waving&color=FF5733&height=80&section=footer"/>
 
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
-```
-
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
-
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
-
-Any static assets, like images, can be placed in the `public/` directory.
-
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
