@@ -1,5 +1,5 @@
 export type TipoProgresion = 'lineal' | 'doble' | 'pesoCorporal' | 'tiempo' | 'libre';
-export type EstadoSerie = 'completada' | 'fallo' | 'corta';
+export type EstadoSerie = 'pendiente' | 'completada' | 'fallo' | 'corta';
 export type EstadoSesion = 'finalizada' | 'borrador';
 export type Jornada = 'manana' | 'tarde' | 'libre';
 
@@ -41,6 +41,7 @@ export interface Config {
   puntero: { ultimoDiaCompletadoId: string | null };
   incrementoMinimoKg: number;
   entrenosObjetivoSemana: number;
+  restTimerActivo: boolean;
   ultimoExportISO: string | null;
 }
 

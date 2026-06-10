@@ -75,5 +75,6 @@ export const CONFIG_INICIAL: Config = {
   puntero: { ultimoDiaCompletadoId: null },
   incrementoMinimoKg: 2.5,
   entrenosObjetivoSemana: 5,
+  restTimerActivo: true,
   ultimoExportISO: null,
 };

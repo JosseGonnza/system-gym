@@ -20,10 +20,12 @@ export async function initDB(): Promise<void> {
   if (!(await get(K.diario))) await set(K.diario, {});
 }
 
-export const getConfig = () => get(K.config) as Promise<Config>;
+export const getConfig = async (): Promise<Config> => ({ ...CONFIG_INICIAL, ...(await get(K.config)) });
 export const setConfig = (c: Config) => set(K.config, c);
 export const getRutinas = () => get(K.rutinas) as Promise<Rutina[]>;
+export const setRutinas = (r: Rutina[]) => set(K.rutinas, r);
 export const getSesiones = () => get(K.sesiones) as Promise<Sesion[]>;
+export const setSesiones = (s: Sesion[]) => set(K.sesiones, s);
 export const getMediciones = () => get(K.mediciones) as Promise<Mediciones>;
 export const getDiario = () => get(K.diario) as Promise<Record<string, DiaRegistro>>;
 

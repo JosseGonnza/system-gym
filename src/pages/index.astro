@@ -72,11 +72,13 @@ import Layout from '../layouts/Layout.astro';
     contarDescansos,
   } from '../lib/db';
   import { JORNADAS, PAUTAS, ALARMAS } from '../lib/horarios';
+  import { cerrarBorradoresCaducados } from '../lib/sesion';
   import type { DiaDef } from '../lib/types';
 
   const $ = (id: string) => document.getElementById(id)!;
 
   await initDB();
+  await cerrarBorradoresCaducados();
   const config = await getConfig();
   const rutinas = await getRutinas();
   const sesiones = await getSesiones();

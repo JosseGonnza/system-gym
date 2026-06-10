@@ -3,11 +3,571 @@ import Layout from '../layouts/Layout.astro';
 ---
 
 <Layout title="Entreno">
-  <section class="card opacity-60">
-    <p class="text-sm font-semibold">🚧 En construcción (bloque 3)</p>
-    <p class="mt-1 text-xs text-mut">
-      Tarjetas de ejercicio una a una · 3 estados por serie · rest timer · sugerencia de pesos del
-      motor de progresión · lastre
-    </p>
+  <section id="vista-inicio" class="hidden">
+    <div class="card glow border-vio/40">
+      <p class="text-xs font-bold uppercase tracking-widest text-vio-hi">Hoy toca</p>
+      <h2 id="inicio-dia" class="mt-1 text-xl font-extrabold"></h2>
+      <ul id="inicio-ejercicios" class="mt-3 space-y-1.5 text-sm text-mut"></ul>
+      <p id="inicio-nota" class="mt-3 hidden text-xs font-semibold text-warn"></p>
+      <button id="btn-empezar" class="btn mt-4">▶ Empezar entreno</button>
+    </div>
   </section>
+
+  <section id="vista-sesion" class="hidden">
+    <div class="mb-3 flex items-center justify-between">
+      <p id="progreso" class="text-sm font-bold text-vio-hi"></p>
+      <div class="flex items-center gap-3 text-sm">
+        <label class="flex items-center gap-1.5 text-mut">
+          💤
+          <input
+            id="in-sueno"
+            type="number"
+            min="0"
+            max="14"
+            step="0.5"
+            inputmode="decimal"
+            placeholder="h"
+            class="w-14 rounded-lg border border-line bg-surface2 px-1.5 py-1 text-center font-bold"
+          />
+        </label>
+        <div id="in-energia" class="flex gap-1"></div>
+      </div>
+    </div>
+
+    <div id="tarjeta"></div>
+
+    <div class="mt-4 grid grid-cols-2 gap-2">
+      <button id="btn-prev" class="btn-2 py-3">← Anterior</button>
+      <button id="btn-next" class="btn py-3">Siguiente →</button>
+    </div>
+    <button id="btn-finalizar" class="btn-2 mt-2 border-vio/40 text-vio-hi">🏁 Finalizar sesión</button>
+    <a href="/" class="mt-2 block text-center text-sm font-semibold text-mut">💾 Guardar y salir (sigue en borrador)</a>
+    <textarea
+      id="in-notas"
+      rows="2"
+      placeholder="📝 Notas: molestias, sensaciones, qué subir…"
+      class="mt-4 w-full rounded-xl border border-line bg-surface px-3 py-2.5 text-sm"></textarea>
+  </section>
+
+  <section id="vista-fin" class="hidden">
+    <div class="card glow border-vio/40 text-center">
+      <p class="text-4xl">🏆</p>
+      <h2 class="mt-2 text-xl font-extrabold">Sesión finalizada</h2>
+      <p id="fin-resumen" class="mt-2 text-sm text-mut"></p>
+      <ul id="fin-prs" class="mt-3 space-y-1 text-sm font-bold text-vio-hi"></ul>
+      <a href="/" class="btn mt-4">Volver a Hoy</a>
+    </div>
+  </section>
+
+  <div
+    id="banner-pr"
+    class="pointer-events-none fixed left-1/2 top-20 z-30 -translate-x-1/2 scale-90 rounded-2xl border border-vio bg-surface px-5 py-3 text-center font-extrabold text-vio-hi opacity-0 transition-all duration-300 glow"
+  >
+  </div>
+
+  <div
+    id="rest-bar"
+    class="fixed inset-x-4 bottom-[4.7rem] z-20 hidden items-center justify-between rounded-2xl border border-vio/40 bg-surface px-4 py-3 glow"
+  >
+    <p class="text-sm font-bold"><span id="rest-tiempo" class="text-lg tabular-nums text-vio-hi"></span> <span id="rest-nombre" class="text-mut"></span></p>
+    <div class="flex gap-2">
+      <button id="rest-mas" class="rounded-lg border border-line bg-surface2 px-2.5 py-1.5 text-xs font-bold">+15s</button>
+      <button id="rest-saltar" class="rounded-lg border border-line bg-surface2 px-2.5 py-1.5 text-xs font-bold">Saltar</button>
+    </div>
+  </div>
+
+  <dialog
+    id="dlg-borrador"
+    class="m-auto w-[88%] max-w-sm rounded-2xl border border-line bg-surface p-5 text-ink backdrop:bg-black/70"
+  >
+    <h3 class="text-lg font-extrabold">Tienes una sesión a medias</h3>
+    <p id="dlg-borrador-texto" class="mt-2 text-sm text-mut"></p>
+    <div class="mt-4 grid gap-2">
+      <button id="dlg-borrador-retomar" class="btn">▶ Retomar</button>
+      <button id="dlg-borrador-descartar" class="btn-2 text-bad">🗑 Descartar</button>
+    </div>
+  </dialog>
 </Layout>
+
+<script>
+  import {
+    initDB,
+    getConfig,
+    getRutinas,
+    setRutinas,
+    getSesiones,
+    getDiario,
+    hoyISO,
+    diaSugerido,
+    formatObjetivo,
+  } from '../lib/db';
+  import { sugerir, historialDeRanura, type Sugerencia } from '../lib/motor';
+  import {
+    crearSesion,
+    guardarSesion,
+    descartarSesion,
+    finalizarSesion,
+    buscarBorrador,
+    cerrarBorradoresCaducados,
+  } from '../lib/sesion';
+  import type { DiaDef, EjercicioDef, EjercicioReg, EstadoSerie, Sesion } from '../lib/types';
+
+  const $ = (id: string) => document.getElementById(id)!;
+
+  await initDB();
+  await cerrarBorradoresCaducados();
+  const config = await getConfig();
+  const rutinas = await getRutinas();
+  const rutina = rutinas.find((r) => r.id === config.rutinaActivaId) ?? rutinas[0];
+  const sesiones = await getSesiones();
+  const diario = await getDiario();
+  const hoy = hoyISO();
+
+  let sesion: Sesion | null = null;
+  let dia: DiaDef = rutina.dias.find((d) => d.id === diario[hoy]?.diaElegidoId) ?? diaSugerido(config, rutina);
+  let cardIdx = 0;
+  const prsLogrados: string[] = [];
+
+  const numeroDe = (d: DiaDef) => rutina.dias.findIndex((x) => x.id === d.id) + 1;
+  const tituloDe = (d: DiaDef) => `${d.emoji} Día ${numeroDe(d)} — ${d.nombre}`;
+
+  // Mejores marcas históricas por ranura, para detectar récords
+  const bests = new Map<string, { peso: number; lastre: number; reps: number; seg: number }>();
+  for (const s of sesiones) {
+    if (s.estado !== 'finalizada') continue;
+    for (const er of s.ejercicios) {
+      for (const sr of er.series) {
+        if (sr.estado !== 'completada') continue;
+        const b = bests.get(er.ranuraId) ?? { peso: 0, lastre: 0, reps: 0, seg: 0 };
+        b.peso = Math.max(b.peso, sr.peso ?? 0);
+        if ((sr.lastreKg ?? 0) > b.lastre) {
+          b.lastre = sr.lastreKg ?? 0;
+          b.reps = sr.reps ?? 0;
+        } else if ((sr.lastreKg ?? 0) === b.lastre) {
+          b.reps = Math.max(b.reps, sr.reps ?? 0);
+        }
+        b.seg = Math.max(b.seg, sr.segundos ?? 0);
+        bests.set(er.ranuraId, b);
+      }
+    }
+  }
+
+  function grupos(d: DiaDef): EjercicioDef[][] {
+    const out: EjercicioDef[][] = [];
+    for (const e of d.ejercicios) {
+      const prev = out[out.length - 1];
+      if (e.superserieId && prev && prev[0].superserieId === e.superserieId) prev.push(e);
+      else out.push([e]);
+    }
+    return out;
+  }
+
+  function calcularSugerencias(d: DiaDef): Map<string, Sugerencia> {
+    const map = new Map<string, Sugerencia>();
+    for (const e of d.ejercicios) {
+      map.set(e.ranuraId, sugerir(e, historialDeRanura(sesiones, e.ranuraId), config.incrementoMinimoKg));
+    }
+    return map;
+  }
+
+  function mostrarVista(v: 'inicio' | 'sesion' | 'fin') {
+    for (const x of ['inicio', 'sesion', 'fin']) $(`vista-${x}`).classList.toggle('hidden', x !== v);
+  }
+
+  // ---------- Vista inicio ----------
+  function renderInicio() {
+    $('inicio-dia').textContent = tituloDe(dia);
+    $('inicio-ejercicios').replaceChildren(
+      ...dia.ejercicios.map((e) => {
+        const li = document.createElement('li');
+        li.className = 'flex justify-between gap-3';
+        const n = document.createElement('span');
+        n.textContent = e.superserieId ? `🔁 ${e.nombre}` : e.nombre;
+        const o = document.createElement('span');
+        o.className = 'shrink-0 font-semibold text-vio-soft';
+        o.textContent = formatObjetivo(e);
+        li.append(n, o);
+        return li;
+      }),
+    );
+    const nota = $('inicio-nota');
+    if (diario[hoy]?.descanso) {
+      nota.textContent = '😴 Hoy lo tienes marcado como descanso. Si entrenas, quítalo luego en Hoy.';
+      nota.classList.remove('hidden');
+    } else if (sesiones.some((s) => s.fecha === hoy && s.estado === 'finalizada')) {
+      nota.textContent = '✅ Hoy ya has finalizado una sesión.';
+      nota.classList.remove('hidden');
+    }
+    mostrarVista('inicio');
+  }
+
+  // ---------- Vista sesión ----------
+  function regDe(e: EjercicioDef): EjercicioReg {
+    return sesion!.ejercicios.find((x) => x.ranuraId === e.ranuraId)!;
+  }
+
+  function renderProgreso() {
+    const gs = grupos(dia);
+    $('progreso').textContent = `${tituloDe(dia)} · ${cardIdx + 1}/${gs.length}`;
+    ($('btn-prev') as HTMLButtonElement).disabled = cardIdx === 0;
+    $('btn-prev').classList.toggle('opacity-40', cardIdx === 0);
+    $('btn-next').textContent = cardIdx === gs.length - 1 ? '🏁 Finalizar' : 'Siguiente →';
+  }
+
+  function renderEnergia() {
+    $('in-energia').replaceChildren(
+      ...[1, 2, 3, 4, 5].map((n) => {
+        const b = document.createElement('button');
+        const activo = sesion!.energia != null && n <= sesion!.energia;
+        b.className = `h-7 w-7 rounded-lg border text-xs font-bold transition active:scale-90 ${
+          activo ? 'border-vio bg-vio/30 text-vio-hi' : 'border-line bg-surface2 text-mut'
+        }`;
+        b.textContent = '⚡';
+        b.addEventListener('click', () => {
+          sesion!.energia = sesion!.energia === n ? null : n;
+          void guardarSesion(sesion!);
+          renderEnergia();
+        });
+        return b;
+      }),
+    );
+  }
+
+  function inputNum(valor: number | null, ancho: string, placeholder: string, onCambio: (v: number | null) => void) {
+    const i = document.createElement('input');
+    i.type = 'number';
+    i.inputMode = 'decimal';
+    i.step = 'any';
+    i.placeholder = placeholder;
+    i.value = valor != null ? String(valor) : '';
+    i.className = `${ancho} rounded-lg border border-line bg-surface2 px-1 py-2 text-center text-base font-bold`;
+    i.addEventListener('change', () => {
+      const v = i.value === '' ? null : Number(i.value);
+      onCambio(Number.isFinite(v as number) ? v : null);
+      void guardarSesion(sesion!);
+    });
+    return i;
+  }
+
+  function checkPR(e: EjercicioDef, i: number) {
+    const s = regDe(e).series[i];
+    const b = bests.get(e.ranuraId);
+    if (!b) return;
+    let logrado: string | null = null;
+    if (e.tipoProgresion === 'tiempo') {
+      if (b.seg > 0 && (s.segundos ?? 0) > b.seg) {
+        logrado = `${e.nombre}: ${s.segundos} s`;
+        b.seg = s.segundos!;
+      }
+    } else if (e.tipoProgresion === 'pesoCorporal') {
+      const lastre = s.lastreKg ?? 0;
+      if (lastre > b.lastre || (lastre === b.lastre && (s.reps ?? 0) > b.reps)) {
+        logrado = `${e.nombre}: ${lastre ? `+${lastre} kg × ` : ''}${s.reps} reps`;
+        b.lastre = lastre;
+        b.reps = s.reps ?? 0;
+      }
+    } else if ((s.peso ?? 0) > b.peso) {
+      logrado = `${e.nombre}: ${s.peso} kg`;
+      b.peso = s.peso!;
+    }
+    if (logrado) {
+      prsLogrados.push(logrado);
+      const banner = $('banner-pr');
+      banner.textContent = `⬆ NUEVO RÉCORD · ${logrado}`;
+      banner.classList.remove('opacity-0', 'scale-90');
+      setTimeout(() => banner.classList.add('opacity-0', 'scale-90'), 2500);
+    }
+  }
+
+  function marcar(e: EjercicioDef, i: number, estado: EstadoSerie) {
+    const s = regDe(e).series[i];
+    s.estado = s.estado === estado ? 'pendiente' : estado;
+    if (s.estado !== 'pendiente') {
+      const ahora = new Date().toISOString();
+      sesion!.inicioISO ??= ahora;
+      sesion!.finISO = ahora;
+      if (s.estado === 'completada') checkPR(e, i);
+      empezarRest(e);
+    }
+    void guardarSesion(sesion!);
+    renderCard();
+  }
+
+  function bloqueEjercicio(e: EjercicioDef): HTMLElement {
+    const reg = regDe(e);
+    const sug = sugerir(e, historialDeRanura(sesiones, e.ranuraId), config.incrementoMinimoKg);
+    const div = document.createElement('div');
+
+    const head = document.createElement('div');
+    head.className = 'flex items-start justify-between gap-2';
+    const h = document.createElement('h3');
+    h.className = 'text-lg font-extrabold';
+    h.textContent = e.nombre;
+    const rest = document.createElement('div');
+    rest.className = 'flex items-center gap-1 text-xs font-bold text-mut';
+    const menos = document.createElement('button');
+    menos.textContent = '−';
+    const masB = document.createElement('button');
+    masB.textContent = '+';
+    for (const b of [menos, masB]) b.className = 'h-6 w-6 rounded-md border border-line bg-surface2';
+    const restTxt = document.createElement('span');
+    restTxt.textContent = `⏱ ${e.restSeg}s`;
+    menos.addEventListener('click', async () => {
+      e.restSeg = Math.max(15, e.restSeg - 15);
+      restTxt.textContent = `⏱ ${e.restSeg}s`;
+      await setRutinas(rutinas);
+    });
+    masB.addEventListener('click', async () => {
+      e.restSeg += 15;
+      restTxt.textContent = `⏱ ${e.restSeg}s`;
+      await setRutinas(rutinas);
+    });
+    rest.append(menos, restTxt, masB);
+    head.append(h, rest);
+    div.append(head);
+
+    const chip = document.createElement('p');
+    chip.className = 'mt-1 inline-block rounded-lg bg-vio/15 px-2 py-1 text-xs font-bold text-vio-hi';
+    chip.textContent = `${formatObjetivo(e)} · ${sug.texto}`;
+    div.append(chip);
+
+    if (sug.aviso) {
+      const aviso = document.createElement('p');
+      aviso.className = 'mt-1.5 text-xs font-semibold text-warn';
+      aviso.textContent = `⚠️ ${sug.aviso}`;
+      div.append(aviso);
+    }
+    if (e.nota) {
+      const nota = document.createElement('p');
+      nota.className = 'mt-1.5 text-xs text-mut';
+      nota.textContent = `💡 ${e.nota}`;
+      div.append(nota);
+    }
+
+    const lista = document.createElement('div');
+    lista.className = 'mt-3 space-y-2';
+    reg.series.forEach((s, i) => {
+      const fila = document.createElement('div');
+      fila.className = 'flex items-center gap-2';
+      const num = document.createElement('span');
+      num.className = 'w-6 shrink-0 text-xs font-bold text-mut';
+      num.textContent = `S${i + 1}`;
+      fila.append(num);
+
+      if (e.tipoProgresion === 'tiempo') {
+        fila.append(inputNum(s.segundos ?? null, 'w-20', 'seg', (v) => (s.segundos = v)));
+        const lbl = document.createElement('span');
+        lbl.className = 'text-xs text-mut';
+        lbl.textContent = 's';
+        fila.append(lbl);
+      } else if (e.tipoProgresion === 'pesoCorporal') {
+        fila.append(inputNum(s.lastreKg ?? null, 'w-18', '+kg', (v) => (s.lastreKg = v)));
+        const x = document.createElement('span');
+        x.className = 'text-xs text-mut';
+        x.textContent = '×';
+        fila.append(x, inputNum(s.reps ?? null, 'w-16', 'reps', (v) => (s.reps = v)));
+      } else {
+        fila.append(inputNum(s.peso ?? null, 'w-20', 'kg', (v) => (s.peso = v)));
+        const x = document.createElement('span');
+        x.className = 'text-xs text-mut';
+        x.textContent = '×';
+        fila.append(x, inputNum(s.reps ?? null, 'w-16', 'reps', (v) => (s.reps = v)));
+      }
+
+      const estados = document.createElement('div');
+      estados.className = 'ml-auto flex gap-1';
+      const defs: { id: EstadoSerie; icono: string; on: string }[] = [
+        { id: 'completada', icono: '✓', on: 'border-ok bg-ok/20 text-ok' },
+        { id: 'fallo', icono: '🔥', on: 'border-warn bg-warn/20' },
+        { id: 'corta', icono: '✗', on: 'border-bad bg-bad/20 text-bad' },
+      ];
+      for (const d of defs) {
+        const b = document.createElement('button');
+        b.className = `h-10 w-10 rounded-xl border text-base font-bold transition active:scale-90 ${
+          s.estado === d.id ? d.on : 'border-line bg-surface2 text-mut'
+        }`;
+        b.textContent = d.icono;
+        b.addEventListener('click', () => marcar(e, i, d.id));
+        estados.append(b);
+      }
+      fila.append(estados);
+      lista.append(fila);
+    });
+    div.append(lista);
+    return div;
+  }
+
+  function renderCard() {
+    const gs = grupos(dia);
+    const grupo = gs[cardIdx];
+    const card = document.createElement('div');
+    card.className = 'card glow border-vio/30';
+    if (grupo.length > 1) {
+      const tag = document.createElement('p');
+      tag.className = 'mb-2 text-xs font-bold uppercase tracking-widest text-vio-hi';
+      tag.textContent = '🔁 Superserie — alterna sin descanso entre ambos';
+      card.append(tag);
+    }
+    grupo.forEach((e, i) => {
+      if (i > 0) {
+        const hr = document.createElement('hr');
+        hr.className = 'my-4 border-line';
+        card.append(hr);
+      }
+      card.append(bloqueEjercicio(e));
+    });
+    $('tarjeta').replaceChildren(card);
+    renderProgreso();
+  }
+
+  function renderSesion() {
+    ($('in-sueno') as HTMLInputElement).value = sesion!.suenoH != null ? String(sesion!.suenoH) : '';
+    ($('in-notas') as HTMLTextAreaElement).value = sesion!.notas;
+    renderEnergia();
+    renderCard();
+    mostrarVista('sesion');
+  }
+
+  // ---------- Vista fin ----------
+  function renderFin() {
+    const total = sesion!.ejercicios.reduce((n, e) => n + e.series.length, 0);
+    const hechasN = sesion!.ejercicios.reduce((n, e) => n + e.series.filter((s) => s.estado !== 'pendiente').length, 0);
+    const dur = sesion!.duracionMin != null ? ` · ${sesion!.duracionMin} min` : '';
+    $('fin-resumen').textContent = `${tituloDe(dia)} · ${hechasN}/${total} series${dur}`;
+    $('fin-prs').replaceChildren(
+      ...prsLogrados.map((p) => {
+        const li = document.createElement('li');
+        li.textContent = `⬆ ${p}`;
+        return li;
+      }),
+    );
+    mostrarVista('fin');
+  }
+
+  // ---------- Rest timer ----------
+  let restInterval: ReturnType<typeof setInterval> | undefined;
+  let restRestante = 0;
+
+  function pintarRest() {
+    const m = Math.floor(restRestante / 60);
+    const s = restRestante % 60;
+    $('rest-tiempo').textContent = `${m}:${String(s).padStart(2, '0')}`;
+  }
+
+  function pararRest() {
+    clearInterval(restInterval);
+    $('rest-bar').classList.add('hidden');
+    $('rest-bar').classList.remove('flex');
+  }
+
+  function empezarRest(e: EjercicioDef) {
+    if (!config.restTimerActivo) return;
+    clearInterval(restInterval);
+    restRestante = e.restSeg;
+    $('rest-nombre').textContent = `· ${e.nombre}`;
+    $('rest-bar').classList.remove('hidden');
+    $('rest-bar').classList.add('flex');
+    pintarRest();
+    restInterval = setInterval(() => {
+      restRestante--;
+      if (restRestante <= 0) {
+        pararRest();
+        navigator.vibrate?.([200, 100, 200]);
+        try {
+          const ctx = new AudioContext();
+          const osc = ctx.createOscillator();
+          osc.frequency.value = 880;
+          osc.connect(ctx.destination);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.25);
+        } catch {
+          /* sin audio, la vibración basta */
+        }
+      } else {
+        pintarRest();
+      }
+    }, 1000);
+  }
+
+  $('rest-saltar').addEventListener('click', pararRest);
+  $('rest-mas').addEventListener('click', () => {
+    restRestante += 15;
+    pintarRest();
+  });
+
+  // ---------- Acciones ----------
+  async function finalizar() {
+    const marcadas = sesion!.ejercicios.reduce((n, e) => n + e.series.filter((s) => s.estado !== 'pendiente').length, 0);
+    if (marcadas === 0) {
+      if (confirm('No has marcado ninguna serie. ¿Descartar la sesión?')) {
+        await descartarSesion(sesion!.id);
+        location.href = '/';
+      }
+      return;
+    }
+    const total = sesion!.ejercicios.reduce((n, e) => n + e.series.length, 0);
+    if (marcadas < total && !confirm(`Quedan ${total - marcadas} series sin marcar. ¿Finalizar igual?`)) return;
+    pararRest();
+    await finalizarSesion(sesion!);
+    renderFin();
+  }
+
+  $('btn-empezar').addEventListener('click', async () => {
+    sesion = crearSesion(rutina, dia, calcularSugerencias(dia));
+    cardIdx = 0;
+    await guardarSesion(sesion);
+    renderSesion();
+  });
+
+  $('btn-prev').addEventListener('click', () => {
+    if (cardIdx > 0) {
+      cardIdx--;
+      renderCard();
+    }
+  });
+  $('btn-next').addEventListener('click', () => {
+    const gs = grupos(dia);
+    if (cardIdx < gs.length - 1) {
+      cardIdx++;
+      renderCard();
+    } else {
+      void finalizar();
+    }
+  });
+  $('btn-finalizar').addEventListener('click', () => void finalizar());
+
+  $('in-sueno').addEventListener('change', () => {
+    const v = ($('in-sueno') as HTMLInputElement).value;
+    sesion!.suenoH = v === '' ? null : Number(v);
+    void guardarSesion(sesion!);
+  });
+  $('in-notas').addEventListener('change', () => {
+    sesion!.notas = ($('in-notas') as HTMLTextAreaElement).value;
+    void guardarSesion(sesion!);
+  });
+
+  // ---------- Arranque ----------
+  const borrador = await buscarBorrador();
+  if (borrador) {
+    const diaBorrador = rutina.dias.find((d) => d.id === borrador.diaId);
+    $('dlg-borrador-texto').textContent = `${diaBorrador ? tituloDe(diaBorrador) : 'Sesión'} del ${new Date(
+      `${borrador.fecha}T12:00:00`,
+    ).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric' })} en borrador. ¿La retomas?`;
+    const dlg = $('dlg-borrador') as HTMLDialogElement;
+    dlg.showModal();
+    $('dlg-borrador-retomar').addEventListener('click', () => {
+      dlg.close();
+      sesion = borrador;
+      if (diaBorrador) dia = diaBorrador;
+      cardIdx = 0;
+      renderSesion();
+    });
+    $('dlg-borrador-descartar').addEventListener('click', async () => {
+      await descartarSesion(borrador.id);
+      dlg.close();
+      renderInicio();
+    });
+  } else {
+    renderInicio();
+  }
+</script>
