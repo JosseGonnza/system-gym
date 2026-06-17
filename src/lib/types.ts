@@ -3,6 +3,25 @@ export type EstadoSerie = 'pendiente' | 'completada' | 'fallo' | 'corta';
 export type EstadoSesion = 'finalizada' | 'borrador';
 export type Jornada = 'manana' | 'tarde' | 'libre';
 
+export type Implemento = 'barra' | 'barraZ' | 'multipower' | 'mancuerna' | 'maquina' | 'polea' | 'kettlebell' | 'corporal';
+export type EntradaPeso = 'porLado' | 'porMancuerna' | 'directa' | 'lastre' | 'asistencia' | 'ninguna';
+export type Patron = 'empujeH' | 'empujeV' | 'traccionV' | 'traccionH' | 'rodilla' | 'cadera' | 'aislamiento' | 'core';
+export type Ejecucion = 'bilateral' | 'unilateral';
+
+// Biblioteca de ejercicios: describe el QUÉ (músculo, implemento, cómo se carga).
+// La rutina referencia un ejercicio por id y le pone el CUÁNTO (series/reps/incremento).
+export interface Ejercicio {
+  id: string;
+  nombre: string;
+  patron: Patron;
+  implemento: Implemento;
+  entrada: EntradaPeso;
+  ejecucion: Ejecucion;
+  pesoBaseKg: number;
+  agarre?: string;
+  nota?: string;
+}
+
 export interface DiaRegistro {
   jornada?: Jornada;
   descanso?: boolean;
@@ -11,6 +30,7 @@ export interface DiaRegistro {
 
 export interface EjercicioDef {
   ranuraId: string;
+  ejercicioId?: string;
   nombre: string;
   tipoProgresion: TipoProgresion;
   series: number;
@@ -84,6 +104,18 @@ export interface BackupV1 {
   app: 'gym';
   exportadoISO: string;
   config: Config;
+  rutinas: Rutina[];
+  sesiones: Sesion[];
+  mediciones: Mediciones;
+  diario: Record<string, DiaRegistro>;
+}
+
+export interface BackupV2 {
+  version: 2;
+  app: 'gym';
+  exportadoISO: string;
+  config: Config;
+  catalogo: Ejercicio[];
   rutinas: Rutina[];
   sesiones: Sesion[];
   mediciones: Mediciones;

@@ -1,9 +1,10 @@
 import { clear, get, set } from 'idb-keyval';
-import type { BackupV1, Config, DiaDef, DiaRegistro, EjercicioDef, Mediciones, Rutina, Sesion } from './types';
-import { CONFIG_INICIAL, RUTINA_1 } from './seed';
+import type { BackupV1, BackupV2, Config, DiaDef, DiaRegistro, Ejercicio, EjercicioDef, Mediciones, Rutina, Sesion } from './types';
+import { CATALOGO, CONFIG_INICIAL, RUTINA_1 } from './seed';
 
 const K = {
   config: 'config',
+  catalogo: 'catalogo',
   rutinas: 'rutinas',
   sesiones: 'sesiones',
   mediciones: 'mediciones',
@@ -14,6 +15,7 @@ const MEDICIONES_VACIAS: Mediciones = { peso: [], cintura: [] };
 
 export async function initDB(): Promise<void> {
   if (!(await get(K.config))) await set(K.config, CONFIG_INICIAL);
+  if (!(await get(K.catalogo))) await set(K.catalogo, CATALOGO);
   if (!(await get(K.rutinas))) await set(K.rutinas, [RUTINA_1]);
   if (!(await get(K.sesiones))) await set(K.sesiones, []);
   if (!(await get(K.mediciones))) await set(K.mediciones, MEDICIONES_VACIAS);
@@ -22,6 +24,8 @@ export async function initDB(): Promise<void> {
 
 export const getConfig = async (): Promise<Config> => ({ ...CONFIG_INICIAL, ...(await get(K.config)) });
 export const setConfig = (c: Config) => set(K.config, c);
+export const getCatalogo = async (): Promise<Ejercicio[]> => (await get(K.catalogo)) ?? CATALOGO;
+export const setCatalogo = (c: Ejercicio[]) => set(K.catalogo, c);
 export const getRutinas = () => get(K.rutinas) as Promise<Rutina[]>;
 export const setRutinas = (r: Rutina[]) => set(K.rutinas, r);
 export const getSesiones = () => get(K.sesiones) as Promise<Sesion[]>;
@@ -86,9 +90,10 @@ export function formatObjetivo(e: EjercicioDef): string {
   return `${e.series}×${reps}`;
 }
 
-export async function exportarBackup(): Promise<BackupV1> {
-  const [config, rutinas, sesiones, mediciones, diario] = await Promise.all([
+export async function exportarBackup(): Promise<BackupV2> {
+  const [config, catalogo, rutinas, sesiones, mediciones, diario] = await Promise.all([
     getConfig(),
+    getCatalogo(),
     getRutinas(),
     getSesiones(),
     getMediciones(),
@@ -97,7 +102,7 @@ export async function exportarBackup(): Promise<BackupV1> {
   const exportadoISO = new Date().toISOString();
   const configActualizada = { ...config, ultimoExportISO: exportadoISO };
   await setConfig(configActualizada);
-  return { version: 1, app: 'gym', exportadoISO, config: configActualizada, rutinas, sesiones, mediciones, diario };
+  return { version: 2, app: 'gym', exportadoISO, config: configActualizada, catalogo, rutinas, sesiones, mediciones, diario };
 }
 
 export async function resetDB(): Promise<void> {
@@ -106,12 +111,14 @@ export async function resetDB(): Promise<void> {
 }
 
 export async function importarBackup(data: unknown): Promise<void> {
-  const b = data as BackupV1;
-  if (!b || b.app !== 'gym' || b.version !== 1 || !b.config || !Array.isArray(b.rutinas)) {
+  const b = data as (BackupV1 | BackupV2) & { catalogo?: Ejercicio[] };
+  if (!b || b.app !== 'gym' || (b.version !== 1 && b.version !== 2) || !b.config || !Array.isArray(b.rutinas)) {
     throw new Error('El archivo no parece un backup válido de GYM');
   }
+  // Los backups v1 no traen catálogo: se siembra el de la app.
   await Promise.all([
     set(K.config, b.config),
+    set(K.catalogo, Array.isArray(b.catalogo) ? b.catalogo : CATALOGO),
     set(K.rutinas, b.rutinas),
     set(K.sesiones, b.sesiones ?? []),
     set(K.mediciones, b.mediciones ?? MEDICIONES_VACIAS),
