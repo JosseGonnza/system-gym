@@ -14,6 +14,7 @@ vi.mock('idb-keyval', () => {
 
 import * as idb from 'idb-keyval';
 import { initDB, getConfig, setConfig, getPerfilActivo, setPerfilActivo, resetDB, exportarBackup } from '../src/lib/db';
+import { horarioDe } from '../src/lib/horarios';
 
 const store = (idb as unknown as { _store: Map<string, unknown> })._store;
 const conf = (c: Awaited<ReturnType<typeof getConfig>>) => c;
@@ -61,6 +62,15 @@ describe('multi-perfil', () => {
     const b = await exportarBackup();
     expect(b.perfil).toBe('yasmina');
     expect(b.version).toBe(2);
+  });
+
+  it('cada perfil tiene sus jornadas y toda jornada tiene pauta', () => {
+    expect(horarioDe('jose').jornadas.map((j) => j.id)).toEqual(['manana', 'tarde', 'libre']);
+    expect(horarioDe('yasmina').jornadas.map((j) => j.id)).toEqual(['laboratorio', 'ett', 'libre']);
+    for (const p of ['jose', 'yasmina'] as const) {
+      const h = horarioDe(p);
+      for (const j of h.jornadas) expect(h.pautas[j.id], `${p}/${j.id}`).toBeDefined();
+    }
   });
 
   it('reset solo afecta al perfil activo, no al otro ni al catálogo', async () => {

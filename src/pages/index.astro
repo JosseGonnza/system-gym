@@ -76,14 +76,16 @@ import Layout from '../layouts/Layout.astro';
     siguienteDia,
     formatObjetivo,
     contarDescansos,
+    getPerfilActivo,
   } from '../lib/db';
-  import { JORNADAS, PAUTAS, ALARMAS } from '../lib/horarios';
+  import { horarioDe } from '../lib/horarios';
   import { cerrarBorradoresCaducados } from '../lib/sesion';
   import type { DiaDef } from '../lib/types';
 
   const $ = (id: string) => document.getElementById(id)!;
 
   await initDB();
+  const { jornadas: JORNADAS, pautas: PAUTAS, alarmas: ALARMAS } = horarioDe(getPerfilActivo());
   await cerrarBorradoresCaducados();
   const config = await getConfig();
   const rutinas = await getRutinas();
@@ -147,13 +149,14 @@ import Layout from '../layouts/Layout.astro';
   function pintarPauta() {
     const ul = $('pauta');
     const jornada = diario[hoy]?.jornada;
-    if (!jornada) {
+    const filas = jornada ? PAUTAS[jornada] : undefined;
+    if (!filas) {
       ul.classList.add('hidden');
       return;
     }
     ul.classList.remove('hidden');
     ul.replaceChildren(
-      ...PAUTAS[jornada].map((fila) => {
+      ...filas.map((fila) => {
         const li = document.createElement('li');
         li.className = `flex gap-3 ${fila.destacado ? 'font-bold text-vio-soft' : 'text-mut'}`;
         const hora = document.createElement('span');
@@ -216,11 +219,12 @@ import Layout from '../layouts/Layout.astro';
         : siguienteDia(rutina, diaEfectivoHoy().id);
     const coletilla = !entrenadoHoy && !diario[hoy]?.descanso ? ' (si hoy completas el de hoy)' : '';
     $('manana-entreno').textContent = `Entreno previsto: ${tituloDe(previsto)}${coletilla}`;
-    if (jornadaM) {
-      const pauta = PAUTAS[jornadaM];
+    const pauta = jornadaM ? PAUTAS[jornadaM] : undefined;
+    if (jornadaM && pauta) {
       const entrenoFila = pauta.find((f) => f.texto.includes('ENTRENO'));
-      $('manana-horario').textContent = `Jornada de ${JORNADAS.find((j) => j.id === jornadaM)!.label.toLowerCase()} · entreno a las ${entrenoFila?.hora}`;
-      $('manana-alarma').textContent = `⏰ Pon la alarma a las ${ALARMAS[jornadaM]}`;
+      const label = JORNADAS.find((j) => j.id === jornadaM)?.label.toLowerCase() ?? '';
+      $('manana-horario').textContent = `Jornada de ${label} · entreno a las ${entrenoFila?.hora ?? '—'}`;
+      $('manana-alarma').textContent = `⏰ Pon la alarma a las ${ALARMAS[jornadaM] ?? 'según turno'}`;
     } else {
       $('manana-horario').textContent = 'Elige jornada para ver horario y alarma.';
       $('manana-alarma').textContent = '';

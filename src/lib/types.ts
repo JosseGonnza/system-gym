@@ -1,7 +1,7 @@
 export type TipoProgresion = 'lineal' | 'doble' | 'pesoCorporal' | 'tiempo' | 'libre';
 export type EstadoSerie = 'pendiente' | 'completada' | 'fallo' | 'corta';
 export type EstadoSesion = 'finalizada' | 'borrador';
-export type Jornada = 'manana' | 'tarde' | 'libre';
+export type Jornada = 'manana' | 'tarde' | 'libre' | 'laboratorio' | 'ett';
 
 export type PerfilId = 'jose' | 'yasmina';
 export type Tema = 'violeta' | 'matcha';
