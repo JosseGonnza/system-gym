@@ -40,8 +40,8 @@ const base = Astro.site ?? Astro.url;
         var esSelector = path === '/perfil';
         var p = esSelector ? 'selector' : stored === 'jose' || stored === 'yasmina' ? stored : 'jose';
         document.documentElement.dataset.perfil = p;
-        document.documentElement.style.setProperty('color-scheme', p === 'yasmina' ? 'light' : 'dark');
-        var tc = { jose: '#0a0712', yasmina: '#efe3c4', selector: '#0c0d12' }[p];
+        document.documentElement.style.setProperty('color-scheme', 'dark');
+        var tc = { jose: '#0a0712', yasmina: '#15200f', selector: '#0c0d12' }[p];
         document.addEventListener('DOMContentLoaded', function () {
           var m = document.querySelector('meta[name="theme-color"]');
           if (m) m.setAttribute('content', tc);

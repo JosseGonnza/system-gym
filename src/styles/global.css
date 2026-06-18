@@ -24,16 +24,16 @@
 
 /* Yasmina — "Cuaderno cozy": pergamino crema, madera, verde hoja. Tema CLARO. */
 html[data-perfil='yasmina'] {
-  color-scheme: light;
-  --color-bg: #efe3c4;
-  --color-surface: #fbf4df;
-  --color-surface2: #f1e6c6;
-  --color-line: #b9935b;
-  --color-vio: #5f7d40;
-  --color-vio-hi: #4a6630;
-  --color-vio-soft: #6d8a4a;
-  --color-ink: #463422;
-  --color-mut: #8a7350;
+  color-scheme: dark;
+  --color-bg: #15200f;
+  --color-surface: #1f2e17;
+  --color-surface2: #2a3b20;
+  --color-line: #50673a;
+  --color-vio: #8fb45f;
+  --color-vio-hi: #aace7c;
+  --color-vio-soft: #c2d89e;
+  --color-ink: #eef2dd;
+  --color-mut: #9aae82;
   --color-ok: #4e8b3f;
   --color-warn: #c2872a;
   --color-bad: #b5482f;
@@ -56,7 +56,9 @@ html[data-perfil='yasmina'] .fondo-yasmina {
   position: fixed;
   inset: 0;
   bottom: calc(env(safe-area-inset-bottom) + 64px);
-  background: url('/iconos/fondo-matcha.webp') center bottom / cover no-repeat;
+  background:
+    linear-gradient(rgba(21, 32, 15, 0.58), rgba(21, 32, 15, 0.8)),
+    url('/iconos/fondo-matcha.webp') center bottom / cover no-repeat;
   z-index: -1;
   pointer-events: none;
 }
@@ -133,7 +135,9 @@ html[data-perfil='selector'] main {
 
 /* Abajo: fondo Matcha Rutine */
 .sel-abajo {
-  background: url('/iconos/fondo-matcha.webp') center bottom / cover no-repeat;
+  background:
+    linear-gradient(rgba(21, 32, 15, 0.55), rgba(21, 32, 15, 0.78)),
+    url('/iconos/fondo-matcha.webp') center bottom / cover no-repeat;
   clip-path: polygon(0 56%, 100% 44%, 100% 100%, 0 100%);
 }
 
@@ -200,10 +204,10 @@ html[data-perfil='selector'] main {
 }
 
 .sel-yasmina {
-  background: #fbf4df;
-  border: 2px solid #b9935b;
-  color: #463422;
-  box-shadow: 0 4px 0 rgb(150 110 60 / 0.3), 0 10px 22px rgb(120 90 50 / 0.18);
+  background: #1f2e17;
+  border: 2px solid #50673a;
+  color: #eef2dd;
+  box-shadow: 0 0 24px color-mix(in srgb, #8fb45f 30%, transparent);
   font-family: 'Fraunces Variable', Georgia, serif;
 }
 
@@ -212,7 +216,7 @@ html[data-perfil='selector'] main {
 }
 
 .sel-yasmina .sel-sub {
-  color: #6d8a4a;
+  color: #aace7c;
   font-family: 'Baloo 2', system-ui, sans-serif;
 }
 
@@ -296,7 +300,7 @@ html[data-perfil='yasmina'] .eyebrow {
 
 html[data-perfil='yasmina'] .card {
   border: 2px solid var(--color-line);
-  box-shadow: 0 4px 0 rgb(150 110 60 / 0.28), 0 10px 18px rgb(120 90 50 / 0.12);
+  box-shadow: 0 4px 0 rgb(0 0 0 / 0.35), 0 10px 20px rgb(0 0 0 / 0.3);
 }
 
 html[data-perfil='yasmina'] .card::before,
@@ -310,7 +314,7 @@ html[data-perfil='yasmina'] .card::after {
 }
 
 html[data-perfil='yasmina'] .glow {
-  box-shadow: 0 4px 0 rgb(150 110 60 / 0.28), 0 10px 22px rgb(120 90 50 / 0.16);
+  box-shadow: 0 0 24px color-mix(in srgb, var(--color-vio) 30%, transparent);
 }
 
 /* Botones "madera" estilo cozy game: tono tablón + borde inferior chunky */
@@ -325,7 +329,17 @@ html[data-perfil='yasmina'] .btn-2 {
   background: var(--color-surface);
   color: var(--color-ink);
   border: 2px solid var(--color-line);
-  box-shadow: 0 3px 0 rgb(150 110 60 / 0.35);
+  box-shadow: 0 3px 0 rgb(0 0 0 / 0.4);
+}
+
+/* Resplandor matcha detrás de iconos y emojis (destacan sobre el verde oscuro) */
+html[data-perfil='yasmina'] .ico-img,
+html[data-perfil='yasmina'] .tab-img {
+  filter: drop-shadow(0 0 7px color-mix(in srgb, var(--color-vio-hi) 60%, transparent));
+}
+
+html[data-perfil='yasmina'] .ico-emoji {
+  text-shadow: 0 0 9px color-mix(in srgb, var(--color-vio-hi) 55%, transparent);
 }
 
 .btn {
