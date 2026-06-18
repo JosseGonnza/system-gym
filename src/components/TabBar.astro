@@ -1,10 +1,11 @@
 ---
 const path = Astro.url.pathname;
+// img: icono ilustrado (perfil Yasmina). Si falta, cae al emoji. Se añaden según se creen.
 const tabs = [
-  { href: '/', label: 'Hoy', icon: '🗓️' },
-  { href: '/entreno', label: 'Entreno', icon: '🏋️' },
-  { href: '/dieta', label: 'Dieta', icon: '🍱' },
-  { href: '/progreso', label: 'Progreso', icon: '📊' },
+  { href: '/', label: 'Hoy', icon: '🗓️', img: '/iconos/nav-hoy.png' },
+  { href: '/entreno', label: 'Entreno', icon: '🏋️', img: '/iconos/nav-entreno.png' },
+  { href: '/dieta', label: 'Dieta', icon: '🍱', img: '/iconos/nav-dieta.png' },
+  { href: '/progreso', label: 'Progreso', icon: '📊', img: '/iconos/nav-progreso.png' },
 ];
 const activo = (href: string) => (href === '/' ? path === '/' : path.startsWith(href));
 ---
@@ -18,9 +19,12 @@ const activo = (href: string) => (href === '/' ? path === '/' : path.startsWith(
           <a
             href={t.href}
             aria-current={on ? 'page' : undefined}
-            class={`tab flex flex-col items-center gap-0.5 py-2.5 text-xs font-semibold ${on ? 'tab-on text-vio-hi' : 'text-mut'}`}
+            class={`tab flex flex-col items-center gap-0.5 py-2.5 text-xs font-semibold ${t.img ? 'has-img' : ''} ${on ? 'tab-on text-vio-hi' : 'text-mut'}`}
           >
-            <span class="tab-ico text-2xl leading-none">{t.icon}</span>
+            <span class="tab-ico text-2xl leading-none">
+              {t.img && <img src={t.img} alt="" class="tab-img" width="28" height="28" />}
+              <span class="tab-emoji">{t.icon}</span>
+            </span>
             {t.label}
           </a>
         );

@@ -237,3 +237,19 @@ html[data-perfil='yasmina'] .tab-on .tab-ico {
   border-radius: 999px;
   padding: 3px 9px;
 }
+
+/* Iconos ilustrados: solo en Yasmina y solo donde existe la imagen (si no, emoji) */
+.tab-img {
+  display: none;
+  width: 1.75rem;
+  height: 1.75rem;
+  object-fit: contain;
+}
+
+html[data-perfil='yasmina'] .has-img .tab-emoji {
+  display: none;
+}
+
+html[data-perfil='yasmina'] .has-img .tab-img {
+  display: inline-block;
+}
