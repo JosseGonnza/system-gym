@@ -15,6 +15,7 @@ vi.mock('idb-keyval', () => {
 import * as idb from 'idb-keyval';
 import { initDB, getConfig, setConfig, getPerfilActivo, setPerfilActivo, resetDB, exportarBackup } from '../src/lib/db';
 import { horarioDe } from '../src/lib/horarios';
+import { dietaDe } from '../src/lib/dietas';
 
 const store = (idb as unknown as { _store: Map<string, unknown> })._store;
 const conf = (c: Awaited<ReturnType<typeof getConfig>>) => c;
@@ -71,6 +72,16 @@ describe('multi-perfil', () => {
       const h = horarioDe(p);
       for (const j of h.jornadas) expect(h.pautas[j.id], `${p}/${j.id}`).toBeDefined();
     }
+  });
+
+  it('cada perfil tiene su dieta con 4 macros y platos', () => {
+    for (const p of ['jose', 'yasmina'] as const) {
+      const d = dietaDe(p);
+      expect(d.macros).toHaveLength(4);
+      expect(d.platos.length).toBeGreaterThan(0);
+      expect(d.resumen.length).toBeGreaterThan(0);
+    }
+    expect(dietaDe('yasmina').macros[0].valor).toBe('1.825');
   });
 
   it('reset solo afecta al perfil activo, no al otro ni al catálogo', async () => {

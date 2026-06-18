@@ -1,89 +1,66 @@
 ---
 import Layout from '../layouts/Layout.astro';
-
-const macros = [
-  { valor: '2.900', unidad: 'kcal', color: 'text-vio-hi' },
-  { valor: '150 g', unidad: 'proteína', color: 'text-ok' },
-  { valor: '70 g', unidad: 'grasa', color: 'text-warn' },
-  { valor: '415 g', unidad: 'carbos', color: 'text-vio-soft' },
-];
-
-const platos = [
-  {
-    emoji: '🍳',
-    nombre: 'Plato 1 — Desayuno motor',
-    kcal: '~840 kcal · 35 g prot',
-    formula: 'Huevos + carbo lento + fruta',
-    detalle: ['4 huevos · 80 g avena (o 2 tostadas de pan bueno) · 1 plátano o fruta', 'Variante salada: huevos + pan + aguacate + tomate'],
-  },
-  {
-    emoji: '🥘',
-    nombre: 'Plato 2 — Bowl de batalla',
-    kcal: '~850 kcal · 50 g prot',
-    formula: '1 puño proteína + 2 puños carbo + verdura + grasa',
-    detalle: [
-      '180-200 g proteína cocinada · 100 g en seco de arroz/pasta/cuscús (o 300 g patata) · verdura · 1 cda aceite/aguacate/frutos secos',
-      'Rotar base: arroz+pollo → pasta+atún → patata+ternera → cuscús+cerdo',
-    ],
-  },
-  {
-    emoji: '🐟',
-    nombre: 'Plato 3 — Cena ligera con chicha',
-    kcal: '~700 kcal · 40 g prot',
-    formula: 'Proteína magra + carbo moderado + mucha verdura',
-    detalle: [
-      '180-200 g pescado blanco/pavo/salmón/huevos · 1 puño carbo · verdura + aceite',
-      'Si vengo muy lleno: quitar carbo y doblar proteína + verdura',
-    ],
-  },
-  {
-    emoji: '🥤',
-    nombre: 'Plato 4 — Salvavidas',
-    kcal: '~400 kcal · 28 g prot',
-    formula: 'Para los huecos sin parar del curro. 2 minutos.',
-    detalle: [
-      '1 scoop proteína + 1 plátano + 1 puñado frutos secos',
-      'Versión sólida: yogur griego + fruta + frutos secos, o bocadillo de atún/pavo',
-    ],
-  },
-];
 ---
 
 <Layout title="Dieta">
-  <section class="grid grid-cols-4 gap-2">
-    {
-      macros.map((m) => (
-        <div class="card px-1 py-3 text-center">
-          <p class={`text-base font-extrabold ${m.color}`}>{m.valor}</p>
-          <p class="mt-0.5 text-[10px] uppercase tracking-wide text-mut">{m.unidad}</p>
-        </div>
-      ))
-    }
-  </section>
-
-  <div class="mt-4 space-y-3">
-    {
-      platos.map((p) => (
-        <section class="card">
-          <div class="flex items-start justify-between gap-2">
-            <h2 class="text-base font-bold">
-              {p.emoji} {p.nombre}
-            </h2>
-          </div>
-          <p class="mt-0.5 text-xs font-semibold text-vio-hi">{p.kcal}</p>
-          <p class="mt-2 text-sm font-medium text-vio-soft">{p.formula}</p>
-          <ul class="mt-1.5 space-y-1 text-sm text-mut">
-            {p.detalle.map((d) => (
-              <li>{d}</li>
-            ))}
-          </ul>
-        </section>
-      ))
-    }
-  </div>
-
-  <p class="mt-4 px-1 text-xs text-mut">
-    Platos 1+2+3+4 ≈ 2.790 kcal · 153 g proteína. Redondear a 2.900 con fruta extra, frutos secos o
-    pan. Clava la proteína y los carbos vienen solos.
-  </p>
+  <section id="macros" class="grid grid-cols-4 gap-2"></section>
+  <div id="platos" class="mt-4 space-y-3"></div>
+  <p id="resumen" class="mt-4 px-1 text-xs text-mut"></p>
 </Layout>
+
+<script>
+  import { initDB, getPerfilActivo } from '../lib/db';
+  import { dietaDe } from '../lib/dietas';
+
+  const $ = (id: string) => document.getElementById(id)!;
+
+  await initDB();
+  const dieta = dietaDe(getPerfilActivo());
+
+  $('macros').replaceChildren(
+    ...dieta.macros.map((m) => {
+      const div = document.createElement('div');
+      div.className = 'card px-1 py-3 text-center';
+      const v = document.createElement('p');
+      v.className = `text-base font-extrabold ${m.color}`;
+      v.textContent = m.valor;
+      const u = document.createElement('p');
+      u.className = 'mt-0.5 text-[10px] uppercase tracking-wide text-mut';
+      u.textContent = m.unidad;
+      div.append(v, u);
+      return div;
+    }),
+  );
+
+  $('platos').replaceChildren(
+    ...dieta.platos.map((p) => {
+      const sec = document.createElement('section');
+      sec.className = 'card';
+      const h = document.createElement('h2');
+      h.className = 'text-base font-bold';
+      h.textContent = `${p.emoji} ${p.nombre}`;
+      sec.append(h);
+      if (p.kcal) {
+        const k = document.createElement('p');
+        k.className = 'mt-0.5 text-xs font-semibold text-vio-hi';
+        k.textContent = p.kcal;
+        sec.append(k);
+      }
+      const f = document.createElement('p');
+      f.className = 'mt-2 text-sm font-medium text-vio-soft';
+      f.textContent = p.formula;
+      sec.append(f);
+      const ul = document.createElement('ul');
+      ul.className = 'mt-1.5 space-y-1 text-sm text-mut';
+      for (const d of p.detalle) {
+        const li = document.createElement('li');
+        li.textContent = d;
+        ul.append(li);
+      }
+      sec.append(ul);
+      return sec;
+    }),
+  );
+
+  $('resumen').textContent = dieta.resumen;
+</script>
