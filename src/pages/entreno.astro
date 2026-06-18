@@ -15,7 +15,7 @@ import Layout from '../layouts/Layout.astro';
 
   <section id="vista-sesion" class="hidden">
     <div class="mb-3 flex items-center justify-between">
-      <p id="progreso" class="text-sm font-bold text-vio-hi"></p>
+      <p id="progreso" class="eyebrow"></p>
       <div class="flex items-center gap-3 text-sm">
         <label class="flex items-center gap-1.5 text-mut">
           💤
@@ -69,7 +69,7 @@ import Layout from '../layouts/Layout.astro';
     id="rest-bar"
     class="fixed inset-x-4 bottom-[4.7rem] z-20 hidden items-center justify-between rounded-2xl border border-vio/40 bg-surface px-4 py-3 glow"
   >
-    <p class="text-sm font-bold"><span id="rest-tiempo" class="text-lg tabular-nums text-vio-hi"></span> <span id="rest-nombre" class="text-mut"></span></p>
+    <p class="text-sm font-bold"><span id="rest-tiempo" class="num text-lg text-vio-hi"></span> <span id="rest-nombre" class="text-mut"></span></p>
     <div class="flex gap-2">
       <button id="rest-mas" class="rounded-lg border border-line bg-surface2 px-2.5 py-1.5 text-xs font-bold">+15s</button>
       <button id="rest-saltar" class="rounded-lg border border-line bg-surface2 px-2.5 py-1.5 text-xs font-bold">Saltar</button>
@@ -244,7 +244,7 @@ import Layout from '../layouts/Layout.astro';
     i.step = 'any';
     i.placeholder = placeholder;
     i.value = valor != null ? String(valor) : '';
-    i.className = `${ancho} rounded-lg border border-line bg-surface2 px-1 py-2 text-center text-base font-bold`;
+    i.className = `${ancho} num rounded-lg border border-line bg-surface2 px-1 py-2 text-center text-base font-bold`;
     i.addEventListener('change', () => {
       const v = i.value === '' ? null : Number(i.value);
       onCambio(Number.isFinite(v as number) ? v : null);
@@ -389,7 +389,7 @@ import Layout from '../layouts/Layout.astro';
         fila.append(x, inputNum(s.reps ?? null, 'w-16', 'reps', (v) => (s.reps = v)));
         if (conReal && ej) {
           real = document.createElement('p');
-          real.className = 'ml-8 mt-0.5 text-xs font-semibold text-vio-soft';
+          real.className = 'num ml-8 mt-0.5 text-xs font-semibold text-vio-soft';
           const pinta = () => {
             const v = inPeso.value === '' ? null : Number(inPeso.value);
             const r = pesoReal(ej, Number.isFinite(v as number) ? v : null);

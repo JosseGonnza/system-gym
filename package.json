@@ -13,6 +13,10 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@fontsource-variable/fraunces": "^5.2.9",
+    "@fontsource-variable/jetbrains-mono": "^5.2.8",
+    "@fontsource/baloo-2": "^5.2.7",
+    "@fontsource/chakra-petch": "^5.2.7",
     "@tailwindcss/vite": "^4.3.0",
     "astro": "^5.18.2",
     "idb-keyval": "^6.2.5",

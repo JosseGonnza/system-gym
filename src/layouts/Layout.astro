@@ -1,6 +1,18 @@
 ---
 import { pwaInfo } from 'virtual:pwa-info';
 import TabBar from '../components/TabBar.astro';
+// Fuentes self-hosted (offline). Jose: Chakra Petch + JetBrains Mono · Yasmina: Quicksand
+import '@fontsource/chakra-petch/400.css';
+import '@fontsource/chakra-petch/500.css';
+import '@fontsource/chakra-petch/600.css';
+import '@fontsource/chakra-petch/700.css';
+import '@fontsource-variable/jetbrains-mono';
+// Yasmina "Cuaderno": Fraunces (títulos de cuento) + Baloo 2 (cuerpo redondeado)
+import '@fontsource-variable/fraunces';
+import '@fontsource/baloo-2/400.css';
+import '@fontsource/baloo-2/500.css';
+import '@fontsource/baloo-2/600.css';
+import '@fontsource/baloo-2/700.css';
 import '../styles/global.css';
 
 interface Props {
@@ -26,8 +38,8 @@ const base = Astro.site ?? Astro.url;
         } catch (e) {}
         var p = stored === 'jose' || stored === 'yasmina' ? stored : 'jose';
         document.documentElement.dataset.perfil = p;
-        document.documentElement.style.setProperty('color-scheme', 'dark');
-        var tc = { jose: '#0a0712', yasmina: '#0a140d' }[p];
+        document.documentElement.style.setProperty('color-scheme', p === 'yasmina' ? 'light' : 'dark');
+        var tc = { jose: '#0a0712', yasmina: '#efe3c4' }[p];
         document.addEventListener('DOMContentLoaded', function () {
           var m = document.querySelector('meta[name="theme-color"]');
           if (m) m.setAttribute('content', tc);
