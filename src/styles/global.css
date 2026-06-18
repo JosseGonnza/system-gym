@@ -92,6 +92,130 @@ html[data-perfil='selector'] .card::after {
   display: none;
 }
 
+/* Pantalla de selección: sin chrome, contenido centrado, body transparente
+   para que asome el fondo partido en diagonal. */
+html[data-perfil='selector'] .appbar,
+html[data-perfil='selector'] .tabbar {
+  display: none;
+}
+
+html[data-perfil='selector'] body {
+  background-color: transparent;
+}
+
+html[data-perfil='selector'] main {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1.5rem;
+  padding-top: 1rem;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 1rem);
+}
+
+.sel-fondo {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+}
+
+.sel-arriba,
+.sel-abajo {
+  position: absolute;
+  inset: 0;
+}
+
+/* Arriba: identidad System Gym (oscuro violeta con brillo) */
+.sel-arriba {
+  background: radial-gradient(125% 80% at 50% 18%, #2c1d4e 0%, #0a0712 72%);
+  clip-path: polygon(0 0, 100% 0, 100% 44%, 0 56%);
+}
+
+/* Abajo: fondo Matcha Rutine */
+.sel-abajo {
+  background: url('/iconos/fondo-matcha.webp') center bottom / cover no-repeat;
+  clip-path: polygon(0 56%, 100% 44%, 100% 100%, 0 100%);
+}
+
+.sel-titulo {
+  text-align: center;
+  font-family: 'Chakra Petch', system-ui, sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #e7e3f5;
+  font-size: 0.95rem;
+}
+
+.sel-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.sel-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  padding: 1.7rem 1.4rem;
+  text-align: left;
+  border-radius: 16px;
+  transition: transform 0.12s ease;
+}
+
+.sel-card:active {
+  transform: scale(0.98);
+}
+
+.sel-emoji {
+  font-size: 2.4rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.sel-nombre {
+  display: block;
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+
+.sel-sub {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.8rem;
+  opacity: 0.85;
+}
+
+.sel-jose {
+  background: #141024;
+  border: 1px solid #8b5cf6;
+  color: #ede9fb;
+  box-shadow: 0 0 24px color-mix(in srgb, #8b5cf6 32%, transparent);
+  font-family: 'Chakra Petch', system-ui, sans-serif;
+}
+
+.sel-jose .sel-sub {
+  color: #c4b5fd;
+}
+
+.sel-yasmina {
+  background: #fbf4df;
+  border: 2px solid #b9935b;
+  color: #463422;
+  box-shadow: 0 4px 0 rgb(150 110 60 / 0.3), 0 10px 22px rgb(120 90 50 / 0.18);
+  font-family: 'Fraunces Variable', Georgia, serif;
+}
+
+.sel-yasmina .sel-nombre {
+  font-weight: 700;
+}
+
+.sel-yasmina .sel-sub {
+  color: #6d8a4a;
+  font-family: 'Baloo 2', system-ui, sans-serif;
+}
+
 html {
   color-scheme: dark;
   background: var(--color-bg);
