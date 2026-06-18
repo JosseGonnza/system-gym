@@ -123,6 +123,7 @@ export interface BackupV2 {
   version: 2;
   app: 'gym';
   exportadoISO: string;
+  perfil?: PerfilId;
   config: Config;
   catalogo: Ejercicio[];
   rutinas: Rutina[];

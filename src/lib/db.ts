@@ -147,7 +147,7 @@ export async function exportarBackup(): Promise<BackupV2> {
   const exportadoISO = new Date().toISOString();
   const configActualizada = { ...config, ultimoExportISO: exportadoISO };
   await setConfig(configActualizada);
-  return { version: 2, app: 'gym', exportadoISO, config: configActualizada, catalogo, rutinas, sesiones, mediciones, diario };
+  return { version: 2, app: 'gym', exportadoISO, perfil: perfilActivo, config: configActualizada, catalogo, rutinas, sesiones, mediciones, diario };
 }
 
 // Resetea SOLO el perfil activo (no toca el catálogo compartido ni el otro perfil).

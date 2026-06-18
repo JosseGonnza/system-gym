@@ -13,7 +13,7 @@ vi.mock('idb-keyval', () => {
 });
 
 import * as idb from 'idb-keyval';
-import { initDB, getConfig, setConfig, getPerfilActivo, setPerfilActivo, resetDB } from '../src/lib/db';
+import { initDB, getConfig, setConfig, getPerfilActivo, setPerfilActivo, resetDB, exportarBackup } from '../src/lib/db';
 
 const store = (idb as unknown as { _store: Map<string, unknown> })._store;
 const conf = (c: Awaited<ReturnType<typeof getConfig>>) => c;
@@ -53,6 +53,14 @@ describe('multi-perfil', () => {
     await setConfig(conf({ ...(await getConfig()), entrenosObjetivoSemana: 3 }));
     expect((store.get('jose:config') as { entrenosObjetivoSemana: number }).entrenosObjetivoSemana).toBe(5);
     expect((store.get('yasmina:config') as { entrenosObjetivoSemana: number }).entrenosObjetivoSemana).toBe(3);
+  });
+
+  it('el backup lleva el perfil activo', async () => {
+    await initDB();
+    await setPerfilActivo('yasmina');
+    const b = await exportarBackup();
+    expect(b.perfil).toBe('yasmina');
+    expect(b.version).toBe(2);
   });
 
   it('reset solo afecta al perfil activo, no al otro ni al catálogo', async () => {
