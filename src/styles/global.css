@@ -185,3 +185,49 @@ html[data-perfil='yasmina'] .btn-2 {
     animation: none;
   }
 }
+
+/* ── Chrome: cabecera + barra de pestañas ── */
+.appbar {
+  border-bottom: 1px solid color-mix(in srgb, var(--color-line) 45%, transparent);
+}
+
+.tab {
+  position: relative;
+}
+
+.tab-ico {
+  display: inline-block;
+}
+
+/* Jose (HUD): icono con glow del tema + barra superior de pestaña activa */
+.tab-on .tab-ico {
+  filter: drop-shadow(0 0 10px color-mix(in srgb, var(--color-vio-hi) 75%, transparent));
+}
+
+.tab-on::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 26px;
+  height: 2px;
+  transform: translateX(-50%);
+  background: var(--color-vio-hi);
+}
+
+/* Yasmina (cozy): barra de madera + pastilla suave bajo el icono, sin glow */
+html[data-perfil='yasmina'] .tabbar {
+  border-top-width: 3px;
+  border-top-color: var(--color-line);
+}
+
+html[data-perfil='yasmina'] .tab-on::before {
+  display: none;
+}
+
+html[data-perfil='yasmina'] .tab-on .tab-ico {
+  filter: none;
+  background: color-mix(in srgb, var(--color-vio) 16%, transparent);
+  border-radius: 999px;
+  padding: 3px 9px;
+}
