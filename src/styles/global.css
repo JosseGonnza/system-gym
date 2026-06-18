@@ -45,6 +45,53 @@ html[data-perfil='yasmina'] {
   --radius-btn: 0.9rem;
 }
 
+/* Fondo cozy de Yasmina: panel fijo que acaba justo encima del nav inferior,
+   para que la barra no tape la escena de la mascota. Robusto en iOS. */
+.fondo-yasmina {
+  display: none;
+}
+
+html[data-perfil='yasmina'] .fondo-yasmina {
+  display: block;
+  position: fixed;
+  inset: 0;
+  bottom: calc(env(safe-area-inset-bottom) + 64px);
+  background: url('/iconos/fondo-matcha.webp') center bottom / cover no-repeat;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* El crema sólido del body taparía el panel (z-index negativo): lo hacemos
+   transparente para que asome la imagen. El respaldo crema queda en <html>. */
+html[data-perfil='yasmina'] body {
+  background-color: transparent;
+}
+
+/* Selector de perfil: identidad propia y neutra (no hereda Jose ni Yasmina) */
+html[data-perfil='selector'] {
+  color-scheme: dark;
+  --color-bg: #0c0d12;
+  --color-surface: #16171f;
+  --color-surface2: #1f212b;
+  --color-line: #343745;
+  --color-vio: #9aa3b2;
+  --color-vio-hi: #c4cad6;
+  --color-vio-soft: #aab2c0;
+  --color-ink: #eef0f4;
+  --color-mut: #8b91a0;
+
+  --font-display: 'Chakra Petch', system-ui, sans-serif;
+  --font-body: 'Chakra Petch', system-ui, sans-serif;
+  --font-num: 'JetBrains Mono Variable', ui-monospace, monospace;
+  --radius-card: 14px;
+  --radius-btn: 12px;
+}
+
+html[data-perfil='selector'] .card::before,
+html[data-perfil='selector'] .card::after {
+  display: none;
+}
+
 html {
   color-scheme: dark;
   background: var(--color-bg);

@@ -221,7 +221,9 @@ import Ico from '../components/Ico.astro';
 
   function renderProgreso() {
     const gs = grupos(dia);
-    $('progreso').textContent = `${tituloDe(dia)} · ${cardIdx + 1}/${gs.length}`;
+    const elP = $('progreso');
+    elP.classList.add('flex', 'items-center', 'gap-1.5');
+    elP.replaceChildren(iconoEl(dia.icono, dia.emoji, 16), `Día ${numeroDe(dia)} — ${dia.nombre} · ${cardIdx + 1}/${gs.length}`);
     ($('btn-prev') as HTMLButtonElement).disabled = cardIdx === 0;
     $('btn-prev').classList.toggle('opacity-40', cardIdx === 0);
     $('btn-next').textContent = cardIdx === gs.length - 1 ? '🏁 Finalizar' : 'Siguiente →';
@@ -471,7 +473,9 @@ import Ico from '../components/Ico.astro';
     const total = sesion!.ejercicios.reduce((n, e) => n + e.series.length, 0);
     const hechasN = sesion!.ejercicios.reduce((n, e) => n + e.series.filter((s) => s.estado !== 'pendiente').length, 0);
     const dur = sesion!.duracionMin != null ? ` · ${sesion!.duracionMin} min` : '';
-    $('fin-resumen').textContent = `${tituloDe(dia)} · ${hechasN}/${total} series${dur}`;
+    const elF = $('fin-resumen');
+    elF.classList.add('flex', 'flex-wrap', 'items-center', 'justify-center', 'gap-1.5');
+    elF.replaceChildren(iconoEl(dia.icono, dia.emoji, 16), `Día ${numeroDe(dia)} — ${dia.nombre} · ${hechasN}/${total} series${dur}`);
     $('fin-prs').replaceChildren(
       ...prsLogrados.map((p) => {
         const li = document.createElement('li');

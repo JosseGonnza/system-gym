@@ -36,16 +36,17 @@ const base = Astro.site ?? Astro.url;
         try {
           stored = localStorage.getItem('perfilActivo');
         } catch (e) {}
-        var p = stored === 'jose' || stored === 'yasmina' ? stored : 'jose';
+        var path = location.pathname.replace(/\/+$/, '') || '/';
+        var esSelector = path === '/perfil';
+        var p = esSelector ? 'selector' : stored === 'jose' || stored === 'yasmina' ? stored : 'jose';
         document.documentElement.dataset.perfil = p;
         document.documentElement.style.setProperty('color-scheme', p === 'yasmina' ? 'light' : 'dark');
-        var tc = { jose: '#0a0712', yasmina: '#efe3c4' }[p];
+        var tc = { jose: '#0a0712', yasmina: '#efe3c4', selector: '#0c0d12' }[p];
         document.addEventListener('DOMContentLoaded', function () {
           var m = document.querySelector('meta[name="theme-color"]');
           if (m) m.setAttribute('content', tc);
         });
-        var path = location.pathname.replace(/\/+$/, '') || '/';
-        if (!stored && path !== '/perfil') location.replace('/perfil');
+        if (!stored && !esSelector) location.replace('/perfil');
       })();
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -68,6 +69,7 @@ const base = Astro.site ?? Astro.url;
     <script src="../pwa.ts"></script>
   </head>
   <body class="min-h-dvh">
+    <div class="fondo-yasmina" aria-hidden="true"></div>
     <header class="appbar sticky top-0 z-10 flex items-center justify-between bg-bg/90 px-5 pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-3 backdrop-blur">
       <h1 class="text-2xl font-extrabold tracking-tight">{title}</h1>
       <a href="/ajustes" class="-m-2 p-2 text-2xl" aria-label="Ajustes">⚙️</a>

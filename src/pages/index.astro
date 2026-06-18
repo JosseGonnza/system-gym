@@ -227,7 +227,9 @@ import Layout from '../layouts/Layout.astro';
         ? diaEfectivoHoy()
         : siguienteDia(rutina, diaEfectivoHoy().id);
     const coletilla = !entrenadoHoy && !diario[hoy]?.descanso ? ' (si hoy completas el de hoy)' : '';
-    $('manana-entreno').textContent = `Entreno previsto: ${tituloDe(previsto)}${coletilla}`;
+    const elPrev = $('manana-entreno');
+    elPrev.classList.add('flex', 'flex-wrap', 'items-center', 'gap-1.5');
+    elPrev.replaceChildren('Entreno previsto:', iconoEl(previsto.icono, previsto.emoji, 16), `Día ${numeroDe(previsto)} — ${previsto.nombre}${coletilla}`);
     const pauta = jornadaM ? PAUTAS[jornadaM] : undefined;
     if (jornadaM && pauta) {
       const entrenoFila = pauta.find((f) => f.texto.includes('ENTRENO'));
