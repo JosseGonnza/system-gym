@@ -110,13 +110,13 @@ import Layout from '../layouts/Layout.astro';
     const pts = valores.map((d, i) => `${x(i)},${y(d.v)}`).join(' ');
     const fin = valores[valores.length - 1];
     wrap.innerHTML = `
-      <svg viewBox="0 0 ${W} ${H}" class="w-full">
-        <polyline points="${pts}" fill="none" stroke="#8b5cf6" stroke-width="2.5"
+      <svg viewBox="0 0 ${W} ${H}" class="w-full text-vio-hi">
+        <polyline points="${pts}" fill="none" stroke="currentColor" stroke-width="2.5"
           stroke-linejoin="round" stroke-linecap="round"
-          style="filter: drop-shadow(0 0 6px rgba(139,92,246,.7))"/>
-        <circle cx="${x(valores.length - 1)}" cy="${y(fin.v)}" r="4" fill="#c4b5fd"/>
+          style="filter: drop-shadow(0 0 6px color-mix(in srgb, currentColor 55%, transparent))"/>
+        <circle cx="${x(valores.length - 1)}" cy="${y(fin.v)}" r="4" fill="currentColor"/>
       </svg>
-      <div class="flex justify-between text-[10px] text-mut">
+      <div class="num flex justify-between text-[10px] text-mut">
         <span>${fmtFecha(valores[0].fecha)}</span>
         <span>mín ${fmtNum(min)} · máx ${fmtNum(max)} ${unidad}</span>
         <span>${fmtFecha(fin.fecha)}</span>

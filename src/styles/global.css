@@ -56,6 +56,12 @@ body {
   font-family: var(--font-body);
 }
 
+:focus-visible {
+  outline: 2px solid var(--color-vio-hi);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
 h1,
 h2,
 h3 {
