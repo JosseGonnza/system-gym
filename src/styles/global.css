@@ -15,6 +15,20 @@
   --color-bad: #f87171;
 }
 
+/* Tema de Yasmina: verde matcha. Solo redefine los tokens; las utilidades
+   ya referencian estas variables, así que recolorea toda la app sin tocar clases. */
+html[data-perfil='yasmina'] {
+  --color-bg: #0a140d;
+  --color-surface: #122017;
+  --color-surface2: #1b3024;
+  --color-line: #2c4a39;
+  --color-vio: #6f9f52;
+  --color-vio-hi: #8fc06a;
+  --color-vio-soft: #bfe0a0;
+  --color-ink: #e9f3e4;
+  --color-mut: #8ba596;
+}
+
 html {
   color-scheme: dark;
   background: var(--color-bg);
@@ -31,7 +45,8 @@ body {
 }
 
 .glow {
-  box-shadow: 0 0 24px rgb(139 92 246 / 0.25), 0 0 4px rgb(139 92 246 / 0.3);
+  box-shadow: 0 0 24px color-mix(in srgb, var(--color-vio) 25%, transparent),
+    0 0 4px color-mix(in srgb, var(--color-vio) 30%, transparent);
 }
 
 .btn {

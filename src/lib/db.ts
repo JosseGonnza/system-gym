@@ -40,11 +40,21 @@ async function sembrarPerfil(p: PerfilId): Promise<void> {
   if (!(await get(`${p}:diario`))) await set(`${p}:diario`, {});
 }
 
+const espejarLocal = (p: PerfilId) => {
+  try {
+    if (typeof localStorage !== 'undefined') localStorage.setItem('perfilActivo', p);
+  } catch {
+    /* modo privado o sin storage: el tema cae al de por defecto, sin más */
+  }
+};
+
 export async function initDB(): Promise<void> {
   await migrarLegacy();
   const guardado = await get(G.perfilActivo);
+  // No forzamos elección aquí: si no hay perfil elegido, trabajamos con el de por
+  // defecto en memoria y el selector (guard del Layout) se encarga de pedirlo.
   perfilActivo = esPerfilValido(guardado) ? guardado : PERFIL_POR_DEFECTO;
-  await set(G.perfilActivo, perfilActivo);
+  if (esPerfilValido(guardado)) espejarLocal(guardado);
   if (!(await get(G.catalogo))) await set(G.catalogo, CATALOGO);
   await sembrarPerfil(perfilActivo);
 }
@@ -53,6 +63,7 @@ export const getPerfilActivo = (): PerfilId => perfilActivo;
 export async function setPerfilActivo(p: PerfilId): Promise<void> {
   perfilActivo = p;
   await set(G.perfilActivo, p);
+  espejarLocal(p);
   await sembrarPerfil(p);
 }
 

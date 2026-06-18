@@ -1,0 +1,43 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { PERFILES } from '../lib/perfiles';
+
+const COLOR: Record<string, string> = { jose: '#8b5cf6', yasmina: '#6f9f52' };
+---
+
+<Layout title="Elige perfil">
+  <section class="mt-6">
+    <p class="mb-4 text-center text-sm text-mut">¿Quién entrena?</p>
+    <div class="grid gap-3">
+      {
+        PERFILES.map((p) => (
+          <button
+            id={`perfil-${p.id}`}
+            class="card glow flex items-center gap-4 border-2 text-left active:scale-[.98]"
+            style={`border-color: ${COLOR[p.id]}`}
+          >
+            <span class="text-4xl">{p.emoji}</span>
+            <span>
+              <span class="block text-xl font-extrabold">{p.nombre}</span>
+              <span class="block text-xs text-mut">Perfil {p.tema}</span>
+            </span>
+          </button>
+        ))
+      }
+    </div>
+  </section>
+</Layout>
+
+<script>
+  import { initDB, setPerfilActivo } from '../lib/db';
+  import { PERFILES } from '../lib/perfiles';
+
+  await initDB();
+
+  for (const p of PERFILES) {
+    document.getElementById(`perfil-${p.id}`)?.addEventListener('click', async () => {
+      await setPerfilActivo(p.id);
+      location.href = '/';
+    });
+  }
+</script>

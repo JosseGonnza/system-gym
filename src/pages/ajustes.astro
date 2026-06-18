@@ -4,6 +4,12 @@ import Layout from '../layouts/Layout.astro';
 
 <Layout title="Ajustes">
   <section class="card">
+    <h2 class="text-base font-bold">🧑 Perfil</h2>
+    <p id="perfil-actual" class="mt-1 text-sm text-mut">—</p>
+    <a href="/perfil" class="btn-2 mt-3">🔄 Cambiar de perfil</a>
+  </section>
+
+  <section class="card mt-4">
     <h2 class="text-base font-bold">💾 Copia de seguridad</h2>
     <p id="ultimo-export" class="mt-1 text-sm text-mut">—</p>
     <div class="mt-3 space-y-2">
@@ -44,18 +50,22 @@ import Layout from '../layouts/Layout.astro';
 
   <section class="card mt-4 border-bad/30">
     <h2 class="text-base font-bold text-bad">🧨 Zona de peligro</h2>
-    <button id="btn-reset" class="btn-2 mt-3 text-bad">🗑 Borrar todos los datos</button>
+    <button id="btn-reset" class="btn-2 mt-3 text-bad">🗑 Borrar los datos de este perfil</button>
     <p class="mt-2 text-xs text-mut">
-      Borra sesiones, diario, mediciones y ajustes, y vuelve a la rutina de fábrica. Si hay algo
-      que quieras conservar, exporta antes.
+      Borra sesiones, diario, mediciones y ajustes <strong>de este perfil</strong> y vuelve a su
+      rutina de fábrica. No afecta al otro perfil. Si hay algo que quieras conservar, exporta antes.
     </p>
   </section>
 </Layout>
 
 <script>
-  import { initDB, getConfig, setConfig, exportarBackup, importarBackup, resetDB } from '../lib/db';
+  import { initDB, getConfig, setConfig, exportarBackup, importarBackup, resetDB, getPerfilActivo } from '../lib/db';
+  import { perfil } from '../lib/perfiles';
 
   await initDB();
+
+  const actual = perfil(getPerfilActivo());
+  document.getElementById('perfil-actual')!.textContent = `Estás en el perfil de ${actual.nombre} ${actual.emoji}`;
 
   const elUltimo = document.getElementById('ultimo-export')!;
   const inputIncremento = document.getElementById('incremento') as HTMLInputElement;
@@ -103,10 +113,10 @@ import Layout from '../layouts/Layout.astro';
   document.getElementById('btn-import')!.addEventListener('click', () => fileInput.click());
 
   document.getElementById('btn-reset')!.addEventListener('click', async () => {
-    if (!confirm('¿Borrar TODOS los datos de la app? Sesiones, diario y mediciones incluidos.')) return;
+    if (!confirm('¿Borrar los datos de ESTE perfil? Sesiones, diario y mediciones incluidos. El otro perfil no se toca.')) return;
     if (!confirm('Última pregunta: esto no se puede deshacer. ¿Seguro?')) return;
     await resetDB();
-    alert('Datos borrados. Empiezas de cero ✓');
+    alert('Datos del perfil borrados. Empiezas de cero ✓');
     location.href = '/';
   });
 

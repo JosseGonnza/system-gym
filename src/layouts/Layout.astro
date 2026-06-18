@@ -18,6 +18,24 @@ const base = Astro.site ?? Astro.url;
 <html lang="es">
   <head>
     <meta charset="utf-8" />
+    <script is:inline>
+      (function () {
+        var stored = null;
+        try {
+          stored = localStorage.getItem('perfilActivo');
+        } catch (e) {}
+        var p = stored === 'jose' || stored === 'yasmina' ? stored : 'jose';
+        document.documentElement.dataset.perfil = p;
+        document.documentElement.style.setProperty('color-scheme', 'dark');
+        var tc = { jose: '#0a0712', yasmina: '#0a140d' }[p];
+        document.addEventListener('DOMContentLoaded', function () {
+          var m = document.querySelector('meta[name="theme-color"]');
+          if (m) m.setAttribute('content', tc);
+        });
+        var path = location.pathname.replace(/\/+$/, '') || '/';
+        if (!stored && path !== '/perfil') location.replace('/perfil');
+      })();
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#0a0712" />
     <meta name="description" content={description} />
