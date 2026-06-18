@@ -45,12 +45,20 @@ Hitos grandes del proyecto:
 - **v3 · Multi-perfil** — varios perfiles con almacenamiento aislado por espacio
   de claves, selector al abrir, catálogo de ejercicios compartido y **temas por
   perfil** vía variables CSS, sin coste de recolorear.
+- **v4 · Dos identidades visuales** — cada perfil con su personalidad propia: una
+  oscura "HUD/Sistema" (tipografía técnica, números en mono, paneles con
+  corner-brackets) y otra clara "cozy" (serif de cuento, pixel-art, fondo
+  ilustrado), conmutadas por `data-perfil`. Set de iconos por perfil con caída a
+  emoji, fuentes self-hosted (offline) y selector de bienvenida con fondo partido
+  en diagonal.
 
 ## Cómo está hecha
 
 - **Astro 5 + Tailwind 4 + TypeScript** → PWA instalable y offline.
 - **IndexedDB** (`idb-keyval`) como única persistencia, con claves namespaced por
   perfil y un catálogo de ejercicios compartido.
+- **Temas por perfil** con variables CSS (`data-perfil`) y **fuentes self-hosted**
+  (`@fontsource`) para que el offline no dependa de la red.
 - **52 tests** (Vitest) cubren el motor de progresión, el cálculo de peso real,
   el aislamiento multi-perfil y la lógica semanal.
 - Construida por bloques con Claude Code: la IA picaba código, el humano decidía.
