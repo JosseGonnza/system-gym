@@ -45,12 +45,12 @@ Hitos grandes del proyecto:
 - **v3 · Multi-perfil** — varios perfiles con almacenamiento aislado por espacio
   de claves, selector al abrir, catálogo de ejercicios compartido y **temas por
   perfil** vía variables CSS, sin coste de recolorear.
-- **v4 · Dos identidades visuales** — cada perfil con su personalidad propia: una
-  oscura "HUD/Sistema" (tipografía técnica, números en mono, paneles con
-  corner-brackets) y otra clara "cozy" (serif de cuento, pixel-art, fondo
-  ilustrado), conmutadas por `data-perfil`. Set de iconos por perfil con caída a
-  emoji, fuentes self-hosted (offline) y selector de bienvenida con fondo partido
-  en diagonal.
+- **v4 · Dos identidades visuales** — cada perfil con su personalidad propia,
+  conmutadas por `data-perfil`: una "HUD/Sistema" (oscura violeta, tipografía
+  técnica, números en mono, paneles con corner-brackets) y otra "cozy matcha"
+  (verde matcha oscuro, serif de cuento, iconos pixel-art con resplandor, fondo
+  ilustrado con velo). Set de iconos por perfil con caída a emoji, fuentes
+  self-hosted (offline) y selector de bienvenida con fondo partido en diagonal.
 
 ## Cómo está hecha
 
