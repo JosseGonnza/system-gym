@@ -79,6 +79,7 @@ import Layout from '../layouts/Layout.astro';
     getPerfilActivo,
   } from '../lib/db';
   import { horarioDe } from '../lib/horarios';
+  import { iconoEl } from '../lib/iconos';
   import { cerrarBorradoresCaducados } from '../lib/sesion';
   import type { DiaDef } from '../lib/types';
 
@@ -133,10 +134,10 @@ import Layout from '../layouts/Layout.astro';
       ...JORNADAS.map((j) => {
         const activo = diario[fecha]?.jornada === j.id;
         const b = document.createElement('button');
-        b.className = `rounded-xl border py-2.5 text-sm font-bold transition active:scale-[.97] ${
+        b.className = `flex items-center justify-center gap-1.5 rounded-xl border py-2.5 text-sm font-bold transition active:scale-[.97] ${
           activo ? 'border-vio bg-vio/20 text-vio-hi glow' : 'border-line bg-surface text-mut'
         }`;
-        b.textContent = `${j.emoji} ${j.label}`;
+        b.append(iconoEl(j.icono, j.emoji, 20), j.label);
         b.addEventListener('click', async () => {
           diario = await patchDia(fecha, { jornada: j.id });
           render();
@@ -187,7 +188,13 @@ import Layout from '../layouts/Layout.astro';
     $('btn-cambiar').classList.remove('hidden');
     btnDescanso.textContent = '😴 Descanso hoy';
     const dia = diaEfectivoHoy();
-    $('dia-nombre').textContent = entrenadoHoy ? `✅ Hecho — ${tituloDe(dia)}` : tituloDe(dia);
+    const elDia = $('dia-nombre');
+    elDia.classList.add('flex', 'items-center', 'gap-2');
+    elDia.replaceChildren(
+      ...(entrenadoHoy ? ['✅ Hecho — '] : []),
+      iconoEl(dia.icono, dia.emoji, 24),
+      `Día ${numeroDe(dia)} — ${dia.nombre}`,
+    );
     ul.replaceChildren(
       ...dia.ejercicios.map((e) => {
         const li = document.createElement('li');

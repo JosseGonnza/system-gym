@@ -8,6 +8,7 @@ export interface Macro {
 
 export interface Plato {
   emoji: string;
+  icono?: string;
   nombre: string;
   kcal?: string;
   formula: string;
@@ -76,30 +77,35 @@ const YASMINA: DietaPerfil = {
   platos: [
     {
       emoji: '🍳',
+      icono: 'comida-desayuno',
       nombre: 'Desayuno (6:00-6:30)',
       formula: 'Proteína + carbo lento + fruta',
       detalle: ['A) Tortilla de 3 huevos + pan de masa madre + kiwi', 'B) Avena (45 g) con bebida sin lactosa + skyr sin lactosa + arándanos + nueces'],
     },
     {
       emoji: '🥪',
+      icono: 'comida-snack',
       nombre: 'Media mañana (10:30)',
       formula: 'Fácil de llevar al curro',
       detalle: ['A) Skyr sin lactosa + plátano', 'B) Pavo (lonchas) + mandarina + puñado de almendras'],
     },
     {
       emoji: '🥗',
+      icono: 'comida-principal',
       nombre: 'Comida principal (13:00)',
       formula: 'Proteína + carbo de calidad + verdura segura',
       detalle: ['A) Pollo/pavo + arroz + calabacín y zanahoria (aceite de ajo)', 'B) Salmón o pescado blanco + patata + judías verdes'],
     },
     {
       emoji: '🥤',
+      icono: 'comida-pregym',
       nombre: 'Pre-gym (17:00)',
       formula: 'Ligero y digerible, para no entrenar vacía',
       detalle: ['A) Plátano + tortita de arroz con pavo', 'B) Yogur sin lactosa + fresas/arándanos'],
     },
     {
       emoji: '🌙',
+      icono: 'comida-cena',
       nombre: 'Cena (post-entreno, ~20:00)',
       formula: 'Recupera',
       detalle: ['A) Huevos/tortilla + boniato + espinacas', 'B) Tofu firme o pollo + quinoa + verdura segura'],

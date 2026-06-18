@@ -1,16 +1,17 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import Ico from '../components/Ico.astro';
 ---
 
 <Layout title="Ajustes">
   <section class="card">
-    <h2 class="text-base font-bold">🧑 Perfil</h2>
+    <h2 class="flex items-center gap-2 text-base font-bold"><Ico id="perfil" emoji="🧑" /> Perfil</h2>
     <p id="perfil-actual" class="mt-1 text-sm text-mut">—</p>
     <a href="/perfil" class="btn-2 mt-3">🔄 Cambiar de perfil</a>
   </section>
 
   <section class="card mt-4">
-    <h2 class="text-base font-bold">💾 Copia de seguridad</h2>
+    <h2 class="flex items-center gap-2 text-base font-bold"><Ico id="backup" emoji="💾" /> Copia de seguridad</h2>
     <p id="ultimo-export" class="mt-1 text-sm text-mut">—</p>
     <div class="mt-3 space-y-2">
       <button id="btn-export" class="btn">⬇️ Exportar JSON</button>
@@ -24,7 +25,7 @@ import Layout from '../layouts/Layout.astro';
   </section>
 
   <section class="card mt-4">
-    <h2 class="text-base font-bold">⚙️ Motor de progresión</h2>
+    <h2 class="flex items-center gap-2 text-base font-bold"><Ico id="ajustes" emoji="⚙️" /> Motor de progresión</h2>
     <label class="mt-3 block text-sm font-medium" for="incremento">Incremento mínimo (kg)</label>
     <div class="mt-1.5 flex items-center gap-2">
       <input
@@ -43,14 +44,14 @@ import Layout from '../layouts/Layout.astro';
       motor lo usará en las sugerencias.
     </p>
     <label class="mt-4 flex items-center justify-between text-sm font-medium">
-      ⏱ Rest timer entre series
+      <span class="flex items-center gap-2"><Ico id="rest-timer" emoji="⏱" px={20} /> Rest timer entre series</span>
       <input id="rest-activo" type="checkbox" class="h-6 w-6 accent-vio" />
     </label>
   </section>
 
   <section class="card mt-4 border-bad/30">
-    <h2 class="text-base font-bold text-bad">🧨 Zona de peligro</h2>
-    <button id="btn-reset" class="btn-2 mt-3 text-bad">🗑 Borrar los datos de este perfil</button>
+    <h2 class="flex items-center gap-2 text-base font-bold text-bad"><Ico id="borrar" emoji="🧨" /> Zona de peligro</h2>
+    <button id="btn-reset" class="btn-2 mt-3 text-bad">Borrar los datos de este perfil</button>
     <p class="mt-2 text-xs text-mut">
       Borra sesiones, diario, mediciones y ajustes <strong>de este perfil</strong> y vuelve a su
       rutina de fábrica. No afecta al otro perfil. Si hay algo que quieras conservar, exporta antes.

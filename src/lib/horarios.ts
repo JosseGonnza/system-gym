@@ -10,6 +10,7 @@ export interface JornadaDef {
   id: Jornada;
   label: string;
   emoji: string;
+  icono?: string;
 }
 
 export interface HorarioPerfil {
@@ -64,9 +65,9 @@ const JOSE: HorarioPerfil = {
 // ──────────────────────────── Yasmina ───────────────────────────
 const YASMINA: HorarioPerfil = {
   jornadas: [
-    { id: 'laboratorio', label: 'Laboratorio', emoji: '🦷' },
-    { id: 'ett', label: 'ETT', emoji: '🔀' },
-    { id: 'libre', label: 'Libre', emoji: '🏖️' },
+    { id: 'laboratorio', label: 'Laboratorio', emoji: '🦷', icono: 'jor-laboratorio' },
+    { id: 'ett', label: 'ETT', emoji: '🔀', icono: 'jor-ett' },
+    { id: 'libre', label: 'Libre', emoji: '🏖️', icono: 'jor-libre' },
   ],
   alarmas: { laboratorio: '6:00', libre: '7:00', ett: 'según turno' },
   pautas: {

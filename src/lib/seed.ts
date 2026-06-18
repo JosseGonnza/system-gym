@@ -138,6 +138,7 @@ export const RUTINA_YASMINA: Rutina = {
       id: 'd1',
       nombre: 'Tren inferior (glúteo)',
       emoji: '🍑',
+      icono: 'dia-gluteo',
       ejercicios: [
         { ranuraId: 'yd1-calent', ejercicioId: 'calent-inferior', nombre: 'Calentamiento tren inferior', tipoProgresion: 'libre', series: 1, repsObjetivo: null, incrementoKg: null, restSeg: 30 },
         { ranuraId: 'yd1-hipthrust', ejercicioId: 'hip-thrust', nombre: 'Hip thrust (empuje de cadera)', tipoProgresion: 'doble', series: 3, repsObjetivo: [8, 12], incrementoKg: 2.5, restSeg: 120 },
@@ -152,6 +153,7 @@ export const RUTINA_YASMINA: Rutina = {
       id: 'd2',
       nombre: 'Tren superior',
       emoji: '💪',
+      icono: 'dia-empuje',
       ejercicios: [
         { ranuraId: 'yd2-calent', ejercicioId: 'calent-superior', nombre: 'Calentamiento tren superior', tipoProgresion: 'libre', series: 1, repsObjetivo: null, incrementoKg: null, restSeg: 30 },
         { ranuraId: 'yd2-press', ejercicioId: 'press-banca', nombre: 'Press de pecho (multipower)', tipoProgresion: 'doble', series: 3, repsObjetivo: [10, 12], incrementoKg: 2.5, restSeg: 120 },
@@ -166,6 +168,7 @@ export const RUTINA_YASMINA: Rutina = {
       id: 'd3',
       nombre: 'Cardio + core + movilidad',
       emoji: '🏃‍♀️',
+      icono: 'dia-cardio',
       ejercicios: [
         { ranuraId: 'yd3-cardio', ejercicioId: 'cardio-cinta', nombre: 'Cardio en cinta inclinada', tipoProgresion: 'libre', series: 1, repsObjetivo: null, incrementoKg: null, restSeg: 0 },
         { ranuraId: 'yd3-plancha', ejercicioId: 'plancha', nombre: 'Plancha', tipoProgresion: 'tiempo', series: 3, repsObjetivo: null, incrementoKg: null, restSeg: 60 },
@@ -178,6 +181,7 @@ export const RUTINA_YASMINA: Rutina = {
       id: 'd4',
       nombre: 'Tren inferior (isquio)',
       emoji: '🦵',
+      icono: 'dia-pierna',
       ejercicios: [
         { ranuraId: 'yd4-calent', ejercicioId: 'calent-inferior', nombre: 'Calentamiento tren inferior', tipoProgresion: 'libre', series: 1, repsObjetivo: null, incrementoKg: null, restSeg: 30 },
         { ranuraId: 'yd4-rumano', ejercicioId: 'rumano-mancuerna', nombre: 'Peso muerto rumano con mancuernas', tipoProgresion: 'doble', series: 3, repsObjetivo: [8, 12], incrementoKg: 2, restSeg: 120 },
@@ -192,6 +196,7 @@ export const RUTINA_YASMINA: Rutina = {
       id: 'd5',
       nombre: 'Tren superior (espalda + brazos)',
       emoji: '🔙',
+      icono: 'dia-espalda',
       ejercicios: [
         { ranuraId: 'yd5-calent', ejercicioId: 'calent-superior', nombre: 'Calentamiento tren superior', tipoProgresion: 'libre', series: 1, repsObjetivo: null, incrementoKg: null, restSeg: 30 },
         { ranuraId: 'yd5-remo', ejercicioId: 'remo-polea', nombre: 'Remo en polea baja', tipoProgresion: 'doble', series: 3, repsObjetivo: [10, 12], incrementoKg: 5, restSeg: 90 },

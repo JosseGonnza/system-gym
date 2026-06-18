@@ -11,6 +11,7 @@ import Layout from '../layouts/Layout.astro';
 <script>
   import { initDB, getPerfilActivo } from '../lib/db';
   import { dietaDe } from '../lib/dietas';
+  import { iconoEl } from '../lib/iconos';
 
   const $ = (id: string) => document.getElementById(id)!;
 
@@ -37,8 +38,8 @@ import Layout from '../layouts/Layout.astro';
       const sec = document.createElement('section');
       sec.className = 'card';
       const h = document.createElement('h2');
-      h.className = 'text-base font-bold';
-      h.textContent = `${p.emoji} ${p.nombre}`;
+      h.className = 'flex items-center gap-2 text-base font-bold';
+      h.append(iconoEl(p.icono, p.emoji, 26), p.nombre);
       sec.append(h);
       if (p.kcal) {
         const k = document.createElement('p');

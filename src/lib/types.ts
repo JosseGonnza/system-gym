@@ -54,6 +54,7 @@ export interface DiaDef {
   id: string;
   nombre: string;
   emoji: string;
+  icono?: string;
   ejercicios: EjercicioDef[];
 }
 

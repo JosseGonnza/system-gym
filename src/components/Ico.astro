@@ -1,0 +1,16 @@
+---
+import { hayIcono } from '../lib/iconos';
+
+interface Props {
+  id?: string;
+  emoji: string;
+  px?: number;
+}
+const { id, emoji, px = 22 } = Astro.props;
+const hay = hayIcono(id);
+---
+
+<span class:list={['ico', { 'has-ico': hay }]}>
+  {hay && <img class="ico-img" src={`/iconos/${id}.png`} alt="" width={px} height={px} />}
+  <span class="ico-emoji">{emoji}</span>
+</span>

@@ -253,3 +253,23 @@ html[data-perfil='yasmina'] .has-img .tab-emoji {
 html[data-perfil='yasmina'] .has-img .tab-img {
   display: inline-block;
 }
+
+/* Icono genérico por perfil (imagen en Yasmina, emoji en el resto) */
+.ico {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+}
+
+.ico-img {
+  display: none;
+  object-fit: contain;
+}
+
+html[data-perfil='yasmina'] .has-ico .ico-emoji {
+  display: none;
+}
+
+html[data-perfil='yasmina'] .has-ico .ico-img {
+  display: inline-block;
+}
