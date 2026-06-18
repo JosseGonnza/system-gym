@@ -1,43 +1,77 @@
-import { clear, get, set } from 'idb-keyval';
-import type { BackupV1, BackupV2, Config, DiaDef, DiaRegistro, Ejercicio, EjercicioDef, Mediciones, Rutina, Sesion } from './types';
-import { CATALOGO, CONFIG_INICIAL, RUTINA_1 } from './seed';
+import { del, get, set } from 'idb-keyval';
+import type { BackupV1, BackupV2, Config, DiaDef, DiaRegistro, Ejercicio, EjercicioDef, Mediciones, PerfilId, Rutina, Sesion } from './types';
+import { CATALOGO, CONFIG_INICIAL, CONFIG_YASMINA, RUTINA_1, RUTINA_YASMINA } from './seed';
+import { esPerfilValido, PERFIL_POR_DEFECTO } from './perfiles';
 
-const K = {
-  config: 'config',
-  catalogo: 'catalogo',
-  rutinas: 'rutinas',
-  sesiones: 'sesiones',
-  mediciones: 'mediciones',
-  diario: 'diario',
-} as const;
+// Claves globales (compartidas entre perfiles).
+const G = { perfilActivo: 'perfilActivo', catalogo: 'catalogo' } as const;
+// Nombres de los datos que viven POR perfil → se guardan con prefijo `${perfil}:`.
+const PROPIOS = ['config', 'rutinas', 'sesiones', 'mediciones', 'diario'] as const;
+
+// Datos sembrados por perfil (config + rutina inicial). El catálogo es compartido.
+const SEED: Record<PerfilId, { config: Config; rutina: Rutina }> = {
+  jose: { config: CONFIG_INICIAL, rutina: RUTINA_1 },
+  yasmina: { config: CONFIG_YASMINA, rutina: RUTINA_YASMINA },
+};
 
 const MEDICIONES_VACIAS: Mediciones = { peso: [], cintura: [] };
 
-export async function initDB(): Promise<void> {
-  if (!(await get(K.config))) await set(K.config, CONFIG_INICIAL);
-  if (!(await get(K.catalogo))) await set(K.catalogo, CATALOGO);
-  if (!(await get(K.rutinas))) await set(K.rutinas, [RUTINA_1]);
-  if (!(await get(K.sesiones))) await set(K.sesiones, []);
-  if (!(await get(K.mediciones))) await set(K.mediciones, MEDICIONES_VACIAS);
-  if (!(await get(K.diario))) await set(K.diario, {});
+// Perfil activo en memoria; se carga en initDB y se usa para prefijar las claves.
+let perfilActivo: PerfilId = PERFIL_POR_DEFECTO;
+const pk = (nombre: string) => `${perfilActivo}:${nombre}`;
+
+// Datos antiguos (v2, sin prefijo) → se reasignan al perfil de Jose una sola vez.
+async function migrarLegacy(): Promise<void> {
+  if ((await get('config')) === undefined || (await get('jose:config')) !== undefined) return;
+  for (const n of PROPIOS) {
+    const v = await get(n);
+    if (v !== undefined) {
+      await set(`jose:${n}`, v);
+      await del(n);
+    }
+  }
 }
 
-export const getConfig = async (): Promise<Config> => ({ ...CONFIG_INICIAL, ...(await get(K.config)) });
-export const setConfig = (c: Config) => set(K.config, c);
-export const getCatalogo = async (): Promise<Ejercicio[]> => (await get(K.catalogo)) ?? CATALOGO;
-export const setCatalogo = (c: Ejercicio[]) => set(K.catalogo, c);
-export const getRutinas = () => get(K.rutinas) as Promise<Rutina[]>;
-export const setRutinas = (r: Rutina[]) => set(K.rutinas, r);
-export const getSesiones = () => get(K.sesiones) as Promise<Sesion[]>;
-export const setSesiones = (s: Sesion[]) => set(K.sesiones, s);
-export const getMediciones = () => get(K.mediciones) as Promise<Mediciones>;
-export const setMediciones = (m: Mediciones) => set(K.mediciones, m);
-export const getDiario = () => get(K.diario) as Promise<Record<string, DiaRegistro>>;
+async function sembrarPerfil(p: PerfilId): Promise<void> {
+  if (!(await get(`${p}:config`))) await set(`${p}:config`, SEED[p].config);
+  if (!(await get(`${p}:rutinas`))) await set(`${p}:rutinas`, [SEED[p].rutina]);
+  if (!(await get(`${p}:sesiones`))) await set(`${p}:sesiones`, []);
+  if (!(await get(`${p}:mediciones`))) await set(`${p}:mediciones`, MEDICIONES_VACIAS);
+  if (!(await get(`${p}:diario`))) await set(`${p}:diario`, {});
+}
+
+export async function initDB(): Promise<void> {
+  await migrarLegacy();
+  const guardado = await get(G.perfilActivo);
+  perfilActivo = esPerfilValido(guardado) ? guardado : PERFIL_POR_DEFECTO;
+  await set(G.perfilActivo, perfilActivo);
+  if (!(await get(G.catalogo))) await set(G.catalogo, CATALOGO);
+  await sembrarPerfil(perfilActivo);
+}
+
+export const getPerfilActivo = (): PerfilId => perfilActivo;
+export async function setPerfilActivo(p: PerfilId): Promise<void> {
+  perfilActivo = p;
+  await set(G.perfilActivo, p);
+  await sembrarPerfil(p);
+}
+
+export const getConfig = async (): Promise<Config> => ({ ...SEED[perfilActivo].config, ...(await get(pk('config'))) });
+export const setConfig = (c: Config) => set(pk('config'), c);
+export const getCatalogo = async (): Promise<Ejercicio[]> => (await get(G.catalogo)) ?? CATALOGO;
+export const setCatalogo = (c: Ejercicio[]) => set(G.catalogo, c);
+export const getRutinas = () => get(pk('rutinas')) as Promise<Rutina[]>;
+export const setRutinas = (r: Rutina[]) => set(pk('rutinas'), r);
+export const getSesiones = () => get(pk('sesiones')) as Promise<Sesion[]>;
+export const setSesiones = (s: Sesion[]) => set(pk('sesiones'), s);
+export const getMediciones = () => get(pk('mediciones')) as Promise<Mediciones>;
+export const setMediciones = (m: Mediciones) => set(pk('mediciones'), m);
+export const getDiario = () => get(pk('diario')) as Promise<Record<string, DiaRegistro>>;
 
 export async function patchDia(fecha: string, patch: Partial<DiaRegistro>): Promise<Record<string, DiaRegistro>> {
   const diario = await getDiario();
   diario[fecha] = { ...diario[fecha], ...patch };
-  await set(K.diario, diario);
+  await set(pk('diario'), diario);
   return diario;
 }
 
@@ -105,9 +139,10 @@ export async function exportarBackup(): Promise<BackupV2> {
   return { version: 2, app: 'gym', exportadoISO, config: configActualizada, catalogo, rutinas, sesiones, mediciones, diario };
 }
 
+// Resetea SOLO el perfil activo (no toca el catálogo compartido ni el otro perfil).
 export async function resetDB(): Promise<void> {
-  await clear();
-  await initDB();
+  for (const n of PROPIOS) await del(pk(n));
+  await sembrarPerfil(perfilActivo);
 }
 
 export async function importarBackup(data: unknown): Promise<void> {
@@ -115,13 +150,13 @@ export async function importarBackup(data: unknown): Promise<void> {
   if (!b || b.app !== 'gym' || (b.version !== 1 && b.version !== 2) || !b.config || !Array.isArray(b.rutinas)) {
     throw new Error('El archivo no parece un backup válido de GYM');
   }
-  // Los backups v1 no traen catálogo: se siembra el de la app.
+  // Importa sobre el perfil activo. Los backups v1 no traen catálogo: se siembra el de la app.
   await Promise.all([
-    set(K.config, b.config),
-    set(K.catalogo, Array.isArray(b.catalogo) ? b.catalogo : CATALOGO),
-    set(K.rutinas, b.rutinas),
-    set(K.sesiones, b.sesiones ?? []),
-    set(K.mediciones, b.mediciones ?? MEDICIONES_VACIAS),
-    set(K.diario, b.diario ?? {}),
+    set(pk('config'), b.config),
+    set(G.catalogo, Array.isArray(b.catalogo) ? b.catalogo : CATALOGO),
+    set(pk('rutinas'), b.rutinas),
+    set(pk('sesiones'), b.sesiones ?? []),
+    set(pk('mediciones'), b.mediciones ?? MEDICIONES_VACIAS),
+    set(pk('diario'), b.diario ?? {}),
   ]);
 }

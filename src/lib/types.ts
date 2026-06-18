@@ -3,9 +3,18 @@ export type EstadoSerie = 'pendiente' | 'completada' | 'fallo' | 'corta';
 export type EstadoSesion = 'finalizada' | 'borrador';
 export type Jornada = 'manana' | 'tarde' | 'libre';
 
+export type PerfilId = 'jose' | 'yasmina';
+export type Tema = 'violeta' | 'matcha';
+export interface Perfil {
+  id: PerfilId;
+  nombre: string;
+  tema: Tema;
+  emoji: string;
+}
+
 export type Implemento = 'barra' | 'barraZ' | 'multipower' | 'mancuerna' | 'maquina' | 'polea' | 'kettlebell' | 'corporal';
 export type EntradaPeso = 'porLado' | 'porMancuerna' | 'directa' | 'lastre' | 'asistencia' | 'ninguna';
-export type Patron = 'empujeH' | 'empujeV' | 'traccionV' | 'traccionH' | 'rodilla' | 'cadera' | 'aislamiento' | 'core';
+export type Patron = 'empujeH' | 'empujeV' | 'traccionV' | 'traccionH' | 'rodilla' | 'cadera' | 'aislamiento' | 'core' | 'movilidad';
 export type Ejecucion = 'bilateral' | 'unilateral';
 
 // Biblioteca de ejercicios: describe el QUÉ (músculo, implemento, cómo se carga).

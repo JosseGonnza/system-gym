@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { pesoReal, muestraPesoReal } from '../src/lib/carga';
-import { CATALOGO, RUTINA_1 } from '../src/lib/seed';
+import { CATALOGO, RUTINA_1, RUTINA_YASMINA } from '../src/lib/seed';
 
 const ej = (id: string) => {
   const e = CATALOGO.find((x) => x.id === id);
@@ -62,12 +62,14 @@ describe('integridad del catálogo y la rutina', () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it('toda ranura de la rutina apunta a un ejercicio existente', () => {
+  it('toda ranura de las rutinas apunta a un ejercicio existente', () => {
     const ids = new Set(CATALOGO.map((e) => e.id));
-    for (const dia of RUTINA_1.dias) {
-      for (const r of dia.ejercicios) {
-        expect(r.ejercicioId, `${r.ranuraId} sin ejercicioId`).toBeDefined();
-        expect(ids.has(r.ejercicioId!), `${r.ranuraId} → ${r.ejercicioId} no existe`).toBe(true);
+    for (const rutina of [RUTINA_1, RUTINA_YASMINA]) {
+      for (const dia of rutina.dias) {
+        for (const r of dia.ejercicios) {
+          expect(r.ejercicioId, `${r.ranuraId} sin ejercicioId`).toBeDefined();
+          expect(ids.has(r.ejercicioId!), `${r.ranuraId} → ${r.ejercicioId} no existe`).toBe(true);
+        }
       }
     }
   });
