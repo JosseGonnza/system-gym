@@ -273,3 +273,12 @@ html[data-perfil='yasmina'] .has-ico .ico-emoji {
 html[data-perfil='yasmina'] .has-ico .ico-img {
   display: inline-block;
 }
+
+/* Adorno decorativo solo en Yasmina (no tiene emoji de reserva) */
+.deco-matcha {
+  display: none;
+}
+
+html[data-perfil='yasmina'] .deco-matcha {
+  display: flex;
+}

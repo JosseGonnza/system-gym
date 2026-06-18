@@ -176,7 +176,9 @@ import Layout from '../layouts/Layout.astro';
     const ul = $('dia-ejercicios');
     const btnDescanso = $('btn-descanso');
     if (descanso) {
-      $('dia-nombre').textContent = '😴 Hoy descansas';
+      const elD = $('dia-nombre');
+      elD.classList.add('flex', 'items-center', 'gap-2');
+      elD.replaceChildren(iconoEl('descanso', '😴', 24), 'Hoy descansas');
       ul.replaceChildren();
       const li = document.createElement('li');
       li.textContent = 'Recuperar también es entrenar. Come bien y duerme.';
@@ -186,7 +188,7 @@ import Layout from '../layouts/Layout.astro';
       return;
     }
     $('btn-cambiar').classList.remove('hidden');
-    btnDescanso.textContent = '😴 Descanso hoy';
+    btnDescanso.replaceChildren(iconoEl('descanso', '😴', 18), ' Descanso hoy');
     const dia = diaEfectivoHoy();
     const elDia = $('dia-nombre');
     elDia.classList.add('flex', 'items-center', 'gap-2');
@@ -231,7 +233,9 @@ import Layout from '../layouts/Layout.astro';
       const entrenoFila = pauta.find((f) => f.texto.includes('ENTRENO'));
       const label = JORNADAS.find((j) => j.id === jornadaM)?.label.toLowerCase() ?? '';
       $('manana-horario').textContent = `Jornada de ${label} · entreno a las ${entrenoFila?.hora ?? '—'}`;
-      $('manana-alarma').textContent = `⏰ Pon la alarma a las ${ALARMAS[jornadaM] ?? 'según turno'}`;
+      const elAlarma = $('manana-alarma');
+      elAlarma.classList.add('flex', 'items-center', 'gap-1.5');
+      elAlarma.replaceChildren(iconoEl('alarma', '⏰', 16), `Pon la alarma a las ${ALARMAS[jornadaM] ?? 'según turno'}`);
     } else {
       $('manana-horario').textContent = 'Elige jornada para ver horario y alarma.';
       $('manana-alarma').textContent = '';
