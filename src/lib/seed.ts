@@ -8,7 +8,7 @@ export const CATALOGO: Ejercicio[] = [
   { id: 'prensa-horizontal', nombre: 'Prensa horizontal', patron: 'rodilla', implemento: 'maquina', entrada: 'directa', ejecucion: 'bilateral', pesoBaseKg: 0 },
   { id: 'extension-cuadriceps', nombre: 'Extensión de cuádriceps', patron: 'rodilla', implemento: 'maquina', entrada: 'directa', ejecucion: 'bilateral', pesoBaseKg: 0 },
   { id: 'curl-femoral', nombre: 'Curl femoral sentado', patron: 'cadera', implemento: 'maquina', entrada: 'directa', ejecucion: 'bilateral', pesoBaseKg: 0 },
-  { id: 'gemelo-pie', nombre: 'Elevación de gemelo de pie', patron: 'aislamiento', implemento: 'multipower', entrada: 'porLado', ejecucion: 'bilateral', pesoBaseKg: 0 },
+  { id: 'gemelo-prensa', nombre: 'Elevación de gemelo en prensa', patron: 'aislamiento', implemento: 'maquina', entrada: 'directa', ejecucion: 'bilateral', pesoBaseKg: 0 },
   { id: 'patada-gluteo', nombre: 'Patada de glúteo', patron: 'cadera', implemento: 'maquina', entrada: 'directa', ejecucion: 'unilateral', pesoBaseKg: 0 },
   // Empuje
   { id: 'press-banca', nombre: 'Press banca (multipower)', patron: 'empujeH', implemento: 'multipower', entrada: 'porLado', ejecucion: 'bilateral', pesoBaseKg: 0, nota: 'Codos ~45°, no abrir del todo' },
@@ -33,6 +33,18 @@ export const CATALOGO: Ejercicio[] = [
   // Core
   { id: 'plancha', nombre: 'Plancha', patron: 'core', implemento: 'corporal', entrada: 'ninguna', ejecucion: 'bilateral', pesoBaseKg: 0 },
   { id: 'elevacion-piernas', nombre: 'Elevación de piernas', patron: 'core', implemento: 'corporal', entrada: 'ninguna', ejecucion: 'bilateral', pesoBaseKg: 0 },
+  // — Añadidos para Yasmina —
+  { id: 'hip-thrust', nombre: 'Hip thrust (empuje de cadera)', patron: 'cadera', implemento: 'multipower', entrada: 'porLado', ejecucion: 'bilateral', pesoBaseKg: 0, nota: 'Barra guiada sobre la cadera, o mancuerna/KB para empezar' },
+  { id: 'rumano-mancuerna', nombre: 'Peso muerto rumano con mancuernas', patron: 'cadera', implemento: 'mancuerna', entrada: 'porMancuerna', ejecucion: 'bilateral', pesoBaseKg: 0, nota: 'Bajar con la espalda recta, sin pasar dolor lumbar' },
+  { id: 'abduccion-cadera', nombre: 'Abducción de cadera (glúteo medio)', patron: 'aislamiento', implemento: 'polea', entrada: 'directa', ejecucion: 'unilateral', pesoBaseKg: 0, nota: 'En polea con tobillera, o con banda elástica' },
+  { id: 'dead-bug', nombre: 'Dead bug', patron: 'core', implemento: 'corporal', entrada: 'ninguna', ejecucion: 'bilateral', pesoBaseKg: 0 },
+  { id: 'bird-dog', nombre: 'Bird dog', patron: 'core', implemento: 'corporal', entrada: 'ninguna', ejecucion: 'unilateral', pesoBaseKg: 0 },
+  { id: 'cardio-cinta', nombre: 'Cardio en cinta inclinada', patron: 'movilidad', implemento: 'corporal', entrada: 'ninguna', ejecucion: 'bilateral', pesoBaseKg: 0, nota: '25-35 min con inclinación, ritmo cómodo. Bajo impacto para las rodillas' },
+  { id: 'calent-inferior', nombre: 'Calentamiento tren inferior', patron: 'movilidad', implemento: 'corporal', entrada: 'ninguna', ejecucion: 'bilateral', pesoBaseKg: 0, nota: 'Cinta inclinada 5\' · activación glúteo con banda 2×15 · gato-camello + círculos de cadera' },
+  { id: 'calent-superior', nombre: 'Calentamiento tren superior', patron: 'movilidad', implemento: 'corporal', entrada: 'ninguna', ejecucion: 'bilateral', pesoBaseKg: 0, nota: 'Movilidad de hombro con banda · manguito rotador (rotación externa) 2×15 · remo ligero de activación' },
+  { id: 'estiram-inferior', nombre: 'Estiramientos tren inferior', patron: 'movilidad', implemento: 'corporal', entrada: 'ninguna', ejecucion: 'bilateral', pesoBaseKg: 0, nota: 'Cuádriceps suave · glúteo (figura 4) · isquios · gemelo' },
+  { id: 'estiram-superior', nombre: 'Estiramientos tren superior', patron: 'movilidad', implemento: 'corporal', entrada: 'ninguna', ejecucion: 'bilateral', pesoBaseKg: 0, nota: 'Pecho/hombro en marco de puerta · dorsal · cuello-trapecio' },
+  { id: 'movilidad-completa', nombre: 'Movilidad completa', patron: 'movilidad', implemento: 'corporal', entrada: 'ninguna', ejecucion: 'bilateral', pesoBaseKg: 0, nota: 'Cadera, columna dorsal, hombro y tobillo' },
 ];
 
 // ───────────────────────────────── Rutina ───────────────────────────────────
@@ -48,7 +60,7 @@ export const RUTINA_1: Rutina = {
         { ranuraId: 'd1-prensa', ejercicioId: 'prensa-horizontal', nombre: 'Prensa horizontal', tipoProgresion: 'doble', series: 4, repsObjetivo: [8, 12], incrementoKg: 5, restSeg: 150 },
         { ranuraId: 'd1-extension', ejercicioId: 'extension-cuadriceps', nombre: 'Extensión de cuádriceps', tipoProgresion: 'doble', series: 3, repsObjetivo: [10, 15], incrementoKg: 5, restSeg: 90 },
         { ranuraId: 'd1-femoral', ejercicioId: 'curl-femoral', nombre: 'Curl femoral sentado', tipoProgresion: 'doble', series: 3, repsObjetivo: [10, 15], incrementoKg: 5, restSeg: 90 },
-        { ranuraId: 'd1-gemelo', ejercicioId: 'gemelo-pie', nombre: 'Elevación de gemelo de pie', tipoProgresion: 'doble', series: 4, repsObjetivo: [12, 20], incrementoKg: 2.5, restSeg: 60 },
+        { ranuraId: 'd1-gemelo', ejercicioId: 'gemelo-prensa', nombre: 'Elevación de gemelo en prensa', tipoProgresion: 'doble', series: 4, repsObjetivo: [12, 20], incrementoKg: 5, restSeg: 60 },
         { ranuraId: 'd1-plancha', ejercicioId: 'plancha', nombre: 'Plancha', tipoProgresion: 'tiempo', series: 3, repsObjetivo: null, incrementoKg: null, restSeg: 60 },
       ],
     },
@@ -110,6 +122,96 @@ export const CONFIG_INICIAL: Config = {
   macros: { kcal: 2900, prot: 150, grasa: 70, carbo: 415 },
   puntero: { ultimoDiaCompletadoId: null },
   incrementoMinimoKg: 2.5,
+  entrenosObjetivoSemana: 5,
+  restTimerActivo: true,
+  ultimoExportISO: null,
+};
+
+// ───────────────────────── Perfil de Yasmina ─────────────────────────
+// Recomposición · 5 días de máquinas cuidando rodillas (condromalacia) y
+// hombros (tendinitis). Cada día abre con calentamiento y cierra con estiramientos.
+export const RUTINA_YASMINA: Rutina = {
+  id: 'rutina-yasmina',
+  nombre: 'Recomposición · 5 días',
+  dias: [
+    {
+      id: 'd1',
+      nombre: 'Tren inferior (glúteo)',
+      emoji: '🍑',
+      ejercicios: [
+        { ranuraId: 'yd1-calent', ejercicioId: 'calent-inferior', nombre: 'Calentamiento tren inferior', tipoProgresion: 'libre', series: 1, repsObjetivo: null, incrementoKg: null, restSeg: 30 },
+        { ranuraId: 'yd1-hipthrust', ejercicioId: 'hip-thrust', nombre: 'Hip thrust (empuje de cadera)', tipoProgresion: 'doble', series: 3, repsObjetivo: [8, 12], incrementoKg: 2.5, restSeg: 120 },
+        { ranuraId: 'yd1-prensa', ejercicioId: 'prensa-horizontal', nombre: 'Prensa horizontal', tipoProgresion: 'doble', series: 3, repsObjetivo: [10, 15], incrementoKg: 5, restSeg: 90, nota: 'Rango parcial, sin dolor de rodilla' },
+        { ranuraId: 'yd1-femoral', ejercicioId: 'curl-femoral', nombre: 'Curl femoral sentado', tipoProgresion: 'doble', series: 3, repsObjetivo: [10, 15], incrementoKg: 5, restSeg: 90 },
+        { ranuraId: 'yd1-gluteo', ejercicioId: 'patada-gluteo', nombre: 'Patada de glúteo', tipoProgresion: 'doble', series: 3, repsObjetivo: [12, 15], incrementoKg: 5, restSeg: 75, nota: 'Por pierna' },
+        { ranuraId: 'yd1-gemelo', ejercicioId: 'gemelo-prensa', nombre: 'Elevación de gemelo en prensa', tipoProgresion: 'doble', series: 3, repsObjetivo: [12, 20], incrementoKg: 5, restSeg: 60 },
+        { ranuraId: 'yd1-estir', ejercicioId: 'estiram-inferior', nombre: 'Estiramientos tren inferior', tipoProgresion: 'libre', series: 1, repsObjetivo: null, incrementoKg: null, restSeg: 30 },
+      ],
+    },
+    {
+      id: 'd2',
+      nombre: 'Tren superior',
+      emoji: '💪',
+      ejercicios: [
+        { ranuraId: 'yd2-calent', ejercicioId: 'calent-superior', nombre: 'Calentamiento tren superior', tipoProgresion: 'libre', series: 1, repsObjetivo: null, incrementoKg: null, restSeg: 30 },
+        { ranuraId: 'yd2-press', ejercicioId: 'press-banca', nombre: 'Press de pecho (multipower)', tipoProgresion: 'doble', series: 3, repsObjetivo: [10, 12], incrementoKg: 2.5, restSeg: 120 },
+        { ranuraId: 'yd2-jalon', ejercicioId: 'jalon-pecho', nombre: 'Jalón al pecho', tipoProgresion: 'doble', series: 3, repsObjetivo: [10, 12], incrementoKg: 5, restSeg: 90 },
+        { ranuraId: 'yd2-remo', ejercicioId: 'remo-maquina', nombre: 'Remo en máquina (apoyo de pecho)', tipoProgresion: 'doble', series: 3, repsObjetivo: [10, 12], incrementoKg: 5, restSeg: 90 },
+        { ranuraId: 'yd2-laterales', ejercicioId: 'elevacion-lateral', nombre: 'Elevaciones laterales', tipoProgresion: 'doble', series: 3, repsObjetivo: [12, 15], incrementoKg: 2, restSeg: 60, nota: 'Ligeras, sin dolor de hombro' },
+        { ranuraId: 'yd2-facepull', ejercicioId: 'face-pull', nombre: 'Face pull en crossover', tipoProgresion: 'doble', series: 3, repsObjetivo: [15, 20], incrementoKg: 2.5, restSeg: 60 },
+        { ranuraId: 'yd2-estir', ejercicioId: 'estiram-superior', nombre: 'Estiramientos tren superior', tipoProgresion: 'libre', series: 1, repsObjetivo: null, incrementoKg: null, restSeg: 30 },
+      ],
+    },
+    {
+      id: 'd3',
+      nombre: 'Cardio + core + movilidad',
+      emoji: '🏃‍♀️',
+      ejercicios: [
+        { ranuraId: 'yd3-cardio', ejercicioId: 'cardio-cinta', nombre: 'Cardio en cinta inclinada', tipoProgresion: 'libre', series: 1, repsObjetivo: null, incrementoKg: null, restSeg: 0 },
+        { ranuraId: 'yd3-plancha', ejercicioId: 'plancha', nombre: 'Plancha', tipoProgresion: 'tiempo', series: 3, repsObjetivo: null, incrementoKg: null, restSeg: 60 },
+        { ranuraId: 'yd3-deadbug', ejercicioId: 'dead-bug', nombre: 'Dead bug', tipoProgresion: 'libre', series: 3, repsObjetivo: null, incrementoKg: null, restSeg: 45 },
+        { ranuraId: 'yd3-birddog', ejercicioId: 'bird-dog', nombre: 'Bird dog', tipoProgresion: 'libre', series: 3, repsObjetivo: null, incrementoKg: null, restSeg: 45 },
+        { ranuraId: 'yd3-movilidad', ejercicioId: 'movilidad-completa', nombre: 'Movilidad completa', tipoProgresion: 'libre', series: 1, repsObjetivo: null, incrementoKg: null, restSeg: 0 },
+      ],
+    },
+    {
+      id: 'd4',
+      nombre: 'Tren inferior (isquio)',
+      emoji: '🦵',
+      ejercicios: [
+        { ranuraId: 'yd4-calent', ejercicioId: 'calent-inferior', nombre: 'Calentamiento tren inferior', tipoProgresion: 'libre', series: 1, repsObjetivo: null, incrementoKg: null, restSeg: 30 },
+        { ranuraId: 'yd4-rumano', ejercicioId: 'rumano-mancuerna', nombre: 'Peso muerto rumano con mancuernas', tipoProgresion: 'doble', series: 3, repsObjetivo: [8, 12], incrementoKg: 2, restSeg: 120 },
+        { ranuraId: 'yd4-prensa', ejercicioId: 'prensa-horizontal', nombre: 'Prensa horizontal', tipoProgresion: 'doble', series: 3, repsObjetivo: [10, 15], incrementoKg: 5, restSeg: 90, nota: 'Pies altos (énfasis glúteo/isquio), rango parcial' },
+        { ranuraId: 'yd4-femoral', ejercicioId: 'curl-femoral', nombre: 'Curl femoral sentado', tipoProgresion: 'doble', series: 3, repsObjetivo: [10, 15], incrementoKg: 5, restSeg: 90 },
+        { ranuraId: 'yd4-abduccion', ejercicioId: 'abduccion-cadera', nombre: 'Abducción de cadera (glúteo medio)', tipoProgresion: 'doble', series: 3, repsObjetivo: [15, 20], incrementoKg: 5, restSeg: 60, nota: 'Por pierna' },
+        { ranuraId: 'yd4-plancha', ejercicioId: 'plancha', nombre: 'Plancha', tipoProgresion: 'tiempo', series: 3, repsObjetivo: null, incrementoKg: null, restSeg: 60 },
+        { ranuraId: 'yd4-estir', ejercicioId: 'estiram-inferior', nombre: 'Estiramientos tren inferior', tipoProgresion: 'libre', series: 1, repsObjetivo: null, incrementoKg: null, restSeg: 30 },
+      ],
+    },
+    {
+      id: 'd5',
+      nombre: 'Tren superior (espalda + brazos)',
+      emoji: '🔙',
+      ejercicios: [
+        { ranuraId: 'yd5-calent', ejercicioId: 'calent-superior', nombre: 'Calentamiento tren superior', tipoProgresion: 'libre', series: 1, repsObjetivo: null, incrementoKg: null, restSeg: 30 },
+        { ranuraId: 'yd5-remo', ejercicioId: 'remo-polea', nombre: 'Remo en polea baja', tipoProgresion: 'doble', series: 3, repsObjetivo: [10, 12], incrementoKg: 5, restSeg: 90 },
+        { ranuraId: 'yd5-jalon', ejercicioId: 'jalon-pecho', nombre: 'Jalón al pecho', tipoProgresion: 'doble', series: 3, repsObjetivo: [10, 12], incrementoKg: 5, restSeg: 90 },
+        { ranuraId: 'yd5-pecdeck', ejercicioId: 'pec-deck', nombre: 'Aperturas en pec deck', tipoProgresion: 'doble', series: 3, repsObjetivo: [12, 15], incrementoKg: 5, restSeg: 75 },
+        { ranuraId: 'yd5-curl', ejercicioId: 'curl-mancuerna', nombre: 'Curl de bíceps con mancuernas', tipoProgresion: 'doble', series: 3, repsObjetivo: [10, 12], incrementoKg: 2, restSeg: 75 },
+        { ranuraId: 'yd5-triceps', ejercicioId: 'extension-triceps-polea', nombre: 'Extensión de tríceps en polea', tipoProgresion: 'doble', series: 3, repsObjetivo: [10, 15], incrementoKg: 2.5, restSeg: 75 },
+        { ranuraId: 'yd5-pajaros', ejercicioId: 'pajaros-crossover', nombre: 'Pájaros en crossover', tipoProgresion: 'doble', series: 3, repsObjetivo: [15, 20], incrementoKg: 2.5, restSeg: 60 },
+        { ranuraId: 'yd5-estir', ejercicioId: 'estiram-superior', nombre: 'Estiramientos tren superior', tipoProgresion: 'libre', series: 1, repsObjetivo: null, incrementoKg: null, restSeg: 30 },
+      ],
+    },
+  ],
+};
+
+export const CONFIG_YASMINA: Config = {
+  rutinaActivaId: 'rutina-yasmina',
+  fechaInicioPlan: '2026-06-18',
+  macros: { kcal: 1825, prot: 140, grasa: 65, carbo: 170 },
+  puntero: { ultimoDiaCompletadoId: null },
+  incrementoMinimoKg: 1.25,
   entrenosObjetivoSemana: 5,
   restTimerActivo: true,
   ultimoExportISO: null,
