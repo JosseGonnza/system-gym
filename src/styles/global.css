@@ -186,6 +186,13 @@ html[data-perfil='selector'] main {
   flex-shrink: 0;
 }
 
+.sel-glifo {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  color: #d71921;
+}
+
 .sel-nombre {
   display: block;
   font-size: 1.4rem;

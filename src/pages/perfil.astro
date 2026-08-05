@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { svgDot } from '../lib/iconos-dot';
 ---
 
 <Layout title="Elige perfil">
@@ -12,7 +13,7 @@ import Layout from '../layouts/Layout.astro';
 
   <div class="sel-cards">
     <button id="perfil-jose" class="sel-card sel-jose">
-      <span class="sel-emoji">⚔️</span>
+      <span class="sel-glifo" set:html={svgDot('sistema', 42)} />
       <span>
         <span class="sel-nombre">System Gym</span>
         <span class="sel-sub">Jose · Fuerza + Estética</span>

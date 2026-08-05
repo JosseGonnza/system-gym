@@ -101,6 +101,17 @@ export const PATRONES: Record<string, string[]> = {
     '...#...',
   ],
 
+  // Marca de System Gym: un punto que irradia. El glifo de la casa.
+  sistema: [
+    '...#...',
+    '.#.#.#.',
+    '..###..',
+    '###.###',
+    '..###..',
+    '.#.#.#.',
+    '...#...',
+  ],
+
   // ── Estados y datos ──
   descanso: [
     '.......',
