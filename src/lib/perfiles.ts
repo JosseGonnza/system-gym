@@ -1,8 +1,8 @@
 import type { Perfil, PerfilId } from './types';
 
 export const PERFILES: Perfil[] = [
-  { id: 'jose', nombre: 'Jose', tema: 'violeta', emoji: '🟣' },
-  { id: 'yasmina', nombre: 'Yasmina', tema: 'matcha', emoji: '🍵' },
+  { id: 'jose', nombre: 'Jose', tema: 'nothing', emoji: '🔴', usaJornadas: false },
+  { id: 'yasmina', nombre: 'Yasmina', tema: 'matcha', emoji: '🍵', usaJornadas: true },
 ];
 
 export const PERFIL_POR_DEFECTO: PerfilId = 'jose';

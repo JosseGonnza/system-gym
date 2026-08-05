@@ -16,6 +16,18 @@ import * as idb from 'idb-keyval';
 import { initDB, getConfig, setConfig, getPerfilActivo, setPerfilActivo, resetDB, exportarBackup } from '../src/lib/db';
 import { horarioDe } from '../src/lib/horarios';
 import { dietaDe } from '../src/lib/dietas';
+import { PERFILES, perfil as perfilDe } from '../src/lib/perfiles';
+
+describe('jornadas por perfil', () => {
+  it('Jose no usa jornadas (va por sensaciones) y Yasmina sí', () => {
+    expect(perfilDe('jose').usaJornadas).toBe(false);
+    expect(perfilDe('yasmina').usaJornadas).toBe(true);
+  });
+
+  it('todo perfil declara si usa jornadas', () => {
+    for (const p of PERFILES) expect(typeof p.usaJornadas).toBe('boolean');
+  });
+});
 
 const store = (idb as unknown as { _store: Map<string, unknown> })._store;
 const conf = (c: Awaited<ReturnType<typeof getConfig>>) => c;

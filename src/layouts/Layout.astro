@@ -1,11 +1,12 @@
 ---
 import { pwaInfo } from 'virtual:pwa-info';
 import TabBar from '../components/TabBar.astro';
-// Fuentes self-hosted (offline). Jose: Chakra Petch + JetBrains Mono · Yasmina: Quicksand
-import '@fontsource/chakra-petch/400.css';
-import '@fontsource/chakra-petch/500.css';
-import '@fontsource/chakra-petch/600.css';
-import '@fontsource/chakra-petch/700.css';
+import Ico from '../components/Ico.astro';
+// Fuentes self-hosted (offline). Jose "Nothing": Inter + Silkscreen (dot-matrix)
+// para etiquetas de sistema + JetBrains Mono en datos.
+import '@fontsource-variable/inter';
+import '@fontsource/silkscreen/400.css';
+import '@fontsource/silkscreen/700.css';
 import '@fontsource-variable/jetbrains-mono';
 // Yasmina "Cuaderno": Fraunces (títulos de cuento) + Baloo 2 (cuerpo redondeado)
 import '@fontsource-variable/fraunces';
@@ -41,7 +42,7 @@ const base = Astro.site ?? Astro.url;
         var p = esSelector ? 'selector' : stored === 'jose' || stored === 'yasmina' ? stored : 'jose';
         document.documentElement.dataset.perfil = p;
         document.documentElement.style.setProperty('color-scheme', 'dark');
-        var tc = { jose: '#0a0712', yasmina: '#15200f', selector: '#0c0d12' }[p];
+        var tc = { jose: '#000000', yasmina: '#15200f', selector: '#000000' }[p];
         document.addEventListener('DOMContentLoaded', function () {
           var m = document.querySelector('meta[name="theme-color"]');
           if (m) m.setAttribute('content', tc);
@@ -50,7 +51,7 @@ const base = Astro.site ?? Astro.url;
       })();
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#0a0712" />
+    <meta name="theme-color" content="#000000" />
     <meta name="description" content={description} />
     <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="icon" href="/favicon-96x96.png" type="image/png" sizes="96x96" />
@@ -72,7 +73,9 @@ const base = Astro.site ?? Astro.url;
     <div class="fondo-yasmina" aria-hidden="true"></div>
     <header class="appbar sticky top-0 z-10 flex items-center justify-between bg-bg/90 px-5 pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-3 backdrop-blur">
       <h1 class="text-2xl font-extrabold tracking-tight">{title}</h1>
-      <a href="/ajustes" class="-m-2 p-2 text-2xl" aria-label="Ajustes">⚙️</a>
+      <a href="/ajustes" class="-m-2 p-2 text-2xl leading-none" aria-label="Ajustes">
+        <Ico id="ajustes" emoji="⚙️" px={22} />
+      </a>
     </header>
     <main class="mx-auto max-w-md px-4 pb-28 pt-3">
       <slot />

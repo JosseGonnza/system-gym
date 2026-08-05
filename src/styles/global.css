@@ -1,25 +1,34 @@
 @import "tailwindcss";
 
+/* Jose — "Nothing": monocromo sobre negro puro, rojo solo como acento, matriz
+   de puntos, tipografía de sistema en mayúsculas. Nada de neón. */
 @theme {
-  --color-bg: #0a0712;
-  --color-surface: #141024;
-  --color-surface2: #1d1633;
-  --color-line: #2d2349;
-  --color-vio: #8b5cf6;
-  --color-vio-hi: #a78bfa;
-  --color-vio-soft: #c4b5fd;
-  --color-ink: #ede9fb;
-  --color-mut: #938aae;
-  --color-ok: #34d399;
-  --color-warn: #fbbf24;
-  --color-bad: #f87171;
+  --color-bg: #000000;
+  --color-surface: #0c0c0c;
+  --color-surface2: #161616;
+  --color-line: #2b2b2b;
+  --color-vio: #d71921;
+  --color-vio-hi: #fafafa;
+  --color-vio-soft: #e4e4e4;
+  --color-ink: #fafafa;
+  --color-mut: #8a8a8a;
+  --color-ok: #d0d0d0;
+  --color-warn: #e8b53a;
+  --color-bad: #d71921;
 
-  /* Jose — "Ventana del Sistema": HUD técnico, esquinas marcadas, números mono */
-  --font-display: 'Chakra Petch', system-ui, sans-serif;
-  --font-body: 'Chakra Petch', system-ui, sans-serif;
+  --font-display: 'Inter Variable', system-ui, sans-serif;
+  --font-body: 'Inter Variable', system-ui, sans-serif;
   --font-num: 'JetBrains Mono Variable', ui-monospace, monospace;
-  --radius-card: 6px;
-  --radius-btn: 8px;
+  --font-dot: 'Silkscreen', ui-monospace, monospace;
+  --radius-card: 14px;
+  --radius-btn: 999px;
+}
+
+/* Matriz de puntos de fondo: la seña de identidad Nothing */
+html[data-perfil='jose'] body {
+  background-image: radial-gradient(circle, #1c1c1c 1px, transparent 1px);
+  background-size: 16px 16px;
+  background-attachment: fixed;
 }
 
 /* Yasmina — "Cuaderno cozy": pergamino crema, madera, verde hoja. Tema CLARO. */
@@ -41,6 +50,7 @@ html[data-perfil='yasmina'] {
   --font-display: 'Fraunces Variable', Georgia, serif;
   --font-body: 'Baloo 2', system-ui, sans-serif;
   --font-num: 'Baloo 2', system-ui, sans-serif;
+  --font-dot: 'Baloo 2', system-ui, sans-serif;
   --radius-card: 1.25rem;
   --radius-btn: 0.9rem;
 }
@@ -72,26 +82,22 @@ html[data-perfil='yasmina'] body {
 /* Selector de perfil: identidad propia y neutra (no hereda Jose ni Yasmina) */
 html[data-perfil='selector'] {
   color-scheme: dark;
-  --color-bg: #0c0d12;
-  --color-surface: #16171f;
-  --color-surface2: #1f212b;
-  --color-line: #343745;
+  --color-bg: #000000;
+  --color-surface: #0c0c0c;
+  --color-surface2: #161616;
+  --color-line: #2b2b2b;
   --color-vio: #9aa3b2;
-  --color-vio-hi: #c4cad6;
-  --color-vio-soft: #aab2c0;
-  --color-ink: #eef0f4;
-  --color-mut: #8b91a0;
+  --color-vio-hi: #e8e8e8;
+  --color-vio-soft: #c8c8c8;
+  --color-ink: #fafafa;
+  --color-mut: #8a8a8a;
 
-  --font-display: 'Chakra Petch', system-ui, sans-serif;
-  --font-body: 'Chakra Petch', system-ui, sans-serif;
+  --font-display: 'Inter Variable', system-ui, sans-serif;
+  --font-body: 'Inter Variable', system-ui, sans-serif;
   --font-num: 'JetBrains Mono Variable', ui-monospace, monospace;
+  --font-dot: 'Silkscreen', ui-monospace, monospace;
   --radius-card: 14px;
   --radius-btn: 12px;
-}
-
-html[data-perfil='selector'] .card::before,
-html[data-perfil='selector'] .card::after {
-  display: none;
 }
 
 /* Pantalla de selección: sin chrome, contenido centrado, body transparente
@@ -127,9 +133,11 @@ html[data-perfil='selector'] main {
   inset: 0;
 }
 
-/* Arriba: identidad System Gym (oscuro violeta con brillo) */
+/* Arriba: identidad System Gym (negro Nothing con matriz de puntos) */
 .sel-arriba {
-  background: radial-gradient(125% 80% at 50% 18%, #2c1d4e 0%, #0a0712 72%);
+  background:
+    radial-gradient(circle, #1f1f1f 1px, transparent 1px) 0 0 / 16px 16px,
+    radial-gradient(120% 75% at 50% 15%, #191919 0%, #000 70%);
   clip-path: polygon(0 0, 100% 0, 100% 44%, 0 56%);
 }
 
@@ -143,12 +151,12 @@ html[data-perfil='selector'] main {
 
 .sel-titulo {
   text-align: center;
-  font-family: 'Chakra Petch', system-ui, sans-serif;
-  font-weight: 700;
-  letter-spacing: 0.12em;
+  font-family: 'Silkscreen', ui-monospace, monospace;
+  font-weight: 400;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #e7e3f5;
-  font-size: 0.95rem;
+  color: #e8e8e8;
+  font-size: 0.85rem;
 }
 
 .sel-cards {
@@ -192,15 +200,25 @@ html[data-perfil='selector'] main {
 }
 
 .sel-jose {
-  background: #141024;
-  border: 1px solid #8b5cf6;
-  color: #ede9fb;
-  box-shadow: 0 0 24px color-mix(in srgb, #8b5cf6 32%, transparent);
-  font-family: 'Chakra Petch', system-ui, sans-serif;
+  background: #0c0c0c;
+  border: 1px solid #d71921;
+  color: #fafafa;
+  font-family: 'Inter Variable', system-ui, sans-serif;
+}
+
+.sel-jose .sel-nombre {
+  font-family: 'Silkscreen', ui-monospace, monospace;
+  font-size: 1.1rem;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .sel-jose .sel-sub {
-  color: #c4b5fd;
+  color: #d71921;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.68rem;
 }
 
 .sel-yasmina {
@@ -243,12 +261,21 @@ h3 {
   font-family: var(--font-display);
 }
 
-/* Etiqueta de sección. Jose: técnica en mayúsculas con tracking; Yasmina: suave */
+/* Cabecera Nothing: nombre de pantalla como etiqueta de sistema */
+html[data-perfil='jose'] .appbar h1 {
+  font-family: var(--font-dot);
+  font-size: 1.05rem;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* Etiqueta de sección. Jose: dot-matrix en mayúsculas; Yasmina: suave */
 .eyebrow {
-  font-family: var(--font-display);
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.18em;
+  font-family: var(--font-dot);
+  font-size: 0.66rem;
+  font-weight: 400;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--color-vio-hi);
 }
@@ -275,42 +302,31 @@ html[data-perfil='yasmina'] .eyebrow {
   padding: 1rem;
 }
 
-.card::before,
-.card::after {
-  content: '';
-  position: absolute;
-  width: 11px;
-  height: 11px;
-  pointer-events: none;
-}
-
-.card::before {
-  top: -1px;
-  left: -1px;
-  border-top: 2px solid var(--color-vio);
-  border-left: 2px solid var(--color-vio);
-}
-
-.card::after {
-  bottom: -1px;
-  right: -1px;
-  border-bottom: 2px solid var(--color-vio);
-  border-right: 2px solid var(--color-vio);
-}
-
 html[data-perfil='yasmina'] .card {
   border: 2px solid var(--color-line);
   box-shadow: 0 4px 0 rgb(0 0 0 / 0.35), 0 10px 20px rgb(0 0 0 / 0.3);
 }
 
-html[data-perfil='yasmina'] .card::before,
-html[data-perfil='yasmina'] .card::after {
-  display: none;
+/* Nothing no brilla: el panel destacado se marca con la línea roja, no con neón */
+.glow {
+  box-shadow: none;
 }
 
-.glow {
-  box-shadow: 0 0 24px color-mix(in srgb, var(--color-vio) 25%, transparent),
-    0 0 4px color-mix(in srgb, var(--color-vio) 30%, transparent);
+/* El día que toca hoy: su figura en rojo, a tamaño grande. Es el ancla de la pantalla. */
+.simbolo-dia {
+  display: grid;
+  place-items: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  flex-shrink: 0;
+  border-radius: 999px;
+  border: 1px solid var(--color-vio);
+  background: color-mix(in srgb, var(--color-vio) 12%, transparent);
+  color: var(--color-vio);
+}
+
+html[data-perfil='yasmina'] .simbolo-dia {
+  border-radius: var(--radius-card);
 }
 
 html[data-perfil='yasmina'] .glow {
@@ -355,6 +371,23 @@ html[data-perfil='yasmina'] .ico-emoji {
   font-family: var(--font-display);
 }
 
+/* Acción secundaria: no compite con el botón principal */
+.btn-2.suave {
+  color: var(--color-mut);
+}
+
+/* Puntos guía entre el nombre del ejercicio y su dato, como en un índice.
+   Se comen el hueco sobrante para que nada caiga a una segunda línea. */
+.guia {
+  flex: 1 1 auto;
+  min-width: 0.75rem;
+  align-self: center;
+  height: 3px;
+  background-image: radial-gradient(circle, var(--color-line) 1px, transparent 1px);
+  background-size: 5px 3px;
+  background-repeat: repeat-x;
+}
+
 /* Aparición de paneles al cargar (respetando reduced-motion) */
 @keyframes panel-in {
   from {
@@ -390,11 +423,7 @@ html[data-perfil='yasmina'] .ico-emoji {
   display: inline-block;
 }
 
-/* Jose (HUD): icono con glow del tema + barra superior de pestaña activa */
-.tab-on .tab-ico {
-  filter: drop-shadow(0 0 10px color-mix(in srgb, var(--color-vio-hi) 75%, transparent));
-}
-
+/* Pestaña activa: barra roja arriba, sin brillos */
 .tab-on::before {
   content: '';
   position: absolute;
@@ -403,8 +432,9 @@ html[data-perfil='yasmina'] .ico-emoji {
   width: 26px;
   height: 2px;
   transform: translateX(-50%);
-  background: var(--color-vio-hi);
+  background: var(--color-vio);
 }
+
 
 /* Yasmina (cozy): barra de madera + pastilla suave bajo el icono, sin glow */
 html[data-perfil='yasmina'] .tabbar {
@@ -423,12 +453,68 @@ html[data-perfil='yasmina'] .tab-on .tab-ico {
   padding: 3px 9px;
 }
 
-/* Iconos ilustrados: solo en Yasmina y solo donde existe la imagen (si no, emoji) */
+/* Iconos de pestaña: puntos en Jose, ilustración en Yasmina, emoji de reserva */
 .tab-img {
   display: none;
   width: 1.75rem;
   height: 1.75rem;
   object-fit: contain;
+}
+
+/* Sin tamaño propio: lo marca el SVG, que ya viene dimensionado. Si se lo
+   imponemos aquí, el glifo se descuadra dentro del círculo. */
+.tab-dot {
+  display: none;
+  line-height: 0;
+}
+
+html[data-perfil='jose'] .has-tab-dot .tab-emoji {
+  display: none;
+}
+
+html[data-perfil='jose'] .has-tab-dot .tab-dot {
+  display: inline-block;
+}
+
+/* Nav de Jose: iconos redondos como los de la pantalla del Nothing, sin texto.
+   El icono habla solo; la etiqueta se queda para lectores de pantalla. */
+html[data-perfil='jose'] .tab-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+html[data-perfil='jose'] .tab {
+  padding-block: 0.55rem;
+}
+
+html[data-perfil='jose'] .tab-ico {
+  display: grid;
+  place-items: center;
+  width: 3.05rem;
+  height: 3.05rem;
+  border-radius: 999px;
+  background: var(--color-surface2);
+  border: 1px solid var(--color-line);
+  color: var(--color-mut);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+html[data-perfil='jose'] .tab-on .tab-ico {
+  background: var(--color-vio);
+  border-color: var(--color-vio);
+  color: #fff;
+}
+
+/* Con el círculo relleno, la barrita superior sobra */
+html[data-perfil='jose'] .tab-on::before {
+  display: none;
 }
 
 html[data-perfil='yasmina'] .has-img .tab-emoji {
@@ -439,16 +525,37 @@ html[data-perfil='yasmina'] .has-img .tab-img {
   display: inline-block;
 }
 
-/* Icono genérico por perfil (imagen en Yasmina, emoji en el resto) */
+/* Icono genérico por perfil: matriz de puntos en Jose, imagen en Yasmina,
+   emoji de reserva cuando no hay ninguna de las dos. */
 .ico {
   display: inline-flex;
   align-items: center;
   vertical-align: middle;
 }
 
-.ico-img {
+.ico-img,
+.ico-dot-wrap {
   display: none;
   object-fit: contain;
+}
+
+.ico-dot-wrap {
+  line-height: 0;
+}
+
+/* En bloque: si el SVG queda como texto en línea, se apoya en la línea base y
+   cae unos píxeles por debajo del texto que lleva al lado. */
+.ico-dot {
+  display: block;
+}
+
+html[data-perfil='jose'] .has-dot .ico-emoji {
+  display: none;
+}
+
+html[data-perfil='jose'] .has-dot .ico-dot-wrap {
+  display: flex;
+  align-items: center;
 }
 
 html[data-perfil='yasmina'] .has-ico .ico-emoji {

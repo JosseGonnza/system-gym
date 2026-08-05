@@ -1,31 +1,50 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import Ico from '../components/Ico.astro';
 ---
 
 <Layout title="Hoy">
   <p id="fecha" class="-mt-1 mb-4 text-sm font-medium capitalize text-mut"></p>
 
-  <section>
+  <section id="bloque-jornada">
     <div id="sel-jornada" class="grid grid-cols-3 gap-2"></div>
     <ul id="pauta" class="card mt-3 hidden space-y-2 text-sm"></ul>
   </section>
 
+  <section id="card-semana" class="card mt-4">
+    <div class="flex items-baseline justify-between">
+      <p class="eyebrow">Últimos 7 días</p>
+      <p id="semana-cuenta" class="num text-xs font-semibold text-mut"></p>
+    </div>
+    <div id="semana-tira" class="mt-2"></div>
+  </section>
+
+  <p id="aviso-abandono" class="card mt-4 hidden border-warn/40 text-sm font-semibold text-warn"></p>
+
   <section id="card-entreno" class="card glow mt-4 border-vio/40">
     <div class="flex items-center justify-between">
-      <p class="text-xs font-bold uppercase tracking-widest text-vio-hi">Entreno de hoy</p>
+      <p class="eyebrow">Entreno de hoy</p>
       <p id="chip-descansos" class="text-xs font-semibold text-mut"></p>
     </div>
-    <h2 id="dia-nombre" class="mt-1 text-xl font-extrabold">Cargando…</h2>
+    <div class="mt-2 flex items-center gap-3">
+      <span id="dia-simbolo" class="simbolo-dia"></span>
+      <div class="min-w-0">
+        <h2 id="dia-nombre" class="text-xl font-extrabold leading-tight">Cargando…</h2>
+        <p id="dia-ultima" class="mt-0.5 text-xs text-mut"></p>
+      </div>
+    </div>
+    <p id="hecho-hoy" class="mt-2 hidden text-xs font-semibold text-ok"></p>
     <ul id="dia-ejercicios" class="mt-3 space-y-1.5 text-sm text-mut"></ul>
-    <div class="mt-4 grid grid-cols-2 gap-2">
-      <button id="btn-cambiar" class="btn-2 py-2.5 text-sm">🔁 Cambiar día</button>
-      <button id="btn-descanso" class="btn-2 py-2.5 text-sm">😴 Descanso hoy</button>
+    <a id="btn-empezar" href="/entreno" class="btn mt-4">Empezar entreno</a>
+    <div class="mt-2 grid grid-cols-2 gap-2">
+      <button id="btn-cambiar" class="btn-2 suave py-2.5 text-sm">Cambiar</button>
+      <button id="btn-descanso" class="btn-2 suave py-2.5 text-sm">Descansar</button>
     </div>
   </section>
 
   <section id="card-manana" class="card mt-4">
     <button id="manana-toggle" class="flex w-full items-center justify-between text-left">
-      <h2 class="text-base font-bold">🌙 Mañana</h2>
+      <h2 class="flex items-center gap-2 text-base font-bold"><Ico id="manana" emoji="🌙" px={18} /> Mañana</h2>
       <span id="manana-flecha" class="text-mut transition-transform">▾</span>
     </button>
     <div id="manana-cuerpo" class="hidden">
@@ -76,16 +95,22 @@ import Layout from '../layouts/Layout.astro';
     siguienteDia,
     formatObjetivo,
     contarDescansos,
+    diasHechosEn,
+    getCatalogo,
     getPerfilActivo,
   } from '../lib/db';
+  import { perfil } from '../lib/perfiles';
   import { horarioDe } from '../lib/horarios';
-  import { iconoEl } from '../lib/iconos';
+  import { ventanaDias, diasDesdeUltimaVez } from '../lib/historial';
+  import { historialDeRanura, sugerir } from '../lib/motor';
+  import { iconoEl, iconoDeDia } from '../lib/iconos';
   import { cerrarBorradoresCaducados } from '../lib/sesion';
-  import type { DiaDef } from '../lib/types';
+  import type { DiaDef, EjercicioDef } from '../lib/types';
 
   const $ = (id: string) => document.getElementById(id)!;
 
   await initDB();
+  const usaJornadas = perfil(getPerfilActivo()).usaJornadas;
   const { jornadas: JORNADAS, pautas: PAUTAS, alarmas: ALARMAS } = horarioDe(getPerfilActivo());
   await cerrarBorradoresCaducados();
   const config = await getConfig();
@@ -93,19 +118,23 @@ import Layout from '../layouts/Layout.astro';
   const sesiones = await getSesiones();
   const rutina = rutinas.find((r) => r.id === config.rutinaActivaId) ?? rutinas[0];
   let diario = await getDiario();
+  const catalogo = await getCatalogo();
 
   const hoy = hoyISO();
   const mananaDate = new Date();
   mananaDate.setDate(mananaDate.getDate() + 1);
   const manana = hoyISO(mananaDate);
-  const entrenadoHoy = sesiones.some((s) => s.fecha === hoy && s.estado === 'finalizada');
+  const hechosHoy = diasHechosEn(sesiones, hoy);
+  const entrenadoHoy = hechosHoy.length > 0;
 
   $('fecha').textContent = new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
-  $('manana-fecha').textContent = mananaDate.toLocaleDateString('es-ES', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-  });
+  if (usaJornadas) {
+    $('manana-fecha').textContent = mananaDate.toLocaleDateString('es-ES', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+    });
+  }
 
   const finalizadasTotal = sesiones.filter((s) => s.estado === 'finalizada').length;
   const diasSinExport = config.ultimoExportISO
@@ -113,20 +142,26 @@ import Layout from '../layouts/Layout.astro';
     : null;
   if (finalizadasTotal > 0 && (diasSinExport === null || diasSinExport >= 7)) {
     const aviso = $('aviso-backup');
-    aviso.textContent =
+    aviso.replaceChildren(
+      iconoEl('backup', '💾', 18),
       diasSinExport === null
-        ? '💾 Aún no has exportado ningún backup. Toca aquí y guárdalo en Drive o en el PC.'
-        : `💾 Hace ${diasSinExport} días que no exportas backup. Toca aquí — son 10 segundos.`;
+        ? 'Aún no has exportado ningún backup. Toca aquí y guárdalo en Drive o en el PC.'
+        : `Hace ${diasSinExport} días que no exportas backup. Toca aquí — son 10 segundos.`,
+    );
     aviso.classList.remove('hidden');
-    aviso.classList.add('block');
+    aviso.classList.add('flex', 'items-center', 'gap-2');
   }
 
-  const numeroDe = (dia: DiaDef) => rutina.dias.findIndex((d) => d.id === dia.id) + 1;
-  const tituloDe = (dia: DiaDef) => `${dia.emoji} Día ${numeroDe(dia)} — ${dia.nombre}`;
 
   function diaEfectivoHoy(): DiaDef {
     const elegido = diario[hoy]?.diaElegidoId;
     return rutina.dias.find((d) => d.id === elegido) ?? diaSugerido(config, rutina);
+  }
+
+  function previstoManana(): DiaDef {
+    if (entrenadoHoy) return diaSugerido(config, rutina);
+    if (diario[hoy]?.descanso) return diaEfectivoHoy();
+    return siguienteDia(rutina, diaEfectivoHoy().id);
   }
 
   function pintarSelector(contenedor: HTMLElement, fecha: string) {
@@ -175,41 +210,140 @@ import Layout from '../layouts/Layout.astro';
     const descanso = diario[hoy]?.descanso;
     const ul = $('dia-ejercicios');
     const btnDescanso = $('btn-descanso');
+    const elHecho = $('hecho-hoy');
+    elHecho.classList.add('hidden');
+    const elSimbolo = $('dia-simbolo');
+    const elUltima = $('dia-ultima');
+    const elEmpezar = $('btn-empezar');
     if (descanso) {
-      const elD = $('dia-nombre');
-      elD.classList.add('flex', 'items-center', 'gap-2');
-      elD.replaceChildren(iconoEl('descanso', '😴', 24), 'Hoy descansas');
+      elSimbolo.replaceChildren(iconoEl('descanso', '😴', 30));
+      $('dia-nombre').textContent = 'Hoy descansas';
+      elUltima.textContent = 'Recuperar también es entrenar. Come bien y duerme.';
       ul.replaceChildren();
-      const li = document.createElement('li');
-      li.textContent = 'Recuperar también es entrenar. Come bien y duerme.';
-      ul.append(li);
-      btnDescanso.textContent = '↩️ He cambiado de idea';
+      elEmpezar.classList.add('hidden');
+      btnDescanso.textContent = 'He cambiado de idea';
       $('btn-cambiar').classList.add('hidden');
       return;
     }
+    elEmpezar.classList.remove('hidden');
     $('btn-cambiar').classList.remove('hidden');
-    btnDescanso.replaceChildren(iconoEl('descanso', '😴', 18), ' Descanso hoy');
+    btnDescanso.textContent = 'Descansar';
     const dia = diaEfectivoHoy();
-    const elDia = $('dia-nombre');
-    elDia.classList.add('flex', 'items-center', 'gap-2');
-    elDia.replaceChildren(
-      ...(entrenadoHoy ? ['✅ Hecho — '] : []),
-      iconoEl(dia.icono, dia.emoji, 24),
-      `Día ${numeroDe(dia)} — ${dia.nombre}`,
-    );
+    const hecho = hechosHoy.includes(dia.id);
+    elSimbolo.replaceChildren(iconoEl(iconoDeDia(rutina.dias, dia), dia.emoji, 30));
+    $('dia-nombre').textContent = dia.nombre;
+    elEmpezar.textContent = hecho ? 'Ver el entreno' : 'Empezar entreno';
+
+    const dias = diasDesdeUltimaVez(sesiones, dia.id);
+    elUltima.textContent =
+      dias == null
+        ? 'Sin estrenar'
+        : dias === 0
+          ? 'Hecho hoy'
+          : dias === 1
+            ? 'La última vez fue ayer'
+            : `Hace ${dias} días que no lo tocas`;
+
+    if (entrenadoHoy && !hecho) {
+      const otros = hechosHoy
+        .map((id) => rutina.dias.find((d) => d.id === id))
+        .filter((d): d is DiaDef => d != null)
+        .map((d) => d.nombre);
+      elHecho.replaceChildren(iconoEl('hecho', '✅', 15), ` Hoy ya has hecho: ${otros.join(' · ')}`);
+      elHecho.classList.remove('hidden');
+      elHecho.classList.add('flex', 'items-center', 'gap-1.5');
+    }
     ul.replaceChildren(
       ...dia.ejercicios.map((e) => {
         const li = document.createElement('li');
-        li.className = 'flex justify-between gap-3';
+        li.className = 'flex items-baseline gap-1.5';
         const nombre = document.createElement('span');
-        nombre.textContent = e.nombre;
+        nombre.className = 'min-w-0 shrink truncate';
+        // El paréntesis (multipower, apoyo de pecho, banco romano…) sobra en un
+        // vistazo rápido; el nombre completo está en la pantalla de Entreno.
+        nombre.textContent = e.nombre.replace(/\s*\([^)]*\)/g, '');
+        nombre.title = e.nombre;
+        // Puntos guía: rellenan el hueco, así el dato queda siempre a la derecha
+        // y el nombre nunca cae a una segunda línea.
+        const guia = document.createElement('span');
+        guia.className = 'guia';
         const objetivo = document.createElement('span');
-        objetivo.className = 'shrink-0 font-semibold text-vio-soft';
-        objetivo.textContent = formatObjetivo(e);
-        li.append(nombre, objetivo);
+        objetivo.className = 'num shrink-0 text-xs font-semibold text-vio-soft';
+        const peso = pesoSugerido(e);
+        objetivo.textContent = peso ? `${peso} · ${formatObjetivo(e)}` : formatObjetivo(e);
+        li.append(nombre, guia, objetivo);
         return li;
       }),
     );
+  }
+
+  const INICIALES = ['D', 'L', 'M', 'X', 'J', 'V', 'S'];
+
+  // Ventana rodante: 5 días atrás + hoy + mañana. Entrenando por sensaciones, el
+  // lunes no significa nada; lo que importa es de dónde vengo y qué viene.
+  function pintarSemana() {
+    const dias = ventanaDias(sesiones, diario, 5, 1);
+    const hechos = dias.filter((c) => !c.futuro && c.diaIds.length > 0).length;
+    $('semana-cuenta').textContent = `${hechos} entrenos`;
+    $('semana-tira').replaceChildren(
+      ...dias.map((c) => {
+        const esManana = c.futuro;
+        const col = document.createElement('div');
+        col.className = 'flex flex-col items-center gap-1';
+        const ini = document.createElement('span');
+        ini.className = `text-[10px] font-bold ${c.fecha === hoy ? 'text-vio-hi' : 'text-mut'}`;
+        ini.textContent = INICIALES[new Date(`${c.fecha}T12:00:00`).getDay()];
+        const celda = document.createElement('div');
+        const base = 'flex h-9 w-full items-center justify-center rounded-lg border text-sm';
+        const dia = c.diaIds.length ? rutina.dias.find((d) => d.id === c.diaIds[0]) : undefined;
+        if (c.diaIds.length) {
+          celda.className = `${base} border-vio/50 bg-vio/20`;
+          celda.append(iconoEl(dia ? iconoDeDia(rutina.dias, dia) : 'hecho', '✔️', 18));
+        } else if (c.descanso) {
+          celda.className = `${base} border-line bg-surface2 opacity-60`;
+          celda.append(iconoEl('descanso', '😴', 18));
+        } else if (esManana) {
+          // La casilla de mañana adelanta el día que tocaría, en tenue.
+          const prev = previstoManana();
+          celda.className = `${base} border-dashed border-line text-mut opacity-50`;
+          celda.append(iconoEl(iconoDeDia(rutina.dias, prev), prev.emoji, 18));
+        } else {
+          celda.className = `${base} border-line/50 text-mut`;
+          celda.textContent = '·';
+        }
+        if (c.fecha === hoy) celda.classList.add('ring-1', 'ring-vio');
+        col.append(ini, celda);
+        return col;
+      }),
+    );
+    $('semana-tira').className = 'mt-2 grid grid-cols-7 gap-1.5';
+  }
+
+  // Solo avisa de los días que YA se han entrenado alguna vez: al estrenar una
+  // rutina todos son "nunca" y el aviso sería ruido.
+  function pintarAbandono() {
+    const el = $('aviso-abandono');
+    const peor = rutina.dias
+      .map((d) => ({ d, dias: diasDesdeUltimaVez(sesiones, d.id) }))
+      .filter((x): x is { d: DiaDef; dias: number } => x.dias != null && x.dias >= 8)
+      .sort((a, b) => b.dias - a.dias)[0];
+    if (!peor) {
+      el.classList.add('hidden');
+      return;
+    }
+    el.classList.remove('hidden');
+    el.classList.add('flex', 'items-center', 'gap-2');
+    el.replaceChildren(iconoEl('aviso', '⚠️', 18), `${peor.d.nombre}: ${peor.dias} días sin tocarlo`);
+  }
+
+  function pesoSugerido(e: EjercicioDef): string {
+    const s = sugerir(e, historialDeRanura(sesiones, e.ranuraId), config.incrementoMinimoKg);
+    if (s.segundos != null) return `${s.segundos} s`;
+    if (s.lastreKg) return `+${s.lastreKg} kg`;
+    if (e.tipoProgresion === 'pesoCorporal') return 'corporal';
+    if (s.peso == null) return e.tipoProgresion === 'libre' ? '' : 'calibrar';
+    const porLado = catalogo.find((x) => x.id === e.ejercicioId)?.entrada === 'porLado';
+    return `${s.peso.toLocaleString('es-ES')} kg${porLado ? '/lado' : ''}`;
   }
 
   function pintarDescansos() {
@@ -221,15 +355,12 @@ import Layout from '../layouts/Layout.astro';
 
   function pintarManana() {
     const jornadaM = diario[manana]?.jornada;
-    const previsto = entrenadoHoy
-      ? diaSugerido(config, rutina)
-      : diario[hoy]?.descanso
-        ? diaEfectivoHoy()
-        : siguienteDia(rutina, diaEfectivoHoy().id);
+    const previsto = previstoManana();
     const coletilla = !entrenadoHoy && !diario[hoy]?.descanso ? ' (si hoy completas el de hoy)' : '';
     const elPrev = $('manana-entreno');
     elPrev.classList.add('flex', 'flex-wrap', 'items-center', 'gap-1.5');
-    elPrev.replaceChildren('Entreno previsto:', iconoEl(previsto.icono, previsto.emoji, 16), `Día ${numeroDe(previsto)} — ${previsto.nombre}${coletilla}`);
+    elPrev.replaceChildren('Entreno previsto:', iconoEl(iconoDeDia(rutina.dias, previsto), previsto.emoji, 16), `${previsto.nombre}${coletilla}`);
+    if (!usaJornadas) return;
     const pauta = jornadaM ? PAUTAS[jornadaM] : undefined;
     if (jornadaM && pauta) {
       const entrenoFila = pauta.find((f) => f.texto.includes('ENTRENO'));
@@ -245,26 +376,39 @@ import Layout from '../layouts/Layout.astro';
   }
 
   function render() {
-    pintarSelector($('sel-jornada'), hoy);
-    pintarSelector($('sel-jornada-manana'), manana);
-    pintarPauta();
+    if (usaJornadas) {
+      pintarSelector($('sel-jornada'), hoy);
+      pintarSelector($('sel-jornada-manana'), manana);
+      pintarPauta();
+    }
+    pintarSemana();
+    pintarAbandono();
     pintarEntreno();
     pintarDescansos();
-    pintarManana();
+    if (usaJornadas) pintarManana();
+  }
+
+  // Sin jornadas, la tarjeta de Mañana se queda sin lo único que aportaba
+  // (horario y alarma): el día previsto ya sale en la tira de arriba.
+  if (!usaJornadas) {
+    $('bloque-jornada').remove();
+    $('card-manana').remove();
   }
 
   render();
 
-  const cuerpoManana = $('manana-cuerpo');
-  const abrirManana = (abrir: boolean) => {
-    cuerpoManana.classList.toggle('hidden', !abrir);
-    $('manana-flecha').classList.toggle('rotate-180', abrir);
-  };
-  $('manana-toggle').addEventListener('click', () => abrirManana(cuerpoManana.classList.contains('hidden')));
+  if (usaJornadas) {
+    const cuerpoManana = $('manana-cuerpo');
+    const abrirManana = (abrir: boolean) => {
+      cuerpoManana.classList.toggle('hidden', !abrir);
+      $('manana-flecha').classList.toggle('rotate-180', abrir);
+    };
+    $('manana-toggle').addEventListener('click', () => abrirManana(cuerpoManana.classList.contains('hidden')));
 
-  if (new Date().getHours() >= 20 && (entrenadoHoy || diario[hoy]?.descanso)) {
-    abrirManana(true);
-    $('card-manana').classList.add('glow', 'border-vio/40');
+    if (new Date().getHours() >= 20 && (entrenadoHoy || diario[hoy]?.descanso)) {
+      abrirManana(true);
+      $('card-manana').classList.add('glow', 'border-vio/40');
+    }
   }
 
   const dlgDescanso = $('dlg-descanso') as HTMLDialogElement;
@@ -294,10 +438,10 @@ import Layout from '../layouts/Layout.astro';
       ...rutina.dias.map((d) => {
         const b = document.createElement('button');
         const actual = diaEfectivoHoy().id === d.id;
-        b.className = `rounded-xl border py-3 text-sm font-bold transition active:scale-[.97] ${
+        b.className = `flex items-center justify-center gap-2 rounded-xl border py-3 text-sm font-bold transition active:scale-[.97] ${
           actual ? 'border-vio bg-vio/20 text-vio-hi' : 'border-line bg-surface2'
         }`;
-        b.textContent = tituloDe(d);
+        b.append(iconoEl(iconoDeDia(rutina.dias, d), d.emoji, 20), d.nombre);
         b.addEventListener('click', async () => {
           diario = await patchDia(hoy, { diaElegidoId: d.id });
           dlgCambiar.close();

@@ -5,6 +5,18 @@ import Ico from '../components/Ico.astro';
 
 <Layout title="Progreso">
   <section class="card">
+    <div class="flex items-center justify-between gap-2">
+      <button id="mes-prev" class="rounded-lg border border-line px-3 py-1.5 text-sm font-bold active:scale-95">‹</button>
+      <h2 id="mes-titulo" class="flex-1 text-center text-base font-bold capitalize"></h2>
+      <button id="mes-next" class="rounded-lg border border-line px-3 py-1.5 text-sm font-bold active:scale-95">›</button>
+    </div>
+    <p id="hist-resumen" class="mt-1 text-center text-xs font-semibold text-mut"></p>
+    <div id="hist-calendario" class="mt-3"></div>
+    <p class="eyebrow mt-3 block">Sin tocar desde</p>
+    <ul id="hist-frescura" class="mt-1.5 space-y-1 text-sm"></ul>
+  </section>
+
+  <section class="card mt-4">
     <div class="flex items-baseline justify-between">
       <h2 class="flex items-center gap-2 text-base font-bold"><Ico id="medidas" emoji="⚖️" /> Peso corporal</h2>
       <p id="peso-actual" class="text-xl font-extrabold text-vio-hi"></p>
@@ -70,9 +82,12 @@ import Ico from '../components/Ico.astro';
     getSesiones,
     getMediciones,
     setMediciones,
+    getDiario,
     hoyISO,
   } from '../lib/db';
   import { historialDeRanura, type PuntoHistorial } from '../lib/motor';
+  import { mesHistorial, diasDesdeUltimaVez } from '../lib/historial';
+  import { iconoEl, iconoDeDia } from '../lib/iconos';
   import { cerrarBorradoresCaducados } from '../lib/sesion';
   import type { EjercicioDef, SerieReg } from '../lib/types';
 
@@ -88,6 +103,7 @@ import Ico from '../components/Ico.astro';
   const rutina = rutinas.find((r) => r.id === config.rutinaActivaId) ?? rutinas[0];
   const sesiones = await getSesiones();
   const mediciones = await getMediciones();
+  const diario = await getDiario();
 
   function grafico(valores: { fecha: string; v: number }[], unidad: string): HTMLElement {
     const wrap = document.createElement('div');
@@ -123,6 +139,83 @@ import Ico from '../components/Ico.astro';
         <span>${fmtFecha(fin.fecha)}</span>
       </div>`;
     return wrap;
+  }
+
+  // ---------- Historial ----------
+  const INICIALES = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+  let cursor = new Date();
+
+  function nombreDia(id: string): string {
+    return rutina.dias.find((d) => d.id === id)?.nombre ?? 'rutina anterior';
+  }
+
+  function renderHistorial() {
+    const mes = mesHistorial(sesiones, diario, cursor.getFullYear(), cursor.getMonth());
+    $('mes-titulo').textContent = cursor.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+    $('hist-resumen').textContent = mes.entrenos === 1 ? '1 entreno' : `${mes.entrenos} entrenos`;
+
+    const cabecera = document.createElement('div');
+    cabecera.className = 'grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-mut';
+    cabecera.replaceChildren(
+      ...INICIALES.map((i) => {
+        const s = document.createElement('span');
+        s.textContent = i;
+        return s;
+      }),
+    );
+
+    const rejilla = document.createElement('div');
+    rejilla.className = 'mt-1 grid grid-cols-7 gap-1';
+    rejilla.replaceChildren(
+      ...mes.celdas.map((c) => {
+        const celda = document.createElement('div');
+        if (!c) {
+          celda.className = 'h-11';
+          return celda;
+        }
+        const base = 'relative flex h-11 flex-col items-center justify-center rounded-lg border';
+        const num = document.createElement('span');
+        num.className = 'num text-[9px] leading-none text-mut';
+        num.textContent = `${Number(c.fecha.slice(-2))}`;
+        const dia = c.diaIds.length ? rutina.dias.find((d) => d.id === c.diaIds[0]) : undefined;
+        if (c.diaIds.length) {
+          celda.className = `${base} border-vio/50 bg-vio/20`;
+          // Sesión de una rutina anterior: el día ya no existe, pero se entrenó.
+          celda.append(num, iconoEl(dia ? iconoDeDia(rutina.dias, dia) : 'hecho', '✔️', 16));
+          celda.title = `${fmtFecha(c.fecha)} — ${c.diaIds.map(nombreDia).join(' + ')}`;
+        } else if (c.descanso) {
+          celda.className = `${base} border-line bg-surface2 opacity-60`;
+          celda.append(num, iconoEl('descanso', '😴', 16));
+          celda.title = `${fmtFecha(c.fecha)} — descanso`;
+        } else {
+          celda.className = `${base} border-line/40 ${c.futuro ? 'opacity-30' : ''}`;
+          celda.append(num);
+          celda.title = fmtFecha(c.fecha);
+        }
+        if (c.fecha === hoyISO()) celda.classList.add('ring-1', 'ring-vio');
+        return celda;
+      }),
+    );
+
+    $('hist-calendario').replaceChildren(cabecera, rejilla);
+
+    $('hist-frescura').replaceChildren(
+      ...rutina.dias.map((d) => {
+        const dias = diasDesdeUltimaVez(sesiones, d.id);
+        const li = document.createElement('li');
+        li.className = 'flex items-center justify-between gap-2';
+        const izq = document.createElement('span');
+        izq.className = 'flex items-center gap-2 text-mut';
+        izq.append(iconoEl(iconoDeDia(rutina.dias, d), d.emoji, 16), d.nombre);
+        const der = document.createElement('span');
+        der.className = `num shrink-0 font-bold ${
+          dias == null || dias >= 10 ? 'text-bad' : dias >= 7 ? 'text-warn' : 'text-ok'
+        }`;
+        der.textContent = dias == null ? 'nunca' : dias === 0 ? 'hoy' : dias === 1 ? 'ayer' : `${dias} días`;
+        li.append(izq, der);
+        return li;
+      }),
+    );
   }
 
   // ---------- Peso y cintura ----------
@@ -295,6 +388,14 @@ import Ico from '../components/Ico.astro';
   if (primeraConDatos) select.value = primeraConDatos.def.ranuraId;
   select.addEventListener('change', renderMarca);
 
+  const moverMes = (delta: number) => {
+    cursor = new Date(cursor.getFullYear(), cursor.getMonth() + delta, 1);
+    renderHistorial();
+  };
+  $('mes-prev').addEventListener('click', () => moverMes(-1));
+  $('mes-next').addEventListener('click', () => moverMes(1));
+
+  renderHistorial();
   renderPeso();
   renderCintura();
   renderMarca();

@@ -1,11 +1,14 @@
 ---
+import { svgDot } from '../lib/iconos-dot';
+
 const path = Astro.url.pathname;
-// img: icono ilustrado (perfil Yasmina). Si falta, cae al emoji. Se añaden según se creen.
+// Tres variantes por pestaña: matriz de puntos (Jose), ilustración (Yasmina) y
+// emoji de reserva. El CSS decide cuál se ve según el perfil.
 const tabs = [
-  { href: '/', label: 'Hoy', icon: '🗓️', img: '/iconos/nav-hoy.png' },
-  { href: '/entreno', label: 'Entreno', icon: '🏋️', img: '/iconos/nav-entreno.png' },
-  { href: '/dieta', label: 'Dieta', icon: '🍱', img: '/iconos/nav-dieta.png' },
-  { href: '/progreso', label: 'Progreso', icon: '📊', img: '/iconos/nav-progreso.png' },
+  { href: '/', label: 'Hoy', icon: '🗓️', id: 'nav-hoy' },
+  { href: '/entreno', label: 'Entreno', icon: '🏋️', id: 'nav-entreno' },
+  { href: '/dieta', label: 'Dieta', icon: '🍱', id: 'nav-dieta' },
+  { href: '/progreso', label: 'Progreso', icon: '📊', id: 'nav-progreso' },
 ];
 const activo = (href: string) => (href === '/' ? path === '/' : path.startsWith(href));
 ---
@@ -19,13 +22,15 @@ const activo = (href: string) => (href === '/' ? path === '/' : path.startsWith(
           <a
             href={t.href}
             aria-current={on ? 'page' : undefined}
-            class={`tab flex flex-col items-center gap-0.5 py-2.5 text-xs font-semibold ${t.img ? 'has-img' : ''} ${on ? 'tab-on text-vio-hi' : 'text-mut'}`}
+            aria-label={t.label}
+            class={`tab has-img has-tab-dot flex flex-col items-center gap-0.5 py-2.5 text-xs font-semibold ${on ? 'tab-on text-vio-hi' : 'text-mut'}`}
           >
             <span class="tab-ico text-2xl leading-none">
-              {t.img && <img src={t.img} alt="" class="tab-img" width="28" height="28" />}
+              <span class="tab-dot" set:html={svgDot(t.id, 30)} />
+              <img src={`/iconos/${t.id}.png`} alt="" class="tab-img" width="28" height="28" />
               <span class="tab-emoji">{t.icon}</span>
             </span>
-            {t.label}
+            <span class="tab-label">{t.label}</span>
           </a>
         );
       })

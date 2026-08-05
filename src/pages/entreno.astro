@@ -6,7 +6,7 @@ import Ico from '../components/Ico.astro';
 <Layout title="Entreno">
   <section id="vista-inicio" class="hidden">
     <div class="card glow border-vio/40">
-      <p class="text-xs font-bold uppercase tracking-widest text-vio-hi">Hoy toca</p>
+      <p class="eyebrow">Hoy toca</p>
       <h2 id="inicio-dia" class="mt-1 text-xl font-extrabold"></h2>
       <ul id="inicio-ejercicios" class="mt-3 space-y-1.5 text-sm text-mut"></ul>
       <p id="inicio-nota" class="mt-3 hidden text-xs font-semibold text-warn"></p>
@@ -104,7 +104,7 @@ import Ico from '../components/Ico.astro';
     formatObjetivo,
   } from '../lib/db';
   import { pesoReal, muestraPesoReal, fmtKg } from '../lib/carga';
-  import { iconoEl } from '../lib/iconos';
+  import { iconoEl, iconoDeDia } from '../lib/iconos';
   import { sugerir, historialDeRanura, type Sugerencia } from '../lib/motor';
   import {
     crearSesion,
@@ -134,8 +134,7 @@ import Ico from '../components/Ico.astro';
   let cardIdx = 0;
   const prsLogrados: string[] = [];
 
-  const numeroDe = (d: DiaDef) => rutina.dias.findIndex((x) => x.id === d.id) + 1;
-  const tituloDe = (d: DiaDef) => `${d.emoji} Día ${numeroDe(d)} — ${d.nombre}`;
+  const tituloDe = (d: DiaDef) => d.nombre;
 
   // Mejores marcas históricas por ranura, para detectar récords
   const bests = new Map<string, { peso: number; lastre: number; reps: number; seg: number }>();
@@ -184,7 +183,7 @@ import Ico from '../components/Ico.astro';
   function renderInicio() {
     const elInicio = $('inicio-dia');
     elInicio.classList.add('flex', 'items-center', 'gap-2');
-    elInicio.replaceChildren(iconoEl(dia.icono, dia.emoji, 24), `Día ${numeroDe(dia)} — ${dia.nombre}`);
+    elInicio.replaceChildren(iconoEl(iconoDeDia(rutina.dias, dia), dia.emoji, 24), dia.nombre);
     $('inicio-ejercicios').replaceChildren(
       ...dia.ejercicios.map((e) => {
         const li = document.createElement('li');
@@ -223,7 +222,7 @@ import Ico from '../components/Ico.astro';
     const gs = grupos(dia);
     const elP = $('progreso');
     elP.classList.add('flex', 'items-center', 'gap-1.5');
-    elP.replaceChildren(iconoEl(dia.icono, dia.emoji, 16), `Día ${numeroDe(dia)} — ${dia.nombre} · ${cardIdx + 1}/${gs.length}`);
+    elP.replaceChildren(iconoEl(iconoDeDia(rutina.dias, dia), dia.emoji, 16), `${dia.nombre} · ${cardIdx + 1}/${gs.length}`);
     ($('btn-prev') as HTMLButtonElement).disabled = cardIdx === 0;
     $('btn-prev').classList.toggle('opacity-40', cardIdx === 0);
     $('btn-next').textContent = cardIdx === gs.length - 1 ? '🏁 Finalizar' : 'Siguiente →';
@@ -443,7 +442,7 @@ import Ico from '../components/Ico.astro';
     card.className = 'card glow border-vio/30';
     if (grupo.length > 1) {
       const tag = document.createElement('p');
-      tag.className = 'mb-2 text-xs font-bold uppercase tracking-widest text-vio-hi';
+      tag.className = 'eyebrow mb-2 block';
       tag.className += ' flex items-center gap-1.5';
       tag.replaceChildren(iconoEl('superserie', '🔁', 15), 'Superserie — alterna sin descanso entre ambos');
       card.append(tag);
@@ -475,7 +474,7 @@ import Ico from '../components/Ico.astro';
     const dur = sesion!.duracionMin != null ? ` · ${sesion!.duracionMin} min` : '';
     const elF = $('fin-resumen');
     elF.classList.add('flex', 'flex-wrap', 'items-center', 'justify-center', 'gap-1.5');
-    elF.replaceChildren(iconoEl(dia.icono, dia.emoji, 16), `Día ${numeroDe(dia)} — ${dia.nombre} · ${hechasN}/${total} series${dur}`);
+    elF.replaceChildren(iconoEl(iconoDeDia(rutina.dias, dia), dia.emoji, 16), `${dia.nombre} · ${hechasN}/${total} series${dur}`);
     $('fin-prs').replaceChildren(
       ...prsLogrados.map((p) => {
         const li = document.createElement('li');

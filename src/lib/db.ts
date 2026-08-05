@@ -121,6 +121,12 @@ export function contarDescansos(
   return descansos;
 }
 
+export function diasHechosEn(sesiones: Sesion[], fecha: string): string[] {
+  return [
+    ...new Set(sesiones.filter((s) => s.estado === 'finalizada' && s.fecha === fecha).map((s) => s.diaId)),
+  ];
+}
+
 export function diaSugerido(config: Config, rutina: Rutina): DiaDef {
   const ultimo = config.puntero.ultimoDiaCompletadoId;
   const i = ultimo ? rutina.dias.findIndex((d) => d.id === ultimo) : -1;

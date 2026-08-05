@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { contarDescansos, diaSugerido, siguienteDia, hoyISO } from '../src/lib/db';
+import { contarDescansos, diaSugerido, diasHechosEn, siguienteDia, hoyISO } from '../src/lib/db';
 import { CONFIG_INICIAL, RUTINA_1 } from '../src/lib/seed';
 import type { Sesion } from '../src/lib/types';
 
@@ -64,6 +64,24 @@ describe('puntero de la rutina', () => {
   it('siguienteDia encadena d1→d2 y d5→d1', () => {
     expect(siguienteDia(RUTINA_1, 'd1').id).toBe('d2');
     expect(siguienteDia(RUTINA_1, 'd5').id).toBe('d1');
+  });
+});
+
+describe('días hechos en una fecha', () => {
+  const hecha = (fecha: string, diaId: string) => ({ fecha, diaId, estado: 'finalizada' }) as Sesion;
+
+  it('devuelve el día realmente entrenado, no el seleccionado', () => {
+    expect(diasHechosEn([hecha('2026-06-12', 'd2')], '2026-06-12')).toEqual(['d2']);
+  });
+
+  it('ignora otras fechas y los borradores', () => {
+    const ses = [hecha('2026-06-11', 'd1'), { fecha: '2026-06-12', diaId: 'd3', estado: 'borrador' } as Sesion];
+    expect(diasHechosEn(ses, '2026-06-12')).toEqual([]);
+  });
+
+  it('admite dos entrenos el mismo día sin duplicar', () => {
+    const ses = [hecha('2026-06-12', 'd2'), hecha('2026-06-12', 'd3'), hecha('2026-06-12', 'd2')];
+    expect(diasHechosEn(ses, '2026-06-12')).toEqual(['d2', 'd3']);
   });
 });
 

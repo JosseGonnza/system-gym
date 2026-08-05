@@ -4,12 +4,13 @@ export type EstadoSesion = 'finalizada' | 'borrador';
 export type Jornada = 'manana' | 'tarde' | 'libre' | 'laboratorio' | 'ett';
 
 export type PerfilId = 'jose' | 'yasmina';
-export type Tema = 'violeta' | 'matcha';
+export type Tema = 'nothing' | 'matcha';
 export interface Perfil {
   id: PerfilId;
   nombre: string;
   tema: Tema;
   emoji: string;
+  usaJornadas: boolean;
 }
 
 export type Implemento = 'barra' | 'barraZ' | 'multipower' | 'mancuerna' | 'maquina' | 'polea' | 'kettlebell' | 'corporal';
