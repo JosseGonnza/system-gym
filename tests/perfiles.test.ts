@@ -19,9 +19,11 @@ import { dietaDe } from '../src/lib/dietas';
 import { PERFILES, perfil as perfilDe } from '../src/lib/perfiles';
 
 describe('jornadas por perfil', () => {
-  it('Jose no usa jornadas (va por sensaciones) y Yasmina sí', () => {
+  // Ninguno de los dos las usa ya: entrenan por sensaciones, no por turno.
+  // El mecanismo se conserva por si alguna vez vuelve a hacer falta.
+  it('nadie usa jornadas ahora mismo', () => {
     expect(perfilDe('jose').usaJornadas).toBe(false);
-    expect(perfilDe('yasmina').usaJornadas).toBe(true);
+    expect(perfilDe('yasmina').usaJornadas).toBe(false);
   });
 
   it('todo perfil declara si usa jornadas', () => {

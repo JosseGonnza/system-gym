@@ -106,6 +106,7 @@ import Ico from '../components/Ico.astro';
   import { pesoReal, muestraPesoReal, fmtKg } from '../lib/carga';
   import { iconoEl, iconoDeDia } from '../lib/iconos';
   import { sugerir, historialDeRanura, type Sugerencia } from '../lib/motor';
+  import { tipDe } from '../lib/tips';
   import {
     crearSesion,
     guardarSesion,
@@ -366,6 +367,48 @@ import Ico from '../components/Ico.astro';
       div.append(ag);
     }
 
+    const tip = tipDe(e.ejercicioId);
+    if (tip) {
+      const btn = document.createElement('button');
+      btn.className =
+        'mt-2 flex items-center gap-1.5 rounded-lg border border-line bg-surface2 px-2.5 py-1.5 text-xs font-bold text-mut transition active:scale-[.97]';
+      btn.setAttribute('aria-expanded', 'false');
+      btn.replaceChildren(iconoEl('nota', '💡', 15), 'Cómo se hace');
+
+      const panel = document.createElement('div');
+      panel.className = 'mt-2 hidden rounded-xl border border-line bg-surface2 p-3 text-xs';
+      const donde = document.createElement('p');
+      donde.className = 'font-bold text-vio-hi';
+      donde.textContent = `Lo tienes que notar en: ${tip.donde}`;
+      const ul = document.createElement('ul');
+      ul.className = 'mt-2 space-y-1 text-mut';
+      ul.replaceChildren(
+        ...tip.claves.map((c) => {
+          const li = document.createElement('li');
+          li.className = 'flex gap-2';
+          const p = document.createElement('span');
+          p.textContent = '·';
+          const t = document.createElement('span');
+          t.textContent = c;
+          li.append(p, t);
+          return li;
+        }),
+      );
+      panel.append(donde, ul);
+      if (tip.error) {
+        const err = document.createElement('p');
+        err.className = 'mt-2 border-t border-line pt-2 font-semibold text-warn';
+        err.textContent = tip.error;
+        panel.append(err);
+      }
+
+      btn.addEventListener('click', () => {
+        const abierto = !panel.classList.toggle('hidden');
+        btn.setAttribute('aria-expanded', String(abierto));
+      });
+      div.append(btn, panel);
+    }
+
     const lista = document.createElement('div');
     lista.className = 'mt-3 space-y-2';
     reg.series.forEach((s, i) => {
@@ -379,10 +422,16 @@ import Ico from '../components/Ico.astro';
 
       let real: HTMLElement | null = null;
       if (e.tipoProgresion === 'tiempo') {
-        fila.append(inputNum(s.segundos ?? null, 'w-20', 'seg', (v) => (s.segundos = v)));
+        // El cardio se pide en minutos (nadie escribe 1800); por dentro sigue
+        // guardándose en segundos, como la plancha.
+        const enMin = ej?.patron === 'cardio';
+        const valor = s.segundos == null ? null : enMin ? Math.round(s.segundos / 60) : s.segundos;
+        fila.append(
+          inputNum(valor, 'w-20', enMin ? 'min' : 'seg', (v) => (s.segundos = v == null ? null : enMin ? v * 60 : v)),
+        );
         const lbl = document.createElement('span');
         lbl.className = 'text-xs text-mut';
-        lbl.textContent = 's';
+        lbl.textContent = enMin ? 'min' : 's';
         fila.append(lbl);
       } else if (e.tipoProgresion === 'pesoCorporal') {
         fila.append(inputNum(s.lastreKg ?? null, 'w-18', '+kg', (v) => (s.lastreKg = v)));

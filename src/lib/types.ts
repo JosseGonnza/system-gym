@@ -15,7 +15,7 @@ export interface Perfil {
 
 export type Implemento = 'barra' | 'barraZ' | 'multipower' | 'mancuerna' | 'maquina' | 'polea' | 'kettlebell' | 'corporal';
 export type EntradaPeso = 'porLado' | 'porMancuerna' | 'directa' | 'lastre' | 'asistencia' | 'ninguna';
-export type Patron = 'empujeH' | 'empujeV' | 'traccionV' | 'traccionH' | 'rodilla' | 'cadera' | 'aislamiento' | 'core' | 'movilidad';
+export type Patron = 'empujeH' | 'empujeV' | 'traccionV' | 'traccionH' | 'rodilla' | 'cadera' | 'aislamiento' | 'core' | 'movilidad' | 'cardio';
 export type Ejecucion = 'bilateral' | 'unilateral';
 
 // Biblioteca de ejercicios: describe el QUÉ (músculo, implemento, cómo se carga).
@@ -56,6 +56,9 @@ export interface DiaDef {
   nombre: string;
   emoji: string;
   icono?: string;
+  // Día suelto (cardio): se puede elegir cuando toque, pero la rueda no lo
+  // propone ni lo cuenta — hacerlo no descoloca el siguiente día de fuerza.
+  fueraDeRueda?: boolean;
   ejercicios: EjercicioDef[];
 }
 

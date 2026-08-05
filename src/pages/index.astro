@@ -21,6 +21,8 @@ import Ico from '../components/Ico.astro';
 
   <p id="aviso-abandono" class="card mt-4 hidden border-warn/40 text-sm font-semibold text-warn"></p>
 
+  <a id="aviso-medidas" href="/progreso" class="card mt-4 hidden border-vio/40 text-sm font-semibold"></a>
+
   <section id="card-entreno" class="card glow mt-4 border-vio/40">
     <div class="flex items-center justify-between">
       <p class="eyebrow">Entreno de hoy</p>
@@ -66,8 +68,8 @@ import Ico from '../components/Ico.astro';
 
   <dialog id="dlg-descanso" class="m-auto w-[88%] max-w-sm rounded-2xl border border-warn/40 bg-surface p-5 text-ink backdrop:bg-black/70">
     <p class="text-3xl">⚠️</p>
-    <h3 class="mt-2 text-lg font-extrabold">Ya llevas 2 descansos esta semana</h3>
-    <p class="mt-2 text-sm text-mut">El plan son 5 entrenos por semana. Un tercer descanso lo deja en 4. Tú decides — pero que sea decisión, no pereza.</p>
+    <h3 id="dlg-descanso-titulo" class="mt-2 text-lg font-extrabold">Descansos de la semana</h3>
+    <p id="dlg-descanso-texto" class="mt-2 text-sm text-mut"></p>
     <div class="mt-4 grid gap-2">
       <button id="dlg-descanso-entrenar" class="btn">💪 Voy a entrenar</button>
       <button id="dlg-descanso-confirmar" class="btn-2 text-warn">Descansar igual</button>
@@ -97,6 +99,7 @@ import Ico from '../components/Ico.astro';
     contarDescansos,
     diasHechosEn,
     getCatalogo,
+    getMediciones,
     getPerfilActivo,
   } from '../lib/db';
   import { perfil } from '../lib/perfiles';
@@ -119,6 +122,7 @@ import Ico from '../components/Ico.astro';
   const rutina = rutinas.find((r) => r.id === config.rutinaActivaId) ?? rutinas[0];
   let diario = await getDiario();
   const catalogo = await getCatalogo();
+  const mediciones = await getMediciones();
 
   const hoy = hoyISO();
   const mananaDate = new Date();
@@ -152,6 +156,32 @@ import Ico from '../components/Ico.astro';
     aviso.classList.add('flex', 'items-center', 'gap-2');
   }
 
+
+  // En recomposición el peso solo no dice nada: hace falta la cintura al lado.
+  // Si no se mide, no hay forma de saber si el plan funciona — así que la app
+  // lo pide en vez de esperar a que uno se acuerde.
+  {
+    const ultima = (xs: { fecha: string }[]) => xs.map((x) => x.fecha).sort().pop();
+    const diasDesde = (f?: string) =>
+      f == null ? null : Math.floor((Date.parse(`${hoy}T12:00:00`) - Date.parse(`${f}T12:00:00`)) / 86_400_000);
+    const dPeso = diasDesde(ultima(mediciones.peso));
+    const dCintura = diasDesde(ultima(mediciones.cintura));
+    const falta: string[] = [];
+    if (dPeso === null || dPeso >= 4) falta.push('pesarte');
+    if (dCintura === null || dCintura >= 10) falta.push('medirte la cintura');
+    if (falta.length) {
+      const el = $('aviso-medidas');
+      const nunca = dPeso === null && dCintura === null;
+      el.replaceChildren(
+        iconoEl('medidas', '📏', 18),
+        nunca
+          ? 'Aún no has anotado peso ni cintura. Sin los dos no se ve si el plan funciona.'
+          : `Toca ${falta.join(' y ')}. Los dos juntos son los que cuentan.`,
+      );
+      el.classList.remove('hidden');
+      el.classList.add('flex', 'items-center', 'gap-2');
+    }
+  }
 
   function diaEfectivoHoy(): DiaDef {
     const elegido = diario[hoy]?.diaElegidoId;
@@ -346,11 +376,15 @@ import Ico from '../components/Ico.astro';
     return `${s.peso.toLocaleString('es-ES')} kg${porLado ? '/lado' : ''}`;
   }
 
+  // Los descansos que caben salen del objetivo semanal, no de un número fijo:
+  // con 4 entrenos por semana, 3 descansos son lo normal, no una alarma.
+  const maxDescansos = Math.max(0, 7 - config.entrenosObjetivoSemana);
+
   function pintarDescansos() {
     const n = contarDescansos(sesiones, diario, config.fechaInicioPlan);
     const chip = $('chip-descansos');
-    chip.textContent = `Descansos: ${n} / 2`;
-    chip.className = `text-xs font-semibold ${n > 2 ? 'text-warn' : 'text-mut'}`;
+    chip.textContent = `Descansos: ${n} / ${maxDescansos}`;
+    chip.className = `text-xs font-semibold ${n > maxDescansos ? 'text-warn' : 'text-mut'}`;
   }
 
   function pintarManana() {
@@ -418,7 +452,13 @@ import Ico from '../components/Ico.astro';
       render();
       return;
     }
-    if (contarDescansos(sesiones, diario, config.fechaInicioPlan) >= 2) {
+    const yaDescansados = contarDescansos(sesiones, diario, config.fechaInicioPlan);
+    if (yaDescansados >= maxDescansos) {
+      $('dlg-descanso-titulo').textContent =
+        `Ya llevas ${yaDescansados} ${yaDescansados === 1 ? 'descanso' : 'descansos'} esta semana`;
+      $('dlg-descanso-texto').textContent =
+        `El plan son ${config.entrenosObjetivoSemana} entrenos por semana. Uno más lo deja en ` +
+        `${Math.max(0, 7 - yaDescansados - 1)}. Tú decides — pero que sea decisión, no pereza.`;
       dlgDescanso.showModal();
       return;
     }

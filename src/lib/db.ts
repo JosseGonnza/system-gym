@@ -93,9 +93,15 @@ export function hoyISO(d: Date = new Date()): string {
   return `${y}-${m}-${dia}`;
 }
 
+// Los días sueltos (cardio) no forman parte de la rotación: se saltan.
 export function siguienteDia(rutina: Rutina, diaId: string): DiaDef {
-  const i = rutina.dias.findIndex((d) => d.id === diaId);
-  return rutina.dias[(i + 1) % rutina.dias.length];
+  const dias = rutina.dias;
+  const i = dias.findIndex((d) => d.id === diaId);
+  for (let n = 1; n <= dias.length; n++) {
+    const cand = dias[(i + n) % dias.length];
+    if (!cand.fueraDeRueda) return cand;
+  }
+  return dias[(i + 1) % dias.length];
 }
 
 export function contarDescansos(
@@ -130,7 +136,7 @@ export function diasHechosEn(sesiones: Sesion[], fecha: string): string[] {
 export function diaSugerido(config: Config, rutina: Rutina): DiaDef {
   const ultimo = config.puntero.ultimoDiaCompletadoId;
   const i = ultimo ? rutina.dias.findIndex((d) => d.id === ultimo) : -1;
-  return rutina.dias[(i + 1) % rutina.dias.length];
+  return siguienteDia(rutina, rutina.dias[i]?.id ?? rutina.dias[rutina.dias.length - 1].id);
 }
 
 export function formatObjetivo(e: EjercicioDef): string {

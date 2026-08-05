@@ -1,4 +1,4 @@
-import { getConfig, setConfig, getSesiones, setSesiones, hoyISO } from './db';
+import { getConfig, setConfig, getSesiones, setSesiones, getRutinas, hoyISO } from './db';
 import type { DiaDef, Rutina, Sesion } from './types';
 import type { Sugerencia } from './motor';
 
@@ -54,6 +54,11 @@ export async function finalizarSesion(sesion: Sesion): Promise<void> {
     : null;
   await guardarSesion(sesion);
   const config = await getConfig();
+  // Un día suelto (cardio) no mueve el puntero: al día siguiente sigue tocando
+  // el día de fuerza que tocaba.
+  const rutinas = await getRutinas();
+  const dia = rutinas.flatMap((r) => r.dias).find((d) => d.id === sesion.diaId);
+  if (dia?.fueraDeRueda) return;
   await setConfig({ ...config, puntero: { ultimoDiaCompletadoId: sesion.diaId } });
 }
 

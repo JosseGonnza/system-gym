@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { contarDescansos, diaSugerido, diasHechosEn, siguienteDia, hoyISO } from '../src/lib/db';
 import { CONFIG_INICIAL, RUTINA_1 } from '../src/lib/seed';
-import type { Sesion } from '../src/lib/types';
+import type { DiaDef, Rutina, Sesion } from '../src/lib/types';
 
 const finalizada = (fecha: string) => ({ fecha, estado: 'finalizada' }) as Sesion;
 const borrador = (fecha: string) => ({ fecha, estado: 'borrador' }) as Sesion;
@@ -64,6 +64,38 @@ describe('puntero de la rutina', () => {
   it('siguienteDia encadena d1→d2 y d5→d1', () => {
     expect(siguienteDia(RUTINA_1, 'd1').id).toBe('d2');
     expect(siguienteDia(RUTINA_1, 'd5').id).toBe('d1');
+  });
+});
+
+describe('días sueltos fuera de la rueda (cardio)', () => {
+  const dia = (id: string, fueraDeRueda = false) =>
+    ({ id, nombre: id, emoji: '', fueraDeRueda, ejercicios: [] }) as unknown as DiaDef;
+  // Rueda de 3 + un cardio suelto al final
+  const rutina = {
+    id: 'r',
+    nombre: 'con cardio',
+    dias: [dia('a'), dia('b'), dia('c'), dia('cardio', true)],
+  } as Rutina;
+
+  it('la rotación salta el día suelto', () => {
+    expect(siguienteDia(rutina, 'b').id).toBe('c');
+    expect(siguienteDia(rutina, 'c').id).toBe('a');
+  });
+
+  it('hacer cardio no descoloca la rueda: sigue tocando el siguiente de fuerza', () => {
+    // Tras el día B tocaba C. Si mete un cardio, el puntero no se mueve (lo
+    // garantiza finalizarSesion) y diaSugerido sigue proponiendo C.
+    const config = { ...CONFIG_INICIAL, puntero: { ultimoDiaCompletadoId: 'b' } };
+    expect(diaSugerido(config, rutina).id).toBe('c');
+  });
+
+  it('si el puntero acabara en el día suelto, la rueda arranca de nuevo', () => {
+    const config = { ...CONFIG_INICIAL, puntero: { ultimoDiaCompletadoId: 'cardio' } };
+    expect(diaSugerido(config, rutina).id).toBe('a');
+  });
+
+  it('sin historial propone el primer día de fuerza', () => {
+    expect(diaSugerido(CONFIG_INICIAL, rutina).id).toBe('a');
   });
 });
 
