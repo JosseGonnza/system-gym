@@ -150,6 +150,28 @@ describe('parón (+14 días sin tocar la ranura)', () => {
   });
 });
 
+describe('sesión abandonada (todo pendiente)', () => {
+  const abandonada = sesionDe(1, [serie(50, 10, 'pendiente'), serie(50, 10, 'pendiente'), serie(50, 10, 'pendiente')]);
+
+  it('doble: se salta y sigue desde la última sesión con series hechas', () => {
+    const buena = sesionDe(8, [serie(50, 12, 'completada'), serie(50, 12, 'completada'), serie(50, 12, 'completada')]);
+    const s = sugerir(doble, [abandonada, buena], INCR_MIN);
+    expect(s.texto).not.toMatch(/Calibración/);
+    expect(s.peso).toBe(52.5);
+  });
+
+  it('sin ninguna sesión con series hechas sí pide calibrar', () => {
+    expect(sugerir(doble, [abandonada], INCR_MIN).texto).toMatch(/Calibración/);
+  });
+
+  it('lineal: el deload mira la sesión previa real, no la abandonada', () => {
+    const fallo = (dias: number) => sesionDe(dias, [serie(60, 5, 'completada'), serie(60, 3, 'corta'), serie(60, 5, 'completada'), serie(60, 2, 'corta')]);
+    const s = sugerir(lineal, [abandonada, fallo(4), fallo(8)], INCR_MIN);
+    expect(s.texto).toMatch(/Deload/);
+    expect(s.peso).toBe(55);
+  });
+});
+
 describe('historial por ranura', () => {
   it('solo cuenta sesiones finalizadas, filtra por ranura y ordena de reciente a antigua', () => {
     const sesiones = [

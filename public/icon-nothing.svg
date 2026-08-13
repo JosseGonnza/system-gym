@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <pattern id="dots" width="34" height="34" patternUnits="userSpaceOnUse">
+      <circle cx="17" cy="17" r="2.2" fill="#1c1c1c"/>
+    </pattern>
+  </defs>
+  <rect width="512" height="512" fill="#000000"/>
+  <rect width="512" height="512" fill="url(#dots)"/>
+  <g fill="#d71921"><circle cx="256.0" cy="127.4" r="16.4"/><circle cx="170.3" cy="170.3" r="16.4"/><circle cx="256.0" cy="170.3" r="16.4"/><circle cx="341.7" cy="170.3" r="16.4"/><circle cx="213.1" cy="213.1" r="16.4"/><circle cx="256.0" cy="213.1" r="16.4"/><circle cx="298.9" cy="213.1" r="16.4"/><circle cx="127.4" cy="256.0" r="16.4"/><circle cx="170.3" cy="256.0" r="16.4"/><circle cx="213.1" cy="256.0" r="16.4"/><circle cx="298.9" cy="256.0" r="16.4"/><circle cx="341.7" cy="256.0" r="16.4"/><circle cx="384.6" cy="256.0" r="16.4"/><circle cx="213.1" cy="298.9" r="16.4"/><circle cx="256.0" cy="298.9" r="16.4"/><circle cx="298.9" cy="298.9" r="16.4"/><circle cx="170.3" cy="341.7" r="16.4"/><circle cx="256.0" cy="341.7" r="16.4"/><circle cx="341.7" cy="341.7" r="16.4"/><circle cx="256.0" cy="384.6" r="16.4"/></g>
+</svg>

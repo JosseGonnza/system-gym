@@ -45,8 +45,10 @@ function todasAlTope(p: PuntoHistorial, e: EjercicioDef, tope: number): boolean 
 export function sugerir(e: EjercicioDef, historial: PuntoHistorial[], incrementoMin: number): Sugerencia {
   if (e.tipoProgresion === 'libre') return { ...VACIA, texto: 'Libre: apunta lo que hagas' };
 
-  const ultimo = historial[0];
-  if (!ultimo || hechas(ultimo).length === 0) {
+  // Una sesión abandonada (todo pendiente) no borra el historial: se salta
+  const puntos = historial.filter((p) => hechas(p).length > 0);
+  const ultimo = puntos[0];
+  if (!ultimo) {
     const reps = Array.isArray(e.repsObjetivo) ? e.repsObjetivo[0] : e.repsObjetivo;
     return {
       ...VACIA,
@@ -84,7 +86,7 @@ export function sugerir(e: EjercicioDef, historial: PuntoHistorial[], incremento
       const peso = redondear(pesoUlt + incr, incr);
       return { ...VACIA, peso, reps, texto: `Sugerido: ${fmtKg(peso)} kg × ${reps} (+${fmtKg(incr)})` };
     }
-    const previo = historial[1];
+    const previo = puntos[1];
     const falloPrevio =
       previo &&
       hechas(previo).some((s) => s.peso === pesoUlt) &&
