@@ -350,10 +350,12 @@ import Ico from '../components/Ico.astro';
   }
 
   // Solo avisa de los días que YA se han entrenado alguna vez: al estrenar una
-  // rutina todos son "nunca" y el aviso sería ruido.
+  // rutina todos son "nunca" y el aviso sería ruido. Los días sueltos (C,
+  // cardio) no tienen por qué hacerse, así que tampoco avisan.
   function pintarAbandono() {
     const el = $('aviso-abandono');
     const peor = rutina.dias
+      .filter((d) => !d.fueraDeRueda)
       .map((d) => ({ d, dias: diasDesdeUltimaVez(sesiones, d.id) }))
       .filter((x): x is { d: DiaDef; dias: number } => x.dias != null && x.dias >= 8)
       .sort((a, b) => b.dias - a.dias)[0];

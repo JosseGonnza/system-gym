@@ -199,8 +199,9 @@ import Ico from '../components/Ico.astro';
 
     $('hist-calendario').replaceChildren(cabecera, rejilla);
 
+    // Los días sueltos (C, cardio) no tienen por qué hacerse: no avisan.
     $('hist-frescura').replaceChildren(
-      ...rutina.dias.map((d) => {
+      ...rutina.dias.filter((d) => !d.fueraDeRueda).map((d) => {
         const dias = diasDesdeUltimaVez(sesiones, d.id);
         const li = document.createElement('li');
         li.className = 'flex items-center justify-between gap-2';
