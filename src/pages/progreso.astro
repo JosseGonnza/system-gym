@@ -12,8 +12,10 @@ import Ico from '../components/Ico.astro';
     </div>
     <p id="hist-resumen" class="mt-1 text-center text-xs font-semibold text-mut"></p>
     <div id="hist-calendario" class="mt-3"></div>
-    <p class="eyebrow mt-3 block">Sin tocar desde</p>
-    <ul id="hist-frescura" class="mt-1.5 space-y-1 text-sm"></ul>
+    <div id="bloque-frescura">
+      <p class="eyebrow mt-3 block">Sin tocar desde</p>
+      <ul id="hist-frescura" class="mt-1.5 space-y-1 text-sm"></ul>
+    </div>
   </section>
 
   <section class="card mt-4">
@@ -44,7 +46,7 @@ import Ico from '../components/Ico.astro';
       <h2 class="flex items-center gap-2 text-base font-bold"><Ico id="medidas" emoji="📏" /> Cintura</h2>
       <p id="cintura-actual" class="text-xl font-extrabold text-vio-hi"></p>
     </div>
-    <p class="mt-1 text-xs text-mut">Cinta a la altura del ombligo. Si el peso sube y esto no → perfecto.</p>
+    <p id="cintura-ayuda" class="mt-1 text-xs text-mut">Cinta a la altura del ombligo. Si el peso sube y esto no → perfecto.</p>
     <div class="mt-3 flex gap-2">
       <input
         id="cintura-input"
@@ -89,7 +91,9 @@ import Ico from '../components/Ico.astro';
     setMediciones,
     getDiario,
     hoyISO,
+    getPerfilActivo,
   } from '../lib/db';
+  import { perfil } from '../lib/perfiles';
   import { historialDeRanura, type PuntoHistorial } from '../lib/motor';
   import { mesHistorial, diasDesdeUltimaVez } from '../lib/historial';
   import { iconoEl, iconoDeDia } from '../lib/iconos';
@@ -104,6 +108,7 @@ import Ico from '../components/Ico.astro';
 
   await initDB();
   await cerrarBorradoresCaducados();
+  const sencillo = perfil(getPerfilActivo()).modoSencillo;
   const config = await getConfig();
   const rutinas = await getRutinas();
   const rutina = rutinas.find((r) => r.id === config.rutinaActivaId) ?? rutinas[0];
@@ -270,7 +275,12 @@ import Ico from '../components/Ico.astro';
     $('peso-actual').textContent = ultima ? `${fmtNum(ultima.kg)} kg` : '—';
     const ahora = mediaSemana(entradas, 0);
     const previa = mediaSemana(entradas, 1);
-    if (ahora != null && previa != null) {
+    // El objetivo de +0,2-0,3 kg/semana es el de Jose (superávit). En modo
+    // sencillo se enseña la media sin juzgarla.
+    if (sencillo) {
+      $('peso-media').textContent =
+        ahora != null ? `Media de esta semana: ${fmtNum(ahora)} kg` : 'Si te pesas, mejor en ayunas y mirando la media de la semana.';
+    } else if (ahora != null && previa != null) {
       const delta = ahora - previa;
       const signo = delta >= 0 ? '+' : '';
       const enRango = delta >= 0.15 && delta <= 0.35;
@@ -426,6 +436,14 @@ import Ico from '../components/Ico.astro';
   };
   $('mes-prev').addEventListener('click', () => moverMes(-1));
   $('mes-next').addEventListener('click', () => moverMes(1));
+
+  // Modo sencillo: el calendario se queda (enseña lo hecho), el semáforo de días
+  // sin tocar no (solo enseña lo que falta).
+  if (sencillo) {
+    $('bloque-frescura').classList.add('hidden');
+    $('cintura-ayuda').textContent =
+      'Cinta a la altura del ombligo, una vez por semana. Si baja, vas genial aunque el peso no se mueva.';
+  }
 
   renderHistorial();
   renderPeso();

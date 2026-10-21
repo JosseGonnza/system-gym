@@ -17,7 +17,7 @@ import Ico from '../components/Ico.astro';
   <section id="vista-sesion" class="hidden">
     <div class="mb-3 flex items-center justify-between">
       <p id="progreso" class="eyebrow"></p>
-      <div class="flex items-center gap-3 text-sm">
+      <div id="sesion-datos" class="flex items-center gap-3 text-sm">
         <label class="flex items-center gap-1.5 text-mut">
           <Ico id="sueno" emoji="💤" px={18} />
           <input
@@ -35,14 +35,15 @@ import Ico from '../components/Ico.astro';
       </div>
     </div>
 
+    <p id="sesion-intro" class="mb-3 hidden px-1 text-sm text-mut"></p>
     <div id="tarjeta"></div>
 
-    <div class="mt-4 grid grid-cols-2 gap-2">
+    <div id="nav-tarjetas" class="mt-4 grid grid-cols-2 gap-2">
       <button id="btn-prev" class="btn-2 py-3">← Anterior</button>
       <button id="btn-next" class="btn py-3">Siguiente →</button>
     </div>
     <button id="btn-finalizar" class="btn-2 mt-2 border-vio/40 text-vio-hi">🏁 Finalizar sesión</button>
-    <a href="/" class="mt-2 block text-center text-sm font-semibold text-mut">💾 Guardar y salir (sigue en borrador)</a>
+    <a id="link-guardar" href="/" class="mt-2 block text-center text-sm font-semibold text-mut">💾 Guardar y salir (sigue en borrador)</a>
     <textarea
       id="in-notas"
       rows="2"
@@ -53,9 +54,21 @@ import Ico from '../components/Ico.astro';
   <section id="vista-fin" class="hidden">
     <div class="card glow border-vio/40 text-center">
       <p class="flex justify-center text-4xl"><Ico id="record" emoji="🏆" px={44} /></p>
-      <h2 class="mt-2 text-xl font-extrabold">Sesión finalizada</h2>
+      <h2 id="fin-titulo" class="mt-2 text-xl font-extrabold">Sesión finalizada</h2>
       <p id="fin-resumen" class="mt-2 text-sm text-mut"></p>
+      <div id="fin-mes" class="mt-4 hidden">
+        <p id="fin-hojas" class="text-2xl leading-none tracking-[4px]"></p>
+        <p id="fin-mes-texto" class="mt-2 text-sm font-semibold text-vio-soft"></p>
+      </div>
       <ul id="fin-prs" class="mt-3 space-y-1 text-sm font-bold text-vio-hi"></ul>
+      <label id="fin-notas-wrap" class="mt-4 hidden text-left">
+        <span class="text-sm font-bold text-mut">¿Algo que contar? Si te ha molestado algo, apúntalo</span>
+        <textarea
+          id="fin-notas"
+          rows="2"
+          placeholder="Opcional"
+          class="mt-1.5 w-full rounded-xl border border-line bg-surface2 px-3 py-2.5 text-base"></textarea>
+      </label>
       <a href="/" class="btn mt-4">Volver a Hoy</a>
     </div>
   </section>
@@ -111,7 +124,10 @@ import Ico from '../components/Ico.astro';
     hoyISO,
     diaSugerido,
     formatObjetivo,
+    getPerfilActivo,
   } from '../lib/db';
+  import { perfil } from '../lib/perfiles';
+  import { mesHistorial } from '../lib/historial';
   import { pesoReal, muestraPesoReal, fmtKg } from '../lib/carga';
   import { iconoEl, iconoDeDia } from '../lib/iconos';
   import { sugerir, historialDeRanura, type Sugerencia } from '../lib/motor';
@@ -143,6 +159,7 @@ import Ico from '../components/Ico.astro';
     EjercicioDef,
     EjercicioReg,
     EstadoSerie,
+    Sensacion,
     SerieReg,
     Sesion,
   } from '../lib/types';
@@ -151,6 +168,7 @@ import Ico from '../components/Ico.astro';
 
   await initDB();
   await cerrarBorradoresCaducados();
+  const sencillo = perfil(getPerfilActivo()).modoSencillo;
   const config = await getConfig();
   const catalogo = await getCatalogo();
   const catalogoMap = new Map(catalogo.map((x) => [x.id, x]));
@@ -281,10 +299,19 @@ import Ico from '../components/Ico.astro';
     const gs = grupos(dia);
     const elP = $('progreso');
     elP.classList.add('flex', 'items-center', 'gap-1.5');
-    elP.replaceChildren(iconoEl(iconoDeDia(rutina.dias, dia), dia.emoji, 16), `${dia.nombre} · ${cardIdx + 1}/${gs.length}`);
+    elP.replaceChildren(
+      iconoEl(iconoDeDia(rutina.dias, dia), dia.emoji, 16),
+      sencillo ? `${dia.nombre} · ${cardIdx + 1} de ${gs.length}` : `${dia.nombre} · ${cardIdx + 1}/${gs.length}`,
+    );
     ($('btn-prev') as HTMLButtonElement).disabled = cardIdx === 0;
     $('btn-prev').classList.toggle('opacity-40', cardIdx === 0);
     $('btn-next').textContent = cardIdx === gs.length - 1 ? '🏁 Finalizar' : 'Siguiente →';
+    // En modo sencillo ya está "Terminar por hoy": sin un segundo botón que haga
+    // lo mismo, y sin fila de navegación si solo hay una tarjeta (día suave).
+    if (sencillo) {
+      $('nav-tarjetas').style.display = gs.length > 1 ? '' : 'none';
+      $('btn-next').classList.toggle('invisible', cardIdx === gs.length - 1);
+    }
   }
 
   function renderEnergia() {
@@ -564,6 +591,184 @@ import Ico from '../components/Ico.astro';
     return wrap;
   }
 
+  // ---------- Modo sencillo ----------
+  // La tarjeta dice qué hacer: el peso con − y +, las series para ir tachando si
+  // quiere (arrancan el descanso) y una carita al acabar, que es lo que cuenta.
+  const CARITAS: { id: Sensacion; emoji: string; label: string }[] = [
+    { id: 'facil', emoji: '😊', label: 'Fácil' },
+    { id: 'bien', emoji: '🙂', label: 'Bien' },
+    { id: 'duro', emoji: '😣', label: 'Duro' },
+  ];
+
+  const unidadPeso = (ej?: Ejercicio) =>
+    ej?.entrada === 'porLado' ? 'kg por lado' : ej?.entrada === 'porMancuerna' ? 'kg cada mancuerna' : 'kg';
+
+  function objetivoSencillo(e: EjercicioDef): string {
+    if (e.tipoProgresion === 'tiempo' && e.segObjetivo) return `${e.series} series de ${e.segObjetivo} segundos`;
+    const reps = Array.isArray(e.repsObjetivo) ? e.repsObjetivo[0] : e.repsObjetivo;
+    return reps ? `${e.series} series de ${reps}` : `${e.series} series`;
+  }
+
+  function bloqueSencillo(e: EjercicioDef): HTMLElement {
+    const reg = regDe(e);
+    const ej = e.ejercicioId ? catalogoMap.get(e.ejercicioId) : undefined;
+    const sug = sugerir(e, historialDeRanura(sesiones, e.ranuraId), config.incrementoMinimoKg);
+    const div = document.createElement('div');
+
+    const h = document.createElement('h3');
+    h.className = 'text-2xl font-extrabold leading-tight';
+    h.textContent = e.nombre;
+    const obj = document.createElement('p');
+    obj.className = 'mt-1 text-lg font-bold text-vio-hi';
+    obj.textContent = objetivoSencillo(e);
+    div.append(h, obj);
+    if (e.nota) {
+      const nota = document.createElement('p');
+      nota.className = 'mt-2 flex items-center gap-1.5 text-sm text-mut';
+      nota.replaceChildren(iconoEl('nota', '💡', 16), e.nota);
+      div.append(nota);
+    }
+
+    if (e.tipoProgresion === 'sensacion' && e.incrementoKg != null) {
+      const paso = e.incrementoKg;
+      const actual = () => reg.series[0]?.peso ?? null;
+      const fila = document.createElement('div');
+      fila.className = 'mt-4 flex items-center justify-center gap-3.5';
+      const input = document.createElement('input');
+      input.type = 'number';
+      input.inputMode = 'decimal';
+      input.step = 'any';
+      input.placeholder = '—';
+      input.setAttribute('aria-label', `Peso en ${unidadPeso(ej)}`);
+      input.className = 'num w-28 rounded-xl bg-transparent text-center text-4xl font-extrabold text-ink';
+      const unidad = document.createElement('p');
+      unidad.className = 'text-center text-xs font-semibold text-mut';
+      const pintar = () => {
+        const v = actual();
+        input.value = v != null ? String(v) : '';
+        const real = ej && muestraPesoReal(ej.entrada) ? pesoReal(ej, v) : null;
+        unidad.textContent = real != null ? `${unidadPeso(ej)} · ${fmtKg(real)} kg en total` : unidadPeso(ej);
+      };
+      const fijar = (v: number | null) => {
+        for (const s of reg.series) s.peso = v;
+        pintar();
+        void guardarSesion(sesion!);
+      };
+      const botonPaso = (txt: string, etiqueta: string, delta: number) => {
+        const b = document.createElement('button');
+        b.className = 'h-12 w-12 shrink-0 rounded-xl border-2 border-line bg-surface2 text-2xl font-bold transition active:scale-90';
+        b.textContent = txt;
+        b.setAttribute('aria-label', etiqueta);
+        b.addEventListener('click', () => fijar(Math.max(0, Math.round(((actual() ?? 0) + delta) * 100) / 100)));
+        return b;
+      };
+      input.addEventListener('change', () => {
+        const v = input.value === '' ? null : Number(input.value);
+        fijar(Number.isFinite(v as number) ? v : null);
+      });
+      const centro = document.createElement('div');
+      centro.append(input, unidad);
+      fila.append(botonPaso('−', 'Menos peso', -paso), centro, botonPaso('+', 'Más peso', paso));
+      pintar();
+      div.append(fila);
+    }
+    if (sug.texto && e.tipoProgresion === 'sensacion') {
+      const t = document.createElement('p');
+      t.className = 'mt-1.5 text-center text-sm text-mut';
+      t.textContent = sug.texto;
+      div.append(t);
+    }
+
+    const series = document.createElement('div');
+    series.className = 'mt-4 flex items-center justify-between';
+    const lbl = document.createElement('span');
+    lbl.className = 'text-sm text-mut';
+    lbl.textContent = 'Series';
+    const circulos = document.createElement('div');
+    circulos.className = 'flex gap-2';
+    reg.series.forEach((s, i) => {
+      const hecha = s.estado !== 'pendiente';
+      const b = document.createElement('button');
+      b.className = `h-11 w-11 rounded-full border-2 text-base font-extrabold transition active:scale-90 ${
+        hecha ? 'border-ok bg-ok/20 text-ok' : 'border-line bg-surface2 text-mut'
+      }`;
+      b.textContent = hecha ? '✓' : String(i + 1);
+      b.setAttribute('aria-label', `Serie ${i + 1}${hecha ? ', hecha' : ''}`);
+      b.addEventListener('click', () => registrar(e, i, hecha ? 'pendiente' : 'completada'));
+      circulos.append(b);
+    });
+    series.append(lbl, circulos);
+    div.append(series);
+
+    const siguiente = reg.series.findIndex((s) => s.estado === 'pendiente');
+    if (e.tipoProgresion === 'tiempo' && e.segObjetivo && siguiente >= 0) {
+      const play = document.createElement('button');
+      play.className = 'btn mt-3 py-3';
+      play.textContent = `▶ Serie ${siguiente + 1} · ${fmtCrono(e.segObjetivo)}`;
+      play.addEventListener('click', () => empezarCuenta(e, siguiente));
+      div.append(play);
+    }
+
+    div.append(...tipEl(e.ejercicioId));
+
+    const hr = document.createElement('hr');
+    hr.className = 'mb-3 mt-4 border-line';
+    const pregunta = document.createElement('p');
+    pregunta.className = 'text-center font-display text-lg font-bold';
+    pregunta.textContent = '¿Qué tal te ha ido?';
+    const caritas = document.createElement('div');
+    caritas.className = 'mt-2.5 grid grid-cols-3 gap-2';
+    for (const c of CARITAS) {
+      const b = document.createElement('button');
+      b.className = `flex flex-col items-center gap-0.5 rounded-xl border-2 py-2.5 text-sm font-bold transition active:scale-95 ${
+        reg.sensacion === c.id ? 'border-vio bg-vio/20 text-vio-hi' : 'border-line bg-surface2'
+      }`;
+      const em = document.createElement('span');
+      em.className = 'text-3xl leading-none';
+      em.textContent = c.emoji;
+      b.append(em, c.label);
+      b.addEventListener('click', () => valorar(e, c.id));
+      caritas.append(b);
+    }
+    const saltar = document.createElement('button');
+    saltar.className = 'mx-auto mt-3 block text-sm font-semibold text-mut underline';
+    saltar.textContent = 'Hoy me lo salto';
+    saltar.addEventListener('click', avanzar);
+    div.append(hr, pregunta, caritas, saltar);
+    return div;
+  }
+
+  // La carita cierra el ejercicio: las series que no tachó cuentan como hechas.
+  let avance: ReturnType<typeof setTimeout> | undefined;
+  function valorar(e: EjercicioDef, como: Sensacion) {
+    const reg = regDe(e);
+    reg.sensacion = como;
+    const ahora = new Date().toISOString();
+    sesion!.inicioISO ??= ahora;
+    sesion!.finISO = ahora;
+    for (const s of reg.series) {
+      if (s.estado !== 'pendiente') continue;
+      s.estado = 'completada';
+      if (e.tipoProgresion === 'tiempo') s.segundos ??= e.segObjetivo ?? null;
+    }
+    checkPR(e, 0);
+    void guardarSesion(sesion!);
+    renderCard();
+    clearTimeout(avance);
+    avance = setTimeout(avanzar, 600);
+  }
+
+  function avanzar() {
+    clearTimeout(avance);
+    if (cardIdx < grupos(dia).length - 1) {
+      cardIdx++;
+      renderCard();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      void finalizar(false);
+    }
+  }
+
   // ---------- Cardio ----------
   const fmtCrono = (seg: number) => {
     const t = Math.max(0, Math.floor(seg));
@@ -619,7 +824,14 @@ import Ico from '../components/Ico.astro';
     h.className = 'text-lg font-extrabold';
     h.textContent = e.nombre;
     div.append(h);
-    if (ultimo) {
+    if (ultimo && sencillo) {
+      if (ultimo.segundos) {
+        const p = document.createElement('p');
+        p.className = 'mt-1 text-sm font-semibold text-vio-soft';
+        p.textContent = `La última vez: ${Math.round(ultimo.segundos / 60)} min`;
+        div.append(p);
+      }
+    } else if (ultimo) {
       const datos = [
         ultimo.segundos ? `${Math.round(ultimo.segundos / 60)} min` : null,
         ...camposDe(e.ejercicioId).map((k) =>
@@ -658,11 +870,13 @@ import Ico from '../components/Ico.astro';
       });
       obj.append(b);
     }
-    const otro = inputNum(OBJETIVOS_MIN.includes(c.objetivoMin ?? 0) ? null : (c.objetivoMin ?? null), 'w-16', 'otro', (v) => {
-      c.objetivoMin = v;
-      renderCard();
-    });
-    obj.append(otro);
+    if (!sencillo) {
+      const otro = inputNum(OBJETIVOS_MIN.includes(c.objetivoMin ?? 0) ? null : (c.objetivoMin ?? null), 'w-16', 'otro', (v) => {
+        c.objetivoMin = v;
+        renderCard();
+      });
+      obj.append(otro);
+    }
     div.append(obj);
 
     const reloj = document.createElement('div');
@@ -715,6 +929,29 @@ import Ico from '../components/Ico.astro';
       }
     }
     div.append(mandos);
+
+    // Sin datos de máquina ni esfuerzo: solo el tiempo, y si no usó el crono,
+    // se apunta de un toque.
+    if (sencillo) {
+      const manual = document.createElement('p');
+      manual.className = 'mt-5 border-t border-line pt-3 text-sm font-bold text-mut';
+      manual.textContent = '¿Lo has hecho sin crono? Apúntalo de un toque:';
+      const fila = document.createElement('div');
+      fila.className = 'mt-2 grid grid-cols-3 gap-1.5';
+      for (const m of OBJETIVOS_MIN) {
+        fila.append(
+          btn(`${m} min`, 'h-11 rounded-xl border border-line bg-surface2 text-base font-bold transition active:scale-95', () => {
+            pararCrono(c);
+            if (!necesitaPantalla()) soltarPantalla();
+            s.segundos = m * 60;
+            registrar(e, 0, 'completada');
+            void finalizar(false);
+          }),
+        );
+      }
+      div.append(manual, fila);
+      return div;
+    }
 
     const campos = document.createElement('div');
     campos.className = 'mt-4 grid grid-cols-2 gap-2';
@@ -775,6 +1012,7 @@ import Ico from '../components/Ico.astro';
     }
     s.segundos = seg;
     registrar(e, 0, 'completada');
+    if (sencillo) void finalizar(false);
   }
 
   function pintarCronoCardio(c: DatosCardio) {
@@ -835,6 +1073,9 @@ import Ico from '../components/Ico.astro';
   function renderCard() {
     const gs = grupos(dia);
     const grupo = gs[cardIdx];
+    const intro = $('sesion-intro');
+    intro.textContent = dia.intro ?? '';
+    intro.classList.toggle('hidden', !dia.intro || cardIdx !== 0);
     const card = document.createElement('div');
     card.className = 'card glow border-vio/30';
     cardioVisible = null;
@@ -859,7 +1100,7 @@ import Ico from '../components/Ico.astro';
         hr.className = 'my-4 border-line';
         card.append(hr);
       }
-      card.append(bloqueEjercicio(e));
+      card.append(sencillo ? bloqueSencillo(e) : bloqueEjercicio(e));
     });
     $('tarjeta').replaceChildren(card);
     renderProgreso();
@@ -880,14 +1121,29 @@ import Ico from '../components/Ico.astro';
   }
 
   // ---------- Vista fin ----------
-  function renderFin() {
+  function renderFin(diasMes: number) {
     const contables = seriesContables();
     const total = contables.length;
     const hechasN = contables.filter((s) => s.estado !== 'pendiente').length;
     const dur = sesion!.duracionMin != null ? ` · ${sesion!.duracionMin} min` : '';
     const elF = $('fin-resumen');
     elF.classList.add('flex', 'flex-wrap', 'items-center', 'justify-center', 'gap-1.5');
-    elF.replaceChildren(iconoEl(iconoDeDia(rutina.dias, dia), dia.emoji, 16), `${dia.nombre} · ${hechasN}/${total} series${dur}`);
+    if (sencillo) {
+      // Ejercicios, no series; y lo que lleva de mes, en hojas.
+      const gs = grupos(dia).filter((g) => !esGrupoCardio(g));
+      const hechos = gs.filter((g) => g.some((e) => regDe(e).series.some((s) => s.estado !== 'pendiente'))).length;
+      const resumen = dia.fueraDeRueda ? `${dia.nombre}${dur}` : `${dia.nombre} · ${hechos} de ${gs.length} ejercicios${dur}`;
+      elF.replaceChildren(iconoEl(iconoDeDia(rutina.dias, dia), dia.emoji, 16), resumen);
+      $('fin-titulo').textContent = '¡Hecho!';
+      $('fin-hojas').textContent = '🍂'.repeat(Math.min(diasMes, 20));
+      $('fin-mes-texto').textContent = diasMes === 1 ? 'La primera hoja del mes' : `Ya van ${diasMes} días este mes`;
+      $('fin-mes').classList.remove('hidden');
+      const notas = $('fin-notas') as HTMLTextAreaElement;
+      notas.value = sesion!.notas;
+      $('fin-notas-wrap').classList.replace('hidden', 'block');
+    } else {
+      elF.replaceChildren(iconoEl(iconoDeDia(rutina.dias, dia), dia.emoji, 16), `${dia.nombre} · ${hechasN}/${total} series${dur}`);
+    }
     $('fin-prs').replaceChildren(
       ...prsLogrados.map((p) => {
         const li = document.createElement('li');
@@ -1068,17 +1324,28 @@ import Ico from '../components/Ico.astro';
   $('cuenta-parar').addEventListener('click', () => terminarCuenta(false));
 
   // ---------- Acciones ----------
-  async function finalizar() {
+  // `preguntar` es false cuando cierra la propia app (última carita o cardio
+  // apuntado): lo que se saltó, se saltó a propósito.
+  async function finalizar(preguntar = true) {
+    clearTimeout(avance);
     const marcadas = sesion!.ejercicios.reduce((n, e) => n + e.series.filter((s) => s.estado !== 'pendiente').length, 0);
     if (marcadas === 0) {
-      if (confirm('No has marcado ninguna serie. ¿Descartar la sesión?')) {
+      const texto = sencillo
+        ? 'Aún no has hecho ningún ejercicio. ¿Salir sin guardar?'
+        : 'No has marcado ninguna serie. ¿Descartar la sesión?';
+      if (confirm(texto)) {
         await descartarSesion(sesion!.id);
         location.href = '/';
       }
       return;
     }
     const pendientes = seriesContables().filter((s) => s.estado === 'pendiente').length;
-    if (pendientes > 0 && !confirm(`Quedan ${pendientes} series sin marcar. ¿Finalizar igual?`)) return;
+    if (preguntar && pendientes > 0) {
+      const texto = sencillo
+        ? '¿Terminas por hoy? Lo que has hecho queda guardado.'
+        : `Quedan ${pendientes} series sin marcar. ¿Finalizar igual?`;
+      if (!confirm(texto)) return;
+    }
     // Un crono de cardio en marcha se cierra con lo que lleve
     for (const { e, c } of cronosCardio()) {
       if (!c.cronoInicioISO) continue;
@@ -1090,15 +1357,18 @@ import Ico from '../components/Ico.astro';
     soltarPantalla();
     pararRest();
     await finalizarSesion(sesion!);
-    renderFin();
+    const ahora = new Date();
+    renderFin(sencillo ? mesHistorial(await getSesiones(), diario, ahora.getFullYear(), ahora.getMonth()).entrenos : 0);
   }
 
-  $('btn-empezar').addEventListener('click', async () => {
+  async function empezar() {
     sesion = crearSesion(rutina, dia, calcularSugerencias(dia));
     cardIdx = 0;
     await guardarSesion(sesion);
     renderSesion();
-  });
+  }
+
+  $('btn-empezar').addEventListener('click', () => void empezar());
 
   $('btn-prev').addEventListener('click', () => {
     if (cardIdx > 0) {
@@ -1126,6 +1396,17 @@ import Ico from '../components/Ico.astro';
     sesion!.notas = ($('in-notas') as HTMLTextAreaElement).value;
     void guardarSesion(sesion!);
   });
+  $('fin-notas').addEventListener('change', () => {
+    sesion!.notas = ($('fin-notas') as HTMLTextAreaElement).value;
+    void guardarSesion(sesion!);
+  });
+
+  // Modo sencillo: sin sueño ni energía, las notas al final y sin borradores
+  // a la vista (si sale a mitad, la sesión la espera igual).
+  if (sencillo) {
+    for (const id of ['sesion-datos', 'in-notas', 'link-guardar']) $(id).classList.add('hidden');
+    $('btn-finalizar').textContent = 'Terminar por hoy';
+  }
 
   // ---------- Arranque ----------
   const borrador = await buscarBorrador();
@@ -1150,6 +1431,10 @@ import Ico from '../components/Ico.astro';
       dlg.close();
       renderInicio();
     });
+  } else if (sencillo && location.hash === '#empezar') {
+    // Viene de "Empezar" en Hoy, donde ya ha visto qué toca: directa al primer ejercicio
+    history.replaceState(null, '', '/entreno');
+    await empezar();
   } else {
     renderInicio();
   }

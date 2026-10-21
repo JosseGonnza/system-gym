@@ -25,7 +25,7 @@ import Ico from '../components/Ico.astro';
 
   <section id="card-entreno" class="card glow mt-4 border-vio/40">
     <div class="flex items-center justify-between">
-      <p class="eyebrow">Entreno de hoy</p>
+      <p id="entreno-eyebrow" class="eyebrow">Entreno de hoy</p>
       <p id="chip-descansos" class="text-xs font-semibold text-mut"></p>
     </div>
     <div class="mt-2 flex items-center gap-3">
@@ -38,10 +38,24 @@ import Ico from '../components/Ico.astro';
     <p id="hecho-hoy" class="mt-2 hidden text-xs font-semibold text-ok"></p>
     <ul id="dia-ejercicios" class="mt-3 space-y-1.5 text-sm text-mut"></ul>
     <a id="btn-empezar" href="/entreno" class="btn mt-4">Empezar entreno</a>
-    <div class="mt-2 grid grid-cols-2 gap-2">
+    <div id="acciones-dia" class="mt-2 grid grid-cols-2 gap-2">
       <button id="btn-cambiar" class="btn-2 suave py-2.5 text-sm">Cambiar</button>
       <button id="btn-descanso" class="btn-2 suave py-2.5 text-sm">Descansar</button>
     </div>
+  </section>
+
+  <section id="otras" class="mt-4 hidden">
+    <p class="eyebrow px-1">O si prefieres</p>
+    <div id="otras-lista" class="mt-2 grid gap-2"></div>
+  </section>
+
+  <section id="card-otono" class="card mt-4 hidden">
+    <div class="flex items-baseline justify-between">
+      <p id="otono-mes" class="eyebrow"></p>
+      <p id="otono-cuenta" class="text-xs font-semibold text-mut"></p>
+    </div>
+    <p id="otono-hojas" class="mt-2 text-2xl leading-none tracking-[4px]"></p>
+    <p id="otono-frase" class="mt-2 text-sm text-mut"></p>
   </section>
 
   <section id="card-manana" class="card mt-4">
@@ -104,7 +118,7 @@ import Ico from '../components/Ico.astro';
   } from '../lib/db';
   import { perfil } from '../lib/perfiles';
   import { horarioDe } from '../lib/horarios';
-  import { ventanaDias, diasDesdeUltimaVez } from '../lib/historial';
+  import { ventanaDias, diasDesdeUltimaVez, mesHistorial } from '../lib/historial';
   import { historialDeRanura, sugerir } from '../lib/motor';
   import { iconoEl, iconoDeDia } from '../lib/iconos';
   import { cerrarBorradoresCaducados } from '../lib/sesion';
@@ -113,7 +127,7 @@ import Ico from '../components/Ico.astro';
   const $ = (id: string) => document.getElementById(id)!;
 
   await initDB();
-  const usaJornadas = perfil(getPerfilActivo()).usaJornadas;
+  const { usaJornadas, modoSencillo: sencillo } = perfil(getPerfilActivo());
   const { jornadas: JORNADAS, pautas: PAUTAS, alarmas: ALARMAS } = horarioDe(getPerfilActivo());
   await cerrarBorradoresCaducados();
   const config = await getConfig();
@@ -144,7 +158,7 @@ import Ico from '../components/Ico.astro';
   const diasSinExport = config.ultimoExportISO
     ? Math.floor((Date.now() - Date.parse(config.ultimoExportISO)) / 86_400_000)
     : null;
-  if (finalizadasTotal > 0 && (diasSinExport === null || diasSinExport >= 7)) {
+  if (!sencillo && finalizadasTotal > 0 && (diasSinExport === null || diasSinExport >= 7)) {
     const aviso = $('aviso-backup');
     aviso.replaceChildren(
       iconoEl('backup', '💾', 18),
@@ -159,8 +173,9 @@ import Ico from '../components/Ico.astro';
 
   // En recomposición el peso solo no dice nada: hace falta la cintura al lado.
   // Si no se mide, no hay forma de saber si el plan funciona — así que la app
-  // lo pide en vez de esperar a que uno se acuerde.
-  {
+  // lo pide en vez de esperar a que uno se acuerde. En modo sencillo no: ahí
+  // un aviso pesa más de lo que ayuda.
+  if (!sencillo) {
     const ultima = (xs: { fecha: string }[]) => xs.map((x) => x.fecha).sort().pop();
     const diasDesde = (f?: string) =>
       f == null ? null : Math.floor((Date.parse(`${hoy}T12:00:00`) - Date.parse(`${f}T12:00:00`)) / 86_400_000);
@@ -411,7 +426,85 @@ import Ico from '../components/Ico.astro';
     }
   }
 
+  const duracionDe = (d: DiaDef) =>
+    d.fueraDeRueda
+      ? 'Cardio a tu ritmo, 20-40 min'
+      : `Unos ${Math.round((d.ejercicios.reduce((n, e) => n + e.series, 0) * 2.3 + 5) / 5) * 5} minutos`;
+
+  // Modo sencillo: lo que toca, las otras opciones a un toque y lo que ya ha
+  // hecho este mes, en positivo. Sin avisos ni cuenta de descansos.
+  function pintarSencillo() {
+    // Recién acabado un día, el puntero ya apunta al siguiente: hasta que elija
+    // otra cosa, la tarjeta enseña lo que ha hecho hoy, no lo que toca mañana.
+    const ultimoHecho = rutina.dias.find((d) => d.id === hechosHoy[hechosHoy.length - 1]);
+    const dia = diario[hoy]?.diaElegidoId ? diaEfectivoHoy() : (ultimoHecho ?? diaEfectivoHoy());
+    const hecho = hechosHoy.includes(dia.id);
+    const sugerido = diaSugerido(config, rutina).id === dia.id;
+    $('entreno-eyebrow').textContent = hecho ? 'Hoy has hecho' : sugerido ? 'Hoy te toca' : 'Hoy haces';
+    $('dia-simbolo').replaceChildren(iconoEl(iconoDeDia(rutina.dias, dia), dia.emoji, 30));
+    $('dia-nombre').textContent = dia.nombre;
+    $('dia-ultima').textContent = hecho ? '¡Hecho! Te lo has ganado 🍂' : duracionDe(dia);
+    const nombres = dia.ejercicios.map((e) => e.nombre);
+    $('dia-ejercicios').replaceChildren(
+      ...(dia.fueraDeRueda && nombres.length > 1
+        ? [`${nombres.slice(0, -1).join(', ')} o ${nombres[nombres.length - 1]}`]
+        : nombres
+      ).map(
+        (n) => {
+          const li = document.createElement('li');
+          li.textContent = n;
+          return li;
+        },
+      ),
+    );
+    const btn = $('btn-empezar') as HTMLAnchorElement;
+    // style y no la clase hidden: el display de .btn le gana a la utilidad
+    btn.style.display = hecho ? 'none' : '';
+    btn.textContent = 'Empezar';
+    // Con #, no con ?: el service worker no reconoce /entreno?… y sirve la home
+    btn.href = '/entreno#empezar';
+
+    $('otras-lista').replaceChildren(
+      ...rutina.dias
+        .filter((d) => d.id !== dia.id)
+        .map((d) => {
+          const b = document.createElement('button');
+          b.className =
+            'flex w-full items-center gap-3 rounded-xl border-2 border-line bg-surface px-4 py-2.5 text-left shadow-[0_3px_0_rgb(0_0_0/0.4)] transition active:scale-[.98]';
+          const textos = document.createElement('span');
+          textos.className = 'flex flex-col';
+          const nombre = document.createElement('span');
+          nombre.className = 'font-display text-base font-bold';
+          nombre.textContent = d.nombre;
+          const sub = document.createElement('span');
+          sub.className = 'text-sm text-mut';
+          sub.textContent = hechosHoy.includes(d.id)
+            ? 'Hecho hoy ✓'
+            : d.fueraDeRueda
+              ? `¿Pocas ganas? ${duracionDe(d)}`
+              : duracionDe(d);
+          textos.append(nombre, sub);
+          b.append(iconoEl(iconoDeDia(rutina.dias, d), d.emoji, 28), textos);
+          b.addEventListener('click', async () => {
+            diario = await patchDia(hoy, { diaElegidoId: d.id });
+            render();
+          });
+          return b;
+        }),
+    );
+
+    const ahora = new Date();
+    const n = mesHistorial(sesiones, diario, ahora.getFullYear(), ahora.getMonth()).entrenos;
+    $('otono-mes').textContent = `Tu ${ahora.toLocaleDateString('es-ES', { month: 'long' })}`;
+    $('otono-cuenta').textContent = n === 1 ? '1 día' : `${n} días`;
+    $('otono-hojas').textContent = '🍂'.repeat(Math.min(n, 20));
+    $('otono-hojas').classList.toggle('hidden', n === 0);
+    $('otono-frase').textContent =
+      n === 0 ? 'Cada día que vengas caerá aquí una hoja. La primera puede ser hoy.' : 'Cada hoja es un día que has venido.';
+  }
+
   function render() {
+    if (sencillo) return pintarSencillo();
     if (usaJornadas) {
       pintarSelector($('sel-jornada'), hoy);
       pintarSelector($('sel-jornada-manana'), manana);
@@ -429,6 +522,12 @@ import Ico from '../components/Ico.astro';
   if (!usaJornadas) {
     $('bloque-jornada').remove();
     $('card-manana').remove();
+  }
+
+  if (sencillo) {
+    for (const id of ['card-semana', 'aviso-abandono', 'chip-descansos', 'acciones-dia']) $(id).classList.add('hidden');
+    $('otras').classList.remove('hidden');
+    $('card-otono').classList.remove('hidden');
   }
 
   render();

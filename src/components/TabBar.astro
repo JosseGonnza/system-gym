@@ -23,7 +23,7 @@ const activo = (href: string) => (href === '/' ? path === '/' : path.startsWith(
             href={t.href}
             aria-current={on ? 'page' : undefined}
             aria-label={t.label}
-            class={`tab has-img has-tab-dot flex flex-col items-center gap-0.5 py-2.5 text-xs font-semibold ${on ? 'tab-on text-vio-hi' : 'text-mut'}`}
+            class={`tab ${t.id === 'nav-dieta' ? 'tab-dieta' : ''} has-img has-tab-dot flex flex-col items-center gap-0.5 py-2.5 text-xs font-semibold ${on ? 'tab-on text-vio-hi' : 'text-mut'}`}
           >
             <span class="tab-ico text-2xl leading-none">
               <span class="tab-dot" set:html={svgDot(t.id, 30)} />
