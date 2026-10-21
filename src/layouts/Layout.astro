@@ -8,7 +8,7 @@ import '@fontsource-variable/inter';
 import '@fontsource/silkscreen/400.css';
 import '@fontsource/silkscreen/700.css';
 import '@fontsource-variable/jetbrains-mono';
-// Yasmina "Cuaderno": Fraunces (títulos de cuento) + Baloo 2 (cuerpo redondeado)
+// Yasmina "Chai Rutine": Fraunces (títulos de cuento) + Baloo 2 (cuerpo redondeado)
 import '@fontsource-variable/fraunces';
 import '@fontsource/baloo-2/400.css';
 import '@fontsource/baloo-2/500.css';
@@ -42,7 +42,7 @@ const base = Astro.site ?? Astro.url;
         var p = esSelector ? 'selector' : stored === 'jose' || stored === 'yasmina' ? stored : 'jose';
         document.documentElement.dataset.perfil = p;
         document.documentElement.style.setProperty('color-scheme', 'dark');
-        var tc = { jose: '#000000', yasmina: '#15200f', selector: '#000000' }[p];
+        var tc = { jose: '#000000', yasmina: '#1d130d', selector: '#000000' }[p];
         document.addEventListener('DOMContentLoaded', function () {
           var m = document.querySelector('meta[name="theme-color"]');
           if (m) m.setAttribute('content', tc);

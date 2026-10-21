@@ -31,21 +31,21 @@ html[data-perfil='jose'] body {
   background-attachment: fixed;
 }
 
-/* Yasmina — "Cuaderno cozy": pergamino crema, madera, verde hoja. Tema CLARO. */
+/* Yasmina — "Chai Rutine", otoño: café, calabaza y teja. Tema oscuro. */
 html[data-perfil='yasmina'] {
   color-scheme: dark;
-  --color-bg: #15200f;
-  --color-surface: #1f2e17;
-  --color-surface2: #2a3b20;
-  --color-line: #50673a;
-  --color-vio: #8fb45f;
-  --color-vio-hi: #aace7c;
-  --color-vio-soft: #c2d89e;
-  --color-ink: #eef2dd;
-  --color-mut: #9aae82;
-  --color-ok: #4e8b3f;
-  --color-warn: #c2872a;
-  --color-bad: #b5482f;
+  --color-bg: #1d130d;
+  --color-surface: #2a1c13;
+  --color-surface2: #38261a;
+  --color-line: #6e4529;
+  --color-vio: #e07a3f;
+  --color-vio-hi: #f3a35f;
+  --color-vio-soft: #f2c79c;
+  --color-ink: #f6e8d6;
+  --color-mut: #c2a184;
+  --color-ok: #a3a94f;
+  --color-warn: #e0ae45;
+  --color-bad: #c4553b;
 
   --font-display: 'Fraunces Variable', Georgia, serif;
   --font-body: 'Baloo 2', system-ui, sans-serif;
@@ -55,8 +55,8 @@ html[data-perfil='yasmina'] {
   --radius-btn: 0.9rem;
 }
 
-/* Fondo cozy de Yasmina: panel fijo que acaba justo encima del nav inferior,
-   para que la barra no tape la escena de la mascota. Robusto en iOS. */
+/* Fondo cozy de Yasmina (la mascota con hojas de otoño): panel fijo que acaba
+   justo encima del nav inferior, para que la barra no tape la escena. Robusto en iOS. */
 .fondo-yasmina {
   display: none;
 }
@@ -67,14 +67,14 @@ html[data-perfil='yasmina'] .fondo-yasmina {
   inset: 0;
   bottom: calc(env(safe-area-inset-bottom) + 64px);
   background:
-    linear-gradient(rgba(21, 32, 15, 0.58), rgba(21, 32, 15, 0.8)),
-    url('/iconos/fondo-matcha.webp') center bottom / cover no-repeat;
+    linear-gradient(rgba(29, 19, 13, 0.6), rgba(29, 19, 13, 0.84)),
+    url('/iconos/fondo-otono.webp') center bottom / cover no-repeat;
   z-index: -1;
   pointer-events: none;
 }
 
-/* El crema sólido del body taparía el panel (z-index negativo): lo hacemos
-   transparente para que asome la imagen. El respaldo crema queda en <html>. */
+/* El fondo sólido del body taparía el panel (z-index negativo): lo hacemos
+   transparente para que asome la imagen. El respaldo queda en <html>. */
 html[data-perfil='yasmina'] body {
   background-color: transparent;
 }
@@ -141,11 +141,9 @@ html[data-perfil='selector'] main {
   clip-path: polygon(0 0, 100% 0, 100% 44%, 0 56%);
 }
 
-/* Abajo: fondo Matcha Rutine */
+/* Abajo: Chai Rutine, degradado de brasa a café (sin imagen) */
 .sel-abajo {
-  background:
-    linear-gradient(rgba(21, 32, 15, 0.55), rgba(21, 32, 15, 0.78)),
-    url('/iconos/fondo-matcha.webp') center bottom / cover no-repeat;
+  background: radial-gradient(120% 80% at 50% 100%, #8a3f1c 0%, #4a2614 45%, #1d130d 85%);
   clip-path: polygon(0 56%, 100% 44%, 100% 100%, 0 100%);
 }
 
@@ -199,13 +197,6 @@ html[data-perfil='selector'] main {
   font-weight: 800;
 }
 
-.sel-sub {
-  display: block;
-  margin-top: 0.15rem;
-  font-size: 0.8rem;
-  opacity: 0.85;
-}
-
 .sel-jose {
   background: #0c0c0c;
   border: 1px solid #d71921;
@@ -221,28 +212,16 @@ html[data-perfil='selector'] main {
   text-transform: uppercase;
 }
 
-.sel-jose .sel-sub {
-  color: #d71921;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  font-size: 0.68rem;
-}
-
 .sel-yasmina {
-  background: #1f2e17;
-  border: 2px solid #50673a;
-  color: #eef2dd;
-  box-shadow: 0 0 24px color-mix(in srgb, #8fb45f 30%, transparent);
+  background: #2a1c13;
+  border: 2px solid #6e4529;
+  color: #f6e8d6;
+  box-shadow: 0 0 24px color-mix(in srgb, #e07a3f 30%, transparent);
   font-family: 'Fraunces Variable', Georgia, serif;
 }
 
 .sel-yasmina .sel-nombre {
   font-weight: 700;
-}
-
-.sel-yasmina .sel-sub {
-  color: #aace7c;
-  font-family: 'Baloo 2', system-ui, sans-serif;
 }
 
 html {
@@ -340,12 +319,13 @@ html[data-perfil='yasmina'] .glow {
   box-shadow: 0 0 24px color-mix(in srgb, var(--color-vio) 30%, transparent);
 }
 
-/* Botones "madera" estilo cozy game: tono tablón + borde inferior chunky */
+/* Botones estilo cozy game: calabaza + borde inferior chunky. Texto oscuro,
+   que el crema sobre naranja no llega al contraste. */
 html[data-perfil='yasmina'] .btn {
-  background: #d9b877;
-  color: #4a3522;
-  border: 2px solid #a9844c;
-  box-shadow: 0 3px 0 #a9844c;
+  background: #e8935a;
+  color: #3a1d0c;
+  border: 2px solid #b5612e;
+  box-shadow: 0 3px 0 #8f4720;
 }
 
 html[data-perfil='yasmina'] .btn-2 {
@@ -355,7 +335,7 @@ html[data-perfil='yasmina'] .btn-2 {
   box-shadow: 0 3px 0 rgb(0 0 0 / 0.4);
 }
 
-/* Resplandor matcha detrás de iconos y emojis (destacan sobre el verde oscuro) */
+/* Resplandor cálido detrás de iconos y emojis (destacan sobre el café) */
 html[data-perfil='yasmina'] .ico-img,
 html[data-perfil='yasmina'] .tab-img {
   filter: drop-shadow(0 0 7px color-mix(in srgb, var(--color-vio-hi) 60%, transparent));
@@ -458,6 +438,15 @@ html[data-perfil='yasmina'] .tab-on .tab-ico {
   background: color-mix(in srgb, var(--color-vio) 16%, transparent);
   border-radius: 999px;
   padding: 3px 9px;
+}
+
+/* Modo sencillo: sin pestaña de dieta, tres pestañas en vez de cuatro */
+html[data-perfil='yasmina'] .tab-dieta {
+  display: none;
+}
+
+html[data-perfil='yasmina'] .tabbar > div {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 /* Iconos de pestaña: puntos en Jose, ilustración en Yasmina, emoji de reserva */
