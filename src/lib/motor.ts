@@ -1,8 +1,9 @@
-import type { EjercicioDef, SerieReg } from './types';
+import type { EjercicioDef, Sensacion, SerieReg } from './types';
 
 export interface PuntoHistorial {
   fecha: string;
   series: SerieReg[];
+  sensacion?: Sensacion;
 }
 
 export interface Sugerencia {
@@ -48,6 +49,34 @@ function todasAlTope(p: PuntoHistorial, e: EjercicioDef, tope: number): boolean 
   return s.length >= e.series && s.every((x) => x.estado === 'completada' && (x.reps ?? 0) >= tope);
 }
 
+// Una carita por ejercicio en vez de reps por serie: fácil sube, bien repite y
+// duro baja. Sin incremento, el ejercicio no lleva peso (dead bug). Las sesiones
+// de antes de las caritas se leen por sus series: si alguna falló, fue duro.
+function porSensacion(e: EjercicioDef, puntos: PuntoHistorial[]): Sugerencia {
+  const reps = Array.isArray(e.repsObjetivo) ? e.repsObjetivo[0] : e.repsObjetivo;
+  if (e.incrementoKg == null) return { ...VACIA, reps, texto: '' };
+  const ultimo = puntos[0];
+  const pesoUlt = ultimo ? (hechas(ultimo).find((s) => s.peso != null)?.peso ?? null) : null;
+  if (!ultimo || pesoUlt == null) {
+    return { ...VACIA, reps, texto: `Primera vez: busca un peso con el que llegues a ${reps} sin sufrir` };
+  }
+
+  const incr = e.incrementoKg;
+  const como = ultimo.sensacion ?? (hechas(ultimo).every((s) => s.estado === 'completada') ? 'bien' : 'duro');
+  const dias = diasDesde(ultimo.fecha);
+  if (como === 'duro') {
+    const peso = pesoUlt > incr ? sumar(pesoUlt, -incr) : pesoUlt;
+    return { ...VACIA, peso, reps, texto: 'La última vez costó: un poco menos de peso' };
+  }
+  if (dias > DIAS_PARON) {
+    return { ...VACIA, peso: pesoUlt, reps, texto: `Hace ${dias} días de la última vez: mismo peso, sin prisa` };
+  }
+  if (como === 'facil') {
+    return { ...VACIA, peso: sumar(pesoUlt, incr), reps, texto: 'La última vez fue fácil: un poquito más' };
+  }
+  return { ...VACIA, peso: pesoUlt, reps, texto: 'La última vez te fue bien: mismo peso' };
+}
+
 export function sugerir(e: EjercicioDef, historial: PuntoHistorial[], incrementoMin: number): Sugerencia {
   if (e.tipoProgresion === 'libre') return { ...VACIA, texto: 'Libre: apunta lo que hagas' };
   if (e.tipoProgresion === 'tiempo' && e.segObjetivo) {
@@ -56,6 +85,7 @@ export function sugerir(e: EjercicioDef, historial: PuntoHistorial[], incremento
 
   // Una sesión abandonada (todo pendiente) no borra el historial: se salta
   const puntos = historial.filter((p) => hechas(p).length > 0);
+  if (e.tipoProgresion === 'sensacion') return porSensacion(e, puntos);
   const ultimo = puntos[0];
   if (!ultimo) {
     const reps = Array.isArray(e.repsObjetivo) ? e.repsObjetivo[0] : e.repsObjetivo;
@@ -153,14 +183,19 @@ export function sugerir(e: EjercicioDef, historial: PuntoHistorial[], incremento
 }
 
 export function historialDeRanura(
-  sesiones: { fecha: string; estado: string; ejercicios: { ranuraId: string; series: SerieReg[] }[] }[],
+  sesiones: {
+    fecha: string;
+    estado: string;
+    ejercicios: { ranuraId: string; series: SerieReg[]; sensacion?: Sensacion }[];
+  }[],
   ranuraId: string,
 ): PuntoHistorial[] {
   return sesiones
     .filter((s) => s.estado === 'finalizada')
-    .map((s) => {
+    .map((s): PuntoHistorial | null => {
       const e = s.ejercicios.find((x) => x.ranuraId === ranuraId);
-      return e ? { fecha: s.fecha, series: e.series } : null;
+      if (!e) return null;
+      return e.sensacion ? { fecha: s.fecha, series: e.series, sensacion: e.sensacion } : { fecha: s.fecha, series: e.series };
     })
     .filter((x): x is PuntoHistorial => x !== null)
     .sort((a, b) => b.fecha.localeCompare(a.fecha));

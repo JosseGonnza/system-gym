@@ -199,6 +199,72 @@ describe('sesión abandonada (todo pendiente)', () => {
   });
 });
 
+describe('por sensación (una carita por ejercicio)', () => {
+  const prensa: EjercicioDef = { ranuraId: 'yd1-prensa', nombre: 'Prensa horizontal', tipoProgresion: 'sensacion', series: 3, repsObjetivo: 12, incrementoKg: 5, restSeg: 90 };
+  const deadBug: EjercicioDef = { ranuraId: 'yd3-deadbug', nombre: 'Dead bug', tipoProgresion: 'sensacion', series: 3, repsObjetivo: 10, incrementoKg: null, restSeg: 45 };
+  const tres = (peso: number) => [serie(peso, 12, 'completada'), serie(peso, 12, 'completada'), serie(peso, 12, 'completada')];
+  const con = (dias: number, sensacion: PuntoHistorial['sensacion'], peso = 50): PuntoHistorial => ({ ...sesionDe(dias, tres(peso)), sensacion });
+
+  it('fácil → sube el incremento', () => {
+    expect(sugerir(prensa, [con(3, 'facil')], INCR_MIN).peso).toBe(55);
+  });
+
+  it('bien → repite peso', () => {
+    expect(sugerir(prensa, [con(3, 'bien')], INCR_MIN).peso).toBe(50);
+  });
+
+  it('duro → baja el incremento', () => {
+    expect(sugerir(prensa, [con(3, 'duro')], INCR_MIN).peso).toBe(45);
+  });
+
+  it('duro con un peso más pequeño que el incremento → no baja de ahí', () => {
+    expect(sugerir(prensa, [con(3, 'duro', 5)], INCR_MIN).peso).toBe(5);
+  });
+
+  it('siempre pide las reps del objetivo', () => {
+    expect(sugerir(prensa, [con(3, 'facil')], INCR_MIN).reps).toBe(12);
+    expect(sugerir(prensa, [], INCR_MIN).reps).toBe(12);
+  });
+
+  it('sin historial: primera vez, sin peso y sin aviso de calibración', () => {
+    const s = sugerir(prensa, [], INCR_MIN);
+    expect(s.peso).toBeNull();
+    expect(s.texto).toMatch(/Primera vez/);
+    expect(s.aviso).toBeUndefined();
+  });
+
+  it('tras un parón no sube aunque fuese fácil, pero si fue duro sí baja', () => {
+    expect(sugerir(prensa, [con(40, 'facil')], INCR_MIN).peso).toBe(50);
+    expect(sugerir(prensa, [con(40, 'duro')], INCR_MIN).peso).toBe(45);
+  });
+
+  it('una sesión de antes de las caritas se lee por sus series', () => {
+    const limpia = sesionDe(3, tres(47.5));
+    const fallada = sesionDe(3, [serie(27.5, 10, 'fallo'), serie(27.5, 10, 'fallo'), serie(27.5, 10, 'completada')]);
+    expect(sugerir(prensa, [limpia], INCR_MIN).peso).toBe(47.5);
+    expect(sugerir(prensa, [fallada], INCR_MIN).peso).toBe(22.5);
+  });
+
+  it('un ejercicio saltado (todo pendiente) no cuenta', () => {
+    const saltado = sesionDe(1, [serie(60, 12, 'pendiente'), serie(60, 12, 'pendiente'), serie(60, 12, 'pendiente')]);
+    expect(sugerir(prensa, [saltado, con(5, 'bien')], INCR_MIN).peso).toBe(50);
+  });
+
+  it('sin incremento el ejercicio no lleva peso', () => {
+    const s = sugerir(deadBug, [], INCR_MIN);
+    expect(s.peso).toBeNull();
+    expect(s.reps).toBe(10);
+    expect(s.texto).toBe('');
+  });
+
+  it('el historial trae la carita de cada sesión', () => {
+    const sesiones = [
+      { fecha: '2026-10-20', estado: 'finalizada', ejercicios: [{ ranuraId: 'yd1-prensa', series: tres(50), sensacion: 'facil' as const }] },
+    ];
+    expect(historialDeRanura(sesiones, 'yd1-prensa')[0].sensacion).toBe('facil');
+  });
+});
+
 describe('historial por ranura', () => {
   it('solo cuenta sesiones finalizadas, filtra por ranura y ordena de reciente a antigua', () => {
     const sesiones = [

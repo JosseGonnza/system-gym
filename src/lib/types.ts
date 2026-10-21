@@ -1,16 +1,20 @@
-export type TipoProgresion = 'lineal' | 'doble' | 'pesoCorporal' | 'tiempo' | 'libre';
+export type TipoProgresion = 'lineal' | 'doble' | 'pesoCorporal' | 'tiempo' | 'libre' | 'sensacion';
 export type EstadoSerie = 'pendiente' | 'completada' | 'fallo' | 'corta';
+export type Sensacion = 'facil' | 'bien' | 'duro';
 export type EstadoSesion = 'finalizada' | 'borrador';
 export type Jornada = 'manana' | 'tarde' | 'libre' | 'laboratorio' | 'ett';
 
 export type PerfilId = 'jose' | 'yasmina';
-export type Tema = 'nothing' | 'matcha';
+export type Tema = 'nothing' | 'otono';
 export interface Perfil {
   id: PerfilId;
   nombre: string;
   tema: Tema;
   emoji: string;
   usaJornadas: boolean;
+  // La app le dice qué hacer y no le pregunta: una carita por ejercicio, sin
+  // avisos, sin datos de sueño ni energía.
+  modoSencillo: boolean;
 }
 
 export type Implemento = 'barra' | 'barraZ' | 'multipower' | 'mancuerna' | 'maquina' | 'polea' | 'kettlebell' | 'corporal';
@@ -62,6 +66,8 @@ export interface DiaDef {
   // Día suelto (cardio): se puede elegir cuando toque, pero la rueda no lo
   // propone ni lo cuenta — hacerlo no descoloca el siguiente día de fuerza.
   fueraDeRueda?: boolean;
+  // Lo que se dice al empezar (calentamiento): una línea, no un bloque que marcar.
+  intro?: string;
   ejercicios: EjercicioDef[];
 }
 
@@ -110,6 +116,7 @@ export interface EjercicioReg {
   ranuraId: string;
   nombre: string;
   series: SerieReg[];
+  sensacion?: Sensacion;
 }
 
 export interface Sesion {
