@@ -292,6 +292,15 @@ export const TIPS: Record<string, Tip> = {
     ],
     error: 'Si tiras con los brazos, sujeta la cuerda pegada a la cabeza y olvídate de ellos.',
   },
+  'crunch-declinado': {
+    donde: 'En el abdomen, sobre todo la parte de arriba.',
+    claves: [
+      'Pies bien enganchados y manos en el pecho, no detrás de la nuca.',
+      'Sube enrollando la espalda vértebra a vértebra, no en bloque.',
+      'Para cuando el abdomen deja de acortarse: no hace falta llegar arriba del todo.',
+    ],
+    error: 'Si lo notas en el cuello o en la cadera, acorta el recorrido y piensa en llevar las costillas al ombligo.',
+  },
   'elevacion-piernas': {
     donde: 'En la parte baja del abdomen.',
     claves: [

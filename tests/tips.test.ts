@@ -36,7 +36,8 @@ describe('tips de ejecución', () => {
       'fondos-paralelas', 'press-militar-mancuerna', 'elevacion-lateral', 'face-pull', 'curl-z',
       'extension-triceps-polea', 'encogimiento-trapecio', 'prensa-horizontal', 'extension-cuadriceps',
       'curl-femoral', 'gemelo-prensa', 'hiperextension', 'crunch-polea', 'press-banca', 'remo-polea',
-      'pec-deck', 'remo-maquina-brazo', 'curl-polea-cuerda', 'elevacion-piernas',
+      'pec-deck', 'remo-maquina-brazo', 'curl-polea-cuerda', 'elevacion-piernas', 'plancha',
+      'crunch-declinado', 'cardio-cinta', 'cardio-eliptica', 'cardio-bici',
     ];
     for (const id of [...yasmina, ...jose]) expect(hayTip(id), `falta tip: ${id}`).toBe(true);
   });
