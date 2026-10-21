@@ -71,6 +71,11 @@ import Ico from '../components/Ico.astro';
     <p id="marca-mejor" class="mt-2 text-sm font-bold text-vio-hi"></p>
     <div id="marca-grafico" class="mt-3"></div>
     <ul id="marca-lista" class="mt-3 space-y-1.5 text-sm text-mut"></ul>
+    <div id="marca-distancia" class="hidden">
+      <p class="eyebrow mt-4 block">Distancia</p>
+      <p id="marca-dist-mejor" class="mt-1 text-sm font-bold text-vio-hi"></p>
+      <div id="marca-dist-grafico" class="mt-3"></div>
+    </div>
   </section>
 </Layout>
 
@@ -89,6 +94,7 @@ import Ico from '../components/Ico.astro';
   import { mesHistorial, diasDesdeUltimaVez } from '../lib/historial';
   import { iconoEl, iconoDeDia } from '../lib/iconos';
   import { cerrarBorradoresCaducados } from '../lib/sesion';
+  import { esCardio } from '../lib/cardio';
   import type { EjercicioDef, SerieReg } from '../lib/types';
 
   const $ = (id: string) => document.getElementById(id)!;
@@ -318,15 +324,21 @@ import Ico from '../components/Ico.astro';
   });
 
   // ---------- Marcas por ejercicio ----------
-  const ejercicios: { def: EjercicioDef; dia: string }[] = rutina.dias.flatMap((d) =>
-    d.ejercicios.map((e) => ({ def: e, dia: `D${rutina.dias.indexOf(d) + 1}` })),
-  );
+  // Una ranura que sale en dos días (la pierna del C repartida en A, B y D) es el
+  // mismo historial: se lista una vez.
+  const ejercicios: { def: EjercicioDef; dia: string }[] = rutina.dias
+    .flatMap((d) => d.ejercicios.map((e) => ({ def: e, dia: `D${rutina.dias.indexOf(d) + 1}` })))
+    .filter((x, i, todos) => todos.findIndex((y) => y.def.ranuraId === x.def.ranuraId) === i);
 
   function valorSesion(def: EjercicioDef, p: PuntoHistorial, usarLastre: boolean): number | null {
     const hechas = p.series.filter((s: SerieReg) => s.estado === 'completada');
     const usar = hechas.length ? hechas : p.series.filter((s: SerieReg) => s.estado !== 'pendiente');
     if (!usar.length) return null;
-    if (def.tipoProgresion === 'tiempo') return Math.max(...usar.map((s) => s.segundos ?? 0)) || null;
+    if (def.tipoProgresion === 'tiempo') {
+      const seg = Math.max(...usar.map((s) => s.segundos ?? 0));
+      if (!seg) return null;
+      return esCardio(def.ejercicioId) ? Math.round(seg / 6) / 10 : seg;
+    }
     if (def.tipoProgresion === 'pesoCorporal') {
       if (usarLastre) return Math.max(...usar.map((s) => s.lastreKg ?? 0));
       return Math.max(...usar.map((s) => s.reps ?? 0)) || null;
@@ -342,9 +354,12 @@ import Ico from '../components/Ico.astro';
     const usarLastre =
       item.def.tipoProgresion === 'pesoCorporal' &&
       historial.some((p) => p.series.some((s) => (s.lastreKg ?? 0) > 0));
+    const cardio = esCardio(item.def.ejercicioId);
     const unidad =
       item.def.tipoProgresion === 'tiempo'
-        ? 's'
+        ? cardio
+          ? 'min'
+          : 's'
         : item.def.tipoProgresion === 'pesoCorporal'
           ? usarLastre
             ? 'kg lastre'
@@ -374,6 +389,22 @@ import Ico from '../components/Ico.astro';
           return li;
         }),
     );
+
+    // Mismos minutos y más km = progreso de verdad en el cardio
+    $('marca-distancia').classList.toggle('hidden', !cardio);
+    if (cardio) {
+      const km = historial
+        .map((p) => ({
+          fecha: p.fecha,
+          v: Math.max(0, ...p.series.filter((s) => s.estado !== 'pendiente').map((s) => s.cardio?.distanciaKm ?? 0)),
+        }))
+        .filter((x) => x.v > 0);
+      const mejorKm = km.reduce<{ fecha: string; v: number } | null>((m, p) => (m == null || p.v > m.v ? p : m), null);
+      $('marca-dist-mejor').textContent = mejorKm
+        ? `Mejor: ${fmtNum(mejorKm.v)} km (${fmtFecha(mejorKm.fecha)})`
+        : 'Apunta los km que marque la máquina y aquí sale la línea.';
+      $('marca-dist-grafico').replaceChildren(grafico(km.slice(-30), 'km'));
+    }
   }
 
   const select = $('marca-select') as HTMLSelectElement;

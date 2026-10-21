@@ -77,6 +77,15 @@ import Ico from '../components/Ico.astro';
     </div>
   </div>
 
+  <div
+    id="cuenta-bar"
+    class="fixed inset-x-4 bottom-[4.7rem] z-30 hidden flex-col items-center rounded-2xl border border-vio bg-surface px-4 py-4 glow"
+  >
+    <p id="cuenta-fase" class="eyebrow"></p>
+    <p id="cuenta-tiempo" class="num mt-1 text-6xl font-extrabold text-vio-hi"></p>
+    <button id="cuenta-parar" class="btn-2 mt-3 py-2.5">⏹ Parar</button>
+  </div>
+
   <dialog
     id="dlg-borrador"
     class="m-auto w-[88%] max-w-sm rounded-2xl border border-line bg-surface p-5 text-ink backdrop:bg-black/70"
@@ -108,6 +117,18 @@ import Ico from '../components/Ico.astro';
   import { sugerir, historialDeRanura, type Sugerencia } from '../lib/motor';
   import { tipDe } from '../lib/tips';
   import {
+    CAMPOS,
+    OBJETIVOS_MIN,
+    arrancarCrono,
+    camposDe,
+    esCardio,
+    maquinaPorDefecto,
+    pararCrono,
+    precargar,
+    segundosCrono,
+    ultimoCardio,
+  } from '../lib/cardio';
+  import {
     crearSesion,
     guardarSesion,
     descartarSesion,
@@ -115,7 +136,16 @@ import Ico from '../components/Ico.astro';
     buscarBorrador,
     cerrarBorradoresCaducados,
   } from '../lib/sesion';
-  import type { DiaDef, EjercicioDef, EjercicioReg, EstadoSerie, Sesion } from '../lib/types';
+  import type {
+    DatosCardio,
+    DiaDef,
+    Ejercicio,
+    EjercicioDef,
+    EjercicioReg,
+    EstadoSerie,
+    SerieReg,
+    Sesion,
+  } from '../lib/types';
 
   const $ = (id: string) => document.getElementById(id)!;
 
@@ -158,14 +188,42 @@ import Ico from '../components/Ico.astro';
     }
   }
 
+  // Las máquinas de cardio seguidas van en una sola tarjeta con pestañas: se hace
+  // una (o dos), no todas.
   function grupos(d: DiaDef): EjercicioDef[][] {
     const out: EjercicioDef[][] = [];
     for (const e of d.ejercicios) {
       const prev = out[out.length - 1];
-      if (e.superserieId && prev && prev[0].superserieId === e.superserieId) prev.push(e);
+      const superserie = !!e.superserieId && prev?.[0].superserieId === e.superserieId;
+      const cardio = esCardio(e.ejercicioId) && !!prev && esCardio(prev[0].ejercicioId);
+      if (superserie || cardio) prev.push(e);
       else out.push([e]);
     }
     return out;
+  }
+
+  const esGrupoCardio = (g: EjercicioDef[]) => esCardio(g[0].ejercicioId);
+  const cardioUsado = (s: SerieReg) =>
+    s.estado !== 'pendiente' || !!s.cardio?.cronoInicioISO || (s.cardio?.cronoAcumSeg ?? 0) > 0;
+
+  // Máquina abierta en cada tarjeta de cardio (clave: su primera ranura)
+  const maquinaSel = new Map<string, string>();
+  function maquinaDe(g: EjercicioDef[]): EjercicioDef {
+    const clave = g[0].ranuraId;
+    if (!maquinaSel.has(clave)) {
+      const usada = g.find((e) => cardioUsado(regDe(e).series[0]));
+      maquinaSel.set(clave, usada?.ranuraId ?? maquinaPorDefecto(sesiones, g.map((e) => e.ranuraId)));
+    }
+    return g.find((e) => e.ranuraId === maquinaSel.get(clave)) ?? g[0];
+  }
+
+  // Las máquinas de cardio que no se han tocado no son series pendientes.
+  function seriesContables(): SerieReg[] {
+    return grupos(dia).flatMap((g) => {
+      if (!esGrupoCardio(g)) return g.flatMap((e) => regDe(e).series);
+      const usadas = g.filter((e) => cardioUsado(regDe(e).series[0]));
+      return (usadas.length ? usadas : [maquinaDe(g)]).flatMap((e) => regDe(e).series);
+    });
   }
 
   function calcularSugerencias(d: DiaDef): Map<string, Sugerencia> {
@@ -271,7 +329,9 @@ import Ico from '../components/Ico.astro';
     let logrado: string | null = null;
     if (e.tipoProgresion === 'tiempo') {
       if (b.seg > 0 && (s.segundos ?? 0) > b.seg) {
-        logrado = `${e.nombre}: ${s.segundos} s`;
+        logrado = esCardio(e.ejercicioId)
+          ? `${e.nombre}: ${Math.round(s.segundos! / 60)} min`
+          : `${e.nombre}: ${s.segundos} s`;
         b.seg = s.segundos!;
       }
     } else if (e.tipoProgresion === 'pesoCorporal') {
@@ -296,7 +356,12 @@ import Ico from '../components/Ico.astro';
 
   function marcar(e: EjercicioDef, i: number, estado: EstadoSerie) {
     const s = regDe(e).series[i];
-    s.estado = s.estado === estado ? 'pendiente' : estado;
+    registrar(e, i, s.estado === estado ? 'pendiente' : estado);
+  }
+
+  function registrar(e: EjercicioDef, i: number, estado: EstadoSerie) {
+    const s = regDe(e).series[i];
+    s.estado = estado;
     if (s.estado !== 'pendiente') {
       const ahora = new Date().toISOString();
       sesion!.inicioISO ??= ahora;
@@ -367,121 +432,404 @@ import Ico from '../components/Ico.astro';
       div.append(ag);
     }
 
-    const tip = tipDe(e.ejercicioId);
-    if (tip) {
-      const btn = document.createElement('button');
-      btn.className =
-        'mt-2 flex items-center gap-1.5 rounded-lg border border-line bg-surface2 px-2.5 py-1.5 text-xs font-bold text-mut transition active:scale-[.97]';
-      btn.setAttribute('aria-expanded', 'false');
-      btn.replaceChildren(iconoEl('nota', '💡', 15), 'Cómo se hace');
-
-      const panel = document.createElement('div');
-      panel.className = 'mt-2 hidden rounded-xl border border-line bg-surface2 p-3 text-xs';
-      const donde = document.createElement('p');
-      donde.className = 'font-bold text-vio-hi';
-      donde.textContent = `Lo tienes que notar en: ${tip.donde}`;
-      const ul = document.createElement('ul');
-      ul.className = 'mt-2 space-y-1 text-mut';
-      ul.replaceChildren(
-        ...tip.claves.map((c) => {
-          const li = document.createElement('li');
-          li.className = 'flex gap-2';
-          const p = document.createElement('span');
-          p.textContent = '·';
-          const t = document.createElement('span');
-          t.textContent = c;
-          li.append(p, t);
-          return li;
-        }),
-      );
-      panel.append(donde, ul);
-      if (tip.error) {
-        const err = document.createElement('p');
-        err.className = 'mt-2 border-t border-line pt-2 font-semibold text-warn';
-        err.textContent = tip.error;
-        panel.append(err);
-      }
-
-      btn.addEventListener('click', () => {
-        const abierto = !panel.classList.toggle('hidden');
-        btn.setAttribute('aria-expanded', String(abierto));
-      });
-      div.append(btn, panel);
-    }
+    div.append(...tipEl(e.ejercicioId));
 
     const lista = document.createElement('div');
     lista.className = 'mt-3 space-y-2';
-    reg.series.forEach((s, i) => {
-      const wrap = document.createElement('div');
-      const fila = document.createElement('div');
-      fila.className = 'flex items-center gap-2';
-      const num = document.createElement('span');
-      num.className = 'w-6 shrink-0 text-xs font-bold text-mut';
-      num.textContent = `S${i + 1}`;
-      fila.append(num);
-
-      let real: HTMLElement | null = null;
-      if (e.tipoProgresion === 'tiempo') {
-        // El cardio se pide en minutos (nadie escribe 1800); por dentro sigue
-        // guardándose en segundos, como la plancha.
-        const enMin = ej?.patron === 'cardio';
-        const valor = s.segundos == null ? null : enMin ? Math.round(s.segundos / 60) : s.segundos;
-        fila.append(
-          inputNum(valor, 'w-20', enMin ? 'min' : 'seg', (v) => (s.segundos = v == null ? null : enMin ? v * 60 : v)),
-        );
-        const lbl = document.createElement('span');
-        lbl.className = 'text-xs text-mut';
-        lbl.textContent = enMin ? 'min' : 's';
-        fila.append(lbl);
-      } else if (e.tipoProgresion === 'pesoCorporal') {
-        fila.append(inputNum(s.lastreKg ?? null, 'w-18', '+kg', (v) => (s.lastreKg = v)));
-        const x = document.createElement('span');
-        x.className = 'text-xs text-mut';
-        x.textContent = '×';
-        fila.append(x, inputNum(s.reps ?? null, 'w-16', 'reps', (v) => (s.reps = v)));
-      } else {
-        const inPeso = inputNum(s.peso ?? null, 'w-20', 'kg', (v) => (s.peso = v));
-        fila.append(inPeso);
-        const x = document.createElement('span');
-        x.className = 'text-xs text-mut';
-        x.textContent = '×';
-        fila.append(x, inputNum(s.reps ?? null, 'w-16', 'reps', (v) => (s.reps = v)));
-        if (conReal && ej) {
-          real = document.createElement('p');
-          real.className = 'num ml-8 mt-0.5 text-xs font-semibold text-vio-soft';
-          const pinta = () => {
-            const v = inPeso.value === '' ? null : Number(inPeso.value);
-            const r = pesoReal(ej, Number.isFinite(v as number) ? v : null);
-            real!.textContent = r != null ? `= ${fmtKg(r)} kg reales` : '';
-          };
-          pinta();
-          inPeso.addEventListener('input', pinta);
-        }
-      }
-
-      const estados = document.createElement('div');
-      estados.className = 'ml-auto flex gap-1';
-      const defs: { id: EstadoSerie; icono: string; on: string }[] = [
-        { id: 'completada', icono: '✓', on: 'border-ok bg-ok/20 text-ok' },
-        { id: 'fallo', icono: '🔥', on: 'border-warn bg-warn/20' },
-        { id: 'corta', icono: '✗', on: 'border-bad bg-bad/20 text-bad' },
-      ];
-      for (const d of defs) {
-        const b = document.createElement('button');
-        b.className = `h-10 w-10 rounded-xl border text-base font-bold transition active:scale-90 ${
-          s.estado === d.id ? d.on : 'border-line bg-surface2 text-mut'
-        }`;
-        b.textContent = d.icono;
-        b.addEventListener('click', () => marcar(e, i, d.id));
-        estados.append(b);
-      }
-      fila.append(estados);
-      wrap.append(fila);
-      if (real) wrap.append(real);
-      lista.append(wrap);
-    });
+    reg.series.forEach((s, i) => lista.append(filaSerie(e, ej, conReal, s, i)));
     div.append(lista);
+
+    // Tiempo fijo (plancha): la serie se hace con cuenta atrás, sin teclear
+    const siguiente = reg.series.findIndex((s) => s.estado === 'pendiente');
+    if (e.tipoProgresion === 'tiempo' && e.segObjetivo && siguiente >= 0) {
+      const play = document.createElement('button');
+      play.className = 'btn mt-3 py-3';
+      play.textContent = `▶ Serie ${siguiente + 1} · ${fmtCrono(e.segObjetivo)}`;
+      play.addEventListener('click', () => empezarCuenta(e, siguiente));
+      div.append(play);
+    }
     return div;
+  }
+
+  function tipEl(ejercicioId?: string): HTMLElement[] {
+    const tip = tipDe(ejercicioId);
+    if (!tip) return [];
+    const btn = document.createElement('button');
+    btn.className =
+      'mt-2 flex items-center gap-1.5 rounded-lg border border-line bg-surface2 px-2.5 py-1.5 text-xs font-bold text-mut transition active:scale-[.97]';
+    btn.setAttribute('aria-expanded', 'false');
+    btn.replaceChildren(iconoEl('nota', '💡', 15), 'Cómo se hace');
+
+    const panel = document.createElement('div');
+    panel.className = 'mt-2 hidden rounded-xl border border-line bg-surface2 p-3 text-xs';
+    const donde = document.createElement('p');
+    donde.className = 'font-bold text-vio-hi';
+    donde.textContent = `Lo tienes que notar en: ${tip.donde}`;
+    const ul = document.createElement('ul');
+    ul.className = 'mt-2 space-y-1 text-mut';
+    ul.replaceChildren(
+      ...tip.claves.map((c) => {
+        const li = document.createElement('li');
+        li.className = 'flex gap-2';
+        const p = document.createElement('span');
+        p.textContent = '·';
+        const t = document.createElement('span');
+        t.textContent = c;
+        li.append(p, t);
+        return li;
+      }),
+    );
+    panel.append(donde, ul);
+    if (tip.error) {
+      const err = document.createElement('p');
+      err.className = 'mt-2 border-t border-line pt-2 font-semibold text-warn';
+      err.textContent = tip.error;
+      panel.append(err);
+    }
+
+    btn.addEventListener('click', () => {
+      const abierto = !panel.classList.toggle('hidden');
+      btn.setAttribute('aria-expanded', String(abierto));
+    });
+    return [btn, panel];
+  }
+
+  function filaSerie(e: EjercicioDef, ej: Ejercicio | undefined, conReal: boolean, s: SerieReg, i: number): HTMLElement {
+    const wrap = document.createElement('div');
+    const fila = document.createElement('div');
+    fila.className = 'flex items-center gap-2';
+    const num = document.createElement('span');
+    num.className = 'w-6 shrink-0 text-xs font-bold text-mut';
+    num.textContent = `S${i + 1}`;
+    fila.append(num);
+
+    let real: HTMLElement | null = null;
+    if (e.tipoProgresion === 'tiempo') {
+      // El cardio se pide en minutos (nadie escribe 1800); por dentro sigue
+      // guardándose en segundos, como la plancha.
+      const enMin = esCardio(e.ejercicioId) || ej?.patron === 'cardio';
+      const valor = s.segundos == null ? null : enMin ? Math.round(s.segundos / 60) : s.segundos;
+      fila.append(
+        inputNum(valor, 'w-20', enMin ? 'min' : 'seg', (v) => (s.segundos = v == null ? null : enMin ? v * 60 : v)),
+      );
+      const lbl = document.createElement('span');
+      lbl.className = 'text-xs text-mut';
+      lbl.textContent = enMin ? 'min' : 's';
+      fila.append(lbl);
+    } else if (e.tipoProgresion === 'pesoCorporal') {
+      fila.append(inputNum(s.lastreKg ?? null, 'w-18', '+kg', (v) => (s.lastreKg = v)));
+      const x = document.createElement('span');
+      x.className = 'text-xs text-mut';
+      x.textContent = '×';
+      fila.append(x, inputNum(s.reps ?? null, 'w-16', 'reps', (v) => (s.reps = v)));
+    } else {
+      const inPeso = inputNum(s.peso ?? null, 'w-20', 'kg', (v) => (s.peso = v));
+      fila.append(inPeso);
+      const x = document.createElement('span');
+      x.className = 'text-xs text-mut';
+      x.textContent = '×';
+      fila.append(x, inputNum(s.reps ?? null, 'w-16', 'reps', (v) => (s.reps = v)));
+      if (conReal && ej) {
+        real = document.createElement('p');
+        real.className = 'num ml-8 mt-0.5 text-xs font-semibold text-vio-soft';
+        const pinta = () => {
+          const v = inPeso.value === '' ? null : Number(inPeso.value);
+          const r = pesoReal(ej, Number.isFinite(v as number) ? v : null);
+          real!.textContent = r != null ? `= ${fmtKg(r)} kg reales` : '';
+        };
+        pinta();
+        inPeso.addEventListener('input', pinta);
+      }
+    }
+
+    const estados = document.createElement('div');
+    estados.className = 'ml-auto flex gap-1';
+    const defs: { id: EstadoSerie; icono: string; on: string }[] = [
+      { id: 'completada', icono: '✓', on: 'border-ok bg-ok/20 text-ok' },
+      { id: 'fallo', icono: '🔥', on: 'border-warn bg-warn/20' },
+      { id: 'corta', icono: '✗', on: 'border-bad bg-bad/20 text-bad' },
+    ];
+    for (const d of defs) {
+      const b = document.createElement('button');
+      b.className = `h-10 w-10 rounded-xl border text-base font-bold transition active:scale-90 ${
+        s.estado === d.id ? d.on : 'border-line bg-surface2 text-mut'
+      }`;
+      b.textContent = d.icono;
+      b.addEventListener('click', () => marcar(e, i, d.id));
+      estados.append(b);
+    }
+    fila.append(estados);
+    wrap.append(fila);
+    if (real) wrap.append(real);
+    return wrap;
+  }
+
+  // ---------- Cardio ----------
+  const fmtCrono = (seg: number) => {
+    const t = Math.max(0, Math.floor(seg));
+    return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`;
+  };
+  const fmtDato = (n: number) => n.toLocaleString('es-ES', { maximumFractionDigits: 2 });
+
+  // Ranura de cardio que se ve ahora en pantalla (para pintar su crono)
+  let cardioVisible: string | null = null;
+
+  function bloqueCardio(g: EjercicioDef[]): HTMLElement {
+    const e = maquinaDe(g);
+    const s = regDe(e).series[0];
+    const ej = e.ejercicioId ? catalogoMap.get(e.ejercicioId) : undefined;
+    const ultimo = ultimoCardio(sesiones, e.ranuraId);
+    if (!s.cardio) {
+      s.cardio = precargar(ultimo?.cardio ?? null);
+      // Los minutos salen del crono: la sugerencia de +5 s no pinta nada aquí
+      if (s.estado === 'pendiente') s.segundos = null;
+    }
+    const c: DatosCardio = s.cardio;
+    const corriendo = !!c.cronoInicioISO;
+    const guardarYPintar = () => {
+      void guardarSesion(sesion!);
+      renderCard();
+    };
+    cardioVisible = e.ranuraId;
+    const div = document.createElement('div');
+
+    if (g.length > 1) {
+      const tabs = document.createElement('div');
+      tabs.className = 'mb-3 grid gap-1.5';
+      tabs.style.gridTemplateColumns = `repeat(${g.length}, minmax(0, 1fr))`;
+      for (const m of g) {
+        const activa = m.ranuraId === e.ranuraId;
+        const b = document.createElement('button');
+        b.className = `rounded-lg border px-1 py-2 text-xs font-bold transition active:scale-95 ${
+          activa ? 'border-vio bg-vio/20 text-vio-hi' : 'border-line bg-surface2 text-mut'
+        } ${corriendo && !activa ? 'opacity-40' : ''}`;
+        b.textContent = m.nombre;
+        // Con el crono en marcha no se cambia de máquina: primero se termina
+        b.disabled = corriendo && !activa;
+        b.addEventListener('click', () => {
+          maquinaSel.set(g[0].ranuraId, m.ranuraId);
+          renderCard();
+        });
+        tabs.append(b);
+      }
+      div.append(tabs);
+    }
+
+    const h = document.createElement('h3');
+    h.className = 'text-lg font-extrabold';
+    h.textContent = e.nombre;
+    div.append(h);
+    if (ultimo) {
+      const datos = [
+        ultimo.segundos ? `${Math.round(ultimo.segundos / 60)} min` : null,
+        ...camposDe(e.ejercicioId).map((k) =>
+          ultimo.cardio?.[k] != null ? `${fmtDato(ultimo.cardio[k]!)}${CAMPOS[k].unidad ? ` ${CAMPOS[k].unidad}` : ''}` : null,
+        ),
+      ].filter(Boolean);
+      const p = document.createElement('p');
+      p.className = 'mt-1 text-xs font-semibold text-vio-soft';
+      p.textContent = `Último día: ${datos.join(' · ') || 'sin datos'}`;
+      div.append(p);
+    }
+    if (e.nota) {
+      const nota = document.createElement('p');
+      nota.className = 'mt-1.5 flex items-center gap-1.5 text-xs text-mut';
+      nota.replaceChildren(iconoEl('nota', '💡', 15), e.nota);
+      div.append(nota);
+    }
+    div.append(...tipEl(e.ejercicioId));
+
+    // Objetivo: se elige antes de subir y se va a por él
+    const obj = document.createElement('div');
+    obj.className = 'mt-4 flex items-center gap-1.5';
+    const objLbl = document.createElement('span');
+    objLbl.className = 'mr-1 text-xs font-bold text-mut';
+    objLbl.textContent = 'Objetivo';
+    obj.append(objLbl);
+    for (const m of OBJETIVOS_MIN) {
+      const b = document.createElement('button');
+      b.className = `h-10 flex-1 rounded-xl border text-sm font-bold transition active:scale-95 ${
+        c.objetivoMin === m ? 'border-vio bg-vio/20 text-vio-hi' : 'border-line bg-surface2 text-mut'
+      }`;
+      b.textContent = `${m}'`;
+      b.addEventListener('click', () => {
+        c.objetivoMin = m;
+        guardarYPintar();
+      });
+      obj.append(b);
+    }
+    const otro = inputNum(OBJETIVOS_MIN.includes(c.objetivoMin ?? 0) ? null : (c.objetivoMin ?? null), 'w-16', 'otro', (v) => {
+      c.objetivoMin = v;
+      renderCard();
+    });
+    obj.append(otro);
+    div.append(obj);
+
+    const reloj = document.createElement('div');
+    reloj.className = 'mt-4 text-center';
+    const tiempo = document.createElement('p');
+    tiempo.id = 'crono-cardio';
+    tiempo.className = 'num text-6xl font-extrabold text-vio-hi';
+    const sub = document.createElement('p');
+    sub.id = 'crono-cardio-sub';
+    sub.className = 'mt-1 text-xs font-semibold text-mut';
+    reloj.append(tiempo, sub);
+    div.append(reloj);
+
+    const mandos = document.createElement('div');
+    mandos.className = 'mt-3 grid grid-cols-2 gap-2';
+    const usado = (c.cronoAcumSeg ?? 0) > 0 || corriendo;
+    const btn = (txt: string, clase: string, accion: () => void) => {
+      const b = document.createElement('button');
+      b.className = clase;
+      b.textContent = txt;
+      b.addEventListener('click', accion);
+      return b;
+    };
+    if (corriendo) {
+      mandos.append(
+        btn('⏸ Pausa', 'btn-2 py-3', () => {
+          pararCrono(c);
+          if (!necesitaPantalla()) soltarPantalla();
+          guardarYPintar();
+        }),
+        btn('⏹ Terminar', 'btn py-3', () => terminarCardio(e, s)),
+      );
+    } else {
+      const play = btn(usado ? '▶ Seguir' : '▶ Empezar', 'btn py-3', () => {
+        asegurarAudio();
+        pararRest();
+        arrancarCrono(c);
+        const ahora = new Date().toISOString();
+        sesion!.inicioISO ??= ahora;
+        sesion!.finISO = ahora;
+        void pedirPantalla();
+        guardarYPintar();
+        tickCardio();
+        cardioInterval ??= setInterval(tickCardio, 500);
+      });
+      if (usado) mandos.append(play, btn('⏹ Terminar', 'btn-2 py-3', () => terminarCardio(e, s)));
+      else {
+        play.classList.add('col-span-2');
+        mandos.append(play);
+      }
+    }
+    div.append(mandos);
+
+    const campos = document.createElement('div');
+    campos.className = 'mt-4 grid grid-cols-2 gap-2';
+    for (const k of camposDe(e.ejercicioId)) {
+      const def = CAMPOS[k];
+      const lab = document.createElement('label');
+      lab.className = 'block';
+      const t = document.createElement('span');
+      t.className = 'text-[11px] font-bold text-mut';
+      t.textContent = def.unidad ? `${def.label} (${def.unidad})` : def.label;
+      const previo = ultimo?.cardio?.[k];
+      const input = inputNum(c[k] ?? null, 'mt-1 w-full', previo != null ? `últ. ${fmtDato(previo)}` : '—', (v) => (c[k] = v));
+      lab.append(t, input);
+      campos.append(lab);
+    }
+    div.append(campos);
+
+    const esf = document.createElement('div');
+    esf.className = 'mt-3';
+    const esfLbl = document.createElement('p');
+    esfLbl.className = 'text-[11px] font-bold text-mut';
+    esfLbl.textContent = 'Esfuerzo (1-10)';
+    const esfFila = document.createElement('div');
+    esfFila.className = 'mt-1 grid grid-cols-10 gap-1';
+    for (let n = 1; n <= 10; n++) {
+      const b = document.createElement('button');
+      b.className = `h-8 rounded-lg border text-xs font-bold transition active:scale-90 ${
+        c.esfuerzo === n ? 'border-vio bg-vio/30 text-vio-hi' : 'border-line bg-surface2 text-mut'
+      }`;
+      b.textContent = String(n);
+      b.addEventListener('click', () => {
+        c.esfuerzo = c.esfuerzo === n ? null : n;
+        guardarYPintar();
+      });
+      esfFila.append(b);
+    }
+    esf.append(esfLbl, esfFila);
+    div.append(esf);
+
+    const manual = document.createElement('p');
+    manual.className = 'mt-4 text-[11px] font-bold text-mut';
+    manual.textContent = '¿Sin crono? Apunta los minutos a mano:';
+    div.append(manual, filaSerie(e, ej, false, s, 0));
+    return div;
+  }
+
+  function terminarCardio(e: EjercicioDef, s: SerieReg) {
+    const c = s.cardio!;
+    pararCrono(c);
+    if (!necesitaPantalla()) soltarPantalla();
+    const seg = Math.round(c.cronoAcumSeg ?? 0);
+    // Menos de un minuto es haberle dado sin querer: se descarta
+    if (seg < 60) {
+      c.cronoAcumSeg = 0;
+      void guardarSesion(sesion!);
+      renderCard();
+      return;
+    }
+    s.segundos = seg;
+    registrar(e, 0, 'completada');
+  }
+
+  function pintarCronoCardio(c: DatosCardio) {
+    const tiempo = document.getElementById('crono-cardio');
+    const sub = document.getElementById('crono-cardio-sub');
+    if (!tiempo || !sub) return;
+    const seg = segundosCrono(c);
+    const obj = (c.objetivoMin ?? 0) * 60;
+    const pausa = c.cronoInicioISO ? '' : (c.cronoAcumSeg ?? 0) > 0 ? ' · en pausa' : '';
+    tiempo.classList.toggle('text-ok', obj > 0 && seg >= obj);
+    tiempo.classList.toggle('text-vio-hi', !(obj > 0 && seg >= obj));
+    if (obj > 0 && seg < obj) {
+      tiempo.textContent = fmtCrono(obj - seg);
+      sub.textContent = `quedan de ${c.objetivoMin} min${pausa}`;
+    } else if (obj > 0) {
+      // Llegar al objetivo no para: lo que sigas es extra y se apunta
+      tiempo.textContent = `+${fmtCrono(seg - obj)}`;
+      sub.textContent = `✓ objetivo de ${c.objetivoMin} min cumplido · llevas ${fmtCrono(seg)}${pausa}`;
+    } else {
+      tiempo.textContent = fmtCrono(seg);
+      sub.textContent = `sin objetivo${pausa}`;
+    }
+  }
+
+  let cardioInterval: ReturnType<typeof setInterval> | undefined;
+  const avisados = new Set<string>();
+
+  function cronosCardio(): { e: EjercicioDef; c: DatosCardio }[] {
+    if (!sesion) return [];
+    return dia.ejercicios
+      .filter((e) => esCardio(e.ejercicioId))
+      .map((e) => ({ e, c: regDe(e)?.series[0]?.cardio }))
+      .filter((x): x is { e: EjercicioDef; c: DatosCardio } => !!x.c);
+  }
+
+  // Pita aunque la tarjeta no esté a la vista; solo pinta la que se ve.
+  function tickCardio() {
+    let alguno = false;
+    for (const { e, c } of cronosCardio()) {
+      const obj = (c.objetivoMin ?? 0) * 60;
+      if (c.cronoInicioISO) alguno = true;
+      if (obj > 0 && segundosCrono(c) >= obj) {
+        if (c.cronoInicioISO && !avisados.has(e.ranuraId)) {
+          avisados.add(e.ranuraId);
+          pitidoObjetivo();
+        }
+      } else {
+        avisados.delete(e.ranuraId);
+      }
+      if (cardioVisible === e.ranuraId) pintarCronoCardio(c);
+    }
+    if (!alguno && cardioInterval) {
+      clearInterval(cardioInterval);
+      cardioInterval = undefined;
+    }
   }
 
   function renderCard() {
@@ -489,6 +837,15 @@ import Ico from '../components/Ico.astro';
     const grupo = gs[cardIdx];
     const card = document.createElement('div');
     card.className = 'card glow border-vio/30';
+    cardioVisible = null;
+    if (esGrupoCardio(grupo)) {
+      card.append(bloqueCardio(grupo));
+      $('tarjeta').replaceChildren(card);
+      renderProgreso();
+      tickCardio();
+      if (cronosCardio().some(({ c }) => c.cronoInicioISO)) cardioInterval ??= setInterval(tickCardio, 500);
+      return;
+    }
     if (grupo.length > 1) {
       const tag = document.createElement('p');
       tag.className = 'eyebrow mb-2 block';
@@ -514,12 +871,19 @@ import Ico from '../components/Ico.astro';
     renderEnergia();
     renderCard();
     mostrarVista('sesion');
+    // Retomar un borrador con el crono de cardio en marcha
+    if (cronosCardio().some(({ c }) => c.cronoInicioISO)) {
+      asegurarAudio();
+      cardioInterval ??= setInterval(tickCardio, 500);
+      void pedirPantalla();
+    }
   }
 
   // ---------- Vista fin ----------
   function renderFin() {
-    const total = sesion!.ejercicios.reduce((n, e) => n + e.series.length, 0);
-    const hechasN = sesion!.ejercicios.reduce((n, e) => n + e.series.filter((s) => s.estado !== 'pendiente').length, 0);
+    const contables = seriesContables();
+    const total = contables.length;
+    const hechasN = contables.filter((s) => s.estado !== 'pendiente').length;
     const dur = sesion!.duracionMin != null ? ` · ${sesion!.duracionMin} min` : '';
     const elF = $('fin-resumen');
     elF.classList.add('flex', 'flex-wrap', 'items-center', 'justify-center', 'gap-1.5');
@@ -541,19 +905,60 @@ import Ico from '../components/Ico.astro';
   let restFinMs = 0;
   let audioCtx: AudioContext | null = null;
 
-  function pitido() {
-    navigator.vibrate?.([200, 100, 200]);
+  function bip(frecuencia = 880, duracion = 0.25) {
     try {
       if (!audioCtx) return;
       const osc = audioCtx.createOscillator();
-      osc.frequency.value = 880;
+      osc.frequency.value = frecuencia;
       osc.connect(audioCtx.destination);
       osc.start();
-      osc.stop(audioCtx.currentTime + 0.25);
+      osc.stop(audioCtx.currentTime + duracion);
     } catch {
       /* sin audio, la vibración basta */
     }
   }
+
+  function pitido() {
+    navigator.vibrate?.([200, 100, 200]);
+    bip();
+  }
+
+  function pitidoObjetivo() {
+    navigator.vibrate?.([400, 150, 400, 150, 400]);
+    bip(880, 0.6);
+  }
+
+  // El AudioContext se crea en un gesto del usuario; si no, el navegador lo bloquea
+  function asegurarAudio() {
+    if (audioCtx) return;
+    try {
+      audioCtx = new AudioContext();
+    } catch {
+      audioCtx = null;
+    }
+  }
+
+  // ---------- Pantalla encendida ----------
+  // Solo mientras corre una cuenta atrás. Si cambias de app se suelta solo, y
+  // se vuelve a pedir al volver.
+  let wakeLock: WakeLockSentinel | null = null;
+
+  async function pedirPantalla() {
+    if (wakeLock || !('wakeLock' in navigator)) return;
+    try {
+      wakeLock = await navigator.wakeLock.request('screen');
+      wakeLock.addEventListener('release', () => (wakeLock = null));
+    } catch {
+      /* sin permiso o sin batería: el crono sigue igual */
+    }
+  }
+
+  function soltarPantalla() {
+    void wakeLock?.release();
+    wakeLock = null;
+  }
+
+  const necesitaPantalla = () => cuenta != null || cronosCardio().some(({ c }) => c.cronoInicioISO);
 
   function pintarRest(restante: number) {
     const m = Math.floor(restante / 60);
@@ -580,15 +985,8 @@ import Ico from '../components/Ico.astro';
   }
 
   function empezarRest(e: EjercicioDef) {
-    if (!config.restTimerActivo) return;
-    // Crear el AudioContext aquí (gesto del usuario) para que el pitido no quede bloqueado
-    if (!audioCtx) {
-      try {
-        audioCtx = new AudioContext();
-      } catch {
-        audioCtx = null;
-      }
-    }
+    if (!config.restTimerActivo || e.restSeg <= 0) return;
+    asegurarAudio();
     clearInterval(restInterval);
     restFinMs = Date.now() + e.restSeg * 1000;
     $('rest-nombre').textContent = `· ${e.nombre}`;
@@ -599,7 +997,11 @@ import Ico from '../components/Ico.astro';
   }
 
   document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) tickRest();
+    if (document.hidden) return;
+    tickRest();
+    tickCuenta();
+    tickCardio();
+    if (necesitaPantalla()) void pedirPantalla();
   });
 
   $('rest-saltar').addEventListener('click', pararRest);
@@ -608,6 +1010,62 @@ import Ico from '../components/Ico.astro';
     restFinMs += 15_000;
     tickRest();
   });
+
+  // ---------- Cuenta atrás (plancha) ----------
+  // 5 s para colocarse y luego el tiempo fijo de la serie. Reloj de pared, como
+  // el descanso: si la pantalla se bloquea, al volver se resincroniza.
+  const PREPARACION_SEG = 5;
+  let cuenta: { e: EjercicioDef; i: number; fase: 'prep' | 'serie'; inicioMs: number; finMs: number; ultimo: number } | null =
+    null;
+  let cuentaInterval: ReturnType<typeof setInterval> | undefined;
+
+  function empezarCuenta(e: EjercicioDef, i: number) {
+    pararRest();
+    asegurarAudio();
+    void pedirPantalla();
+    const ahora = Date.now();
+    cuenta = { e, i, fase: 'prep', inicioMs: ahora, finMs: ahora + PREPARACION_SEG * 1000, ultimo: PREPARACION_SEG + 1 };
+    $('cuenta-bar').classList.remove('hidden');
+    $('cuenta-bar').classList.add('flex');
+    clearInterval(cuentaInterval);
+    cuentaInterval = setInterval(tickCuenta, 200);
+    tickCuenta();
+  }
+
+  function tickCuenta() {
+    if (!cuenta) return;
+    const restante = Math.ceil((cuenta.finMs - Date.now()) / 1000);
+    if (restante <= 0) {
+      if (cuenta.fase === 'serie') return terminarCuenta(true);
+      const ahora = Date.now();
+      const seg = cuenta.e.segObjetivo ?? 60;
+      cuenta = { ...cuenta, fase: 'serie', inicioMs: ahora, finMs: ahora + seg * 1000, ultimo: seg + 1 };
+      bip(1320, 0.35);
+      return tickCuenta();
+    }
+    // Pitido corto en los tres últimos segundos de cada fase
+    if (restante < cuenta.ultimo && restante <= 3) bip(660, 0.08);
+    cuenta.ultimo = restante;
+    $('cuenta-fase').textContent = cuenta.fase === 'prep' ? 'Colócate' : `${cuenta.e.nombre} · S${cuenta.i + 1}`;
+    $('cuenta-tiempo').textContent = cuenta.fase === 'prep' ? String(restante) : fmtCrono(restante);
+  }
+
+  function terminarCuenta(completa: boolean) {
+    if (!cuenta) return;
+    const { e, i, fase, inicioMs, finMs } = cuenta;
+    cuenta = null;
+    clearInterval(cuentaInterval);
+    $('cuenta-bar').classList.add('hidden');
+    $('cuenta-bar').classList.remove('flex');
+    if (!necesitaPantalla()) soltarPantalla();
+    if (fase === 'prep') return;
+    const s = regDe(e).series[i];
+    s.segundos = Math.round(((completa ? finMs : Date.now()) - inicioMs) / 1000);
+    if (completa) pitido();
+    registrar(e, i, completa ? 'completada' : 'fallo');
+  }
+
+  $('cuenta-parar').addEventListener('click', () => terminarCuenta(false));
 
   // ---------- Acciones ----------
   async function finalizar() {
@@ -619,8 +1077,17 @@ import Ico from '../components/Ico.astro';
       }
       return;
     }
-    const total = sesion!.ejercicios.reduce((n, e) => n + e.series.length, 0);
-    if (marcadas < total && !confirm(`Quedan ${total - marcadas} series sin marcar. ¿Finalizar igual?`)) return;
+    const pendientes = seriesContables().filter((s) => s.estado === 'pendiente').length;
+    if (pendientes > 0 && !confirm(`Quedan ${pendientes} series sin marcar. ¿Finalizar igual?`)) return;
+    // Un crono de cardio en marcha se cierra con lo que lleve
+    for (const { e, c } of cronosCardio()) {
+      if (!c.cronoInicioISO) continue;
+      pararCrono(c);
+      const s = regDe(e).series[0];
+      s.segundos = Math.round(c.cronoAcumSeg ?? 0);
+      if (s.estado === 'pendiente' && s.segundos >= 60) s.estado = 'completada';
+    }
+    soltarPantalla();
     pararRest();
     await finalizarSesion(sesion!);
     renderFin();

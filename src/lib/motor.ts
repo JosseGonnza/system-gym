@@ -50,6 +50,9 @@ function todasAlTope(p: PuntoHistorial, e: EjercicioDef, tope: number): boolean 
 
 export function sugerir(e: EjercicioDef, historial: PuntoHistorial[], incrementoMin: number): Sugerencia {
   if (e.tipoProgresion === 'libre') return { ...VACIA, texto: 'Libre: apunta lo que hagas' };
+  if (e.tipoProgresion === 'tiempo' && e.segObjetivo) {
+    return { ...VACIA, segundos: e.segObjetivo, texto: `${e.segObjetivo} s fijos: dale a ▶` };
+  }
 
   // Una sesión abandonada (todo pendiente) no borra el historial: se salta
   const puntos = historial.filter((p) => hechas(p).length > 0);

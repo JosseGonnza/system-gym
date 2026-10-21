@@ -138,6 +138,15 @@ describe('tiempo y libre', () => {
     expect(sugerir(plancha, [pl], INCR_MIN).segundos).toBe(50);
   });
 
+  it('tiempo con segObjetivo: siempre el mismo, sin alargar ni avisar de parón', () => {
+    const fija: EjercicioDef = { ...plancha, segObjetivo: 60 };
+    const pl = sesionDe(30, [serie(null, null, 'completada', { segundos: 60 })]);
+    const s = sugerir(fija, [pl], INCR_MIN);
+    expect(s.segundos).toBe(60);
+    expect(s.aviso).toBeUndefined();
+    expect(sugerir(fija, [], INCR_MIN).segundos).toBe(60);
+  });
+
   it('libre: sin auto-progresión', () => {
     const s = sugerir(abdomen, [], INCR_MIN);
     expect(s.peso).toBeNull();

@@ -47,6 +47,9 @@ export interface EjercicioDef {
   repsObjetivo: number | [number, number] | null;
   incrementoKg: number | null;
   restSeg: number;
+  // Tiempo fijo por serie (plancha): el motor no lo alarga y la cuenta atrás
+  // arranca de aquí.
+  segObjetivo?: number;
   superserieId?: string;
   nota?: string;
 }
@@ -79,11 +82,27 @@ export interface Config {
   ultimoExportISO: string | null;
 }
 
+export interface DatosCardio {
+  objetivoMin?: number | null;
+  velocidad?: number | null;
+  inclinacion?: number | null;
+  nivel?: number | null;
+  rpm?: number | null;
+  distanciaKm?: number | null;
+  pulso?: number | null;
+  esfuerzo?: number | null;
+  // Crono por reloj de pared, guardado en la sesión: aguanta la pantalla
+  // bloqueada y que Android cierre la app mientras suena un podcast.
+  cronoInicioISO?: string | null;
+  cronoAcumSeg?: number;
+}
+
 export interface SerieReg {
   peso: number | null;
   reps: number | null;
   segundos?: number | null;
   lastreKg?: number | null;
+  cardio?: DatosCardio;
   estado: EstadoSerie;
 }
 

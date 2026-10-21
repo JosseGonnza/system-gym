@@ -2,6 +2,7 @@ import { del, get, set } from 'idb-keyval';
 import type { BackupV1, BackupV2, Config, DiaDef, DiaRegistro, Ejercicio, EjercicioDef, Mediciones, PerfilId, Rutina, Sesion } from './types';
 import { CATALOGO, CONFIG_INICIAL, CONFIG_YASMINA, RUTINA_1, RUTINA_YASMINA } from './seed';
 import { esPerfilValido, PERFIL_POR_DEFECTO } from './perfiles';
+import { esCardio } from './cardio';
 
 // Claves globales (compartidas entre perfiles).
 const G = { perfilActivo: 'perfilActivo', catalogo: 'catalogo' } as const;
@@ -141,7 +142,9 @@ export function diaSugerido(config: Config, rutina: Rutina): DiaDef {
 
 export function formatObjetivo(e: EjercicioDef): string {
   if (e.repsObjetivo == null) {
-    return e.tipoProgresion === 'tiempo' ? `${e.series}×seg` : `${e.series} series`;
+    if (e.tipoProgresion !== 'tiempo') return `${e.series} series`;
+    if (esCardio(e.ejercicioId)) return 'min';
+    return e.segObjetivo ? `${e.series}×${e.segObjetivo}s` : `${e.series}×seg`;
   }
   const reps = Array.isArray(e.repsObjetivo) ? `${e.repsObjetivo[0]}-${e.repsObjetivo[1]}` : `${e.repsObjetivo}`;
   return `${e.series}×${reps}`;
