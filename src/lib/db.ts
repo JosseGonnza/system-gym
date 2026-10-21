@@ -15,6 +15,14 @@ const SEED: Record<PerfilId, { config: Config; rutina: Rutina }> = {
   yasmina: { config: CONFIG_YASMINA, rutina: RUTINA_YASMINA },
 };
 
+// Rutina que llega con un deploy: si el perfil no la tiene, se añade y pasa a
+// ser la activa desde el primer día de la rueda. Las rutinas viejas y las
+// sesiones se quedan, así que el historial sigue ahí. Solo para quien se lista:
+// Jose cambia de rutina importando backups.
+const RUTINA_VIGENTE: Partial<Record<PerfilId, { rutina: Rutina; objetivoSemana: number }>> = {
+  yasmina: { rutina: RUTINA_YASMINA, objetivoSemana: CONFIG_YASMINA.entrenosObjetivoSemana },
+};
+
 const MEDICIONES_VACIAS: Mediciones = { peso: [], cintura: [] };
 
 // Perfil activo en memoria; se carga en initDB y se usa para prefijar las claves.
@@ -39,6 +47,33 @@ async function sembrarPerfil(p: PerfilId): Promise<void> {
   if (!(await get(`${p}:sesiones`))) await set(`${p}:sesiones`, []);
   if (!(await get(`${p}:mediciones`))) await set(`${p}:mediciones`, MEDICIONES_VACIAS);
   if (!(await get(`${p}:diario`))) await set(`${p}:diario`, {});
+
+  const vigente = RUTINA_VIGENTE[p];
+  const rutinas: Rutina[] = (await get(`${p}:rutinas`)) ?? [];
+  if (vigente && !rutinas.some((r) => r.id === vigente.rutina.id)) {
+    await set(`${p}:rutinas`, [...rutinas, vigente.rutina]);
+    const config: Config = (await get(`${p}:config`)) ?? SEED[p].config;
+    await set(`${p}:config`, {
+      ...config,
+      rutinaActivaId: vigente.rutina.id,
+      puntero: { ultimoDiaCompletadoId: null },
+      entrenosObjetivoSemana: vigente.objetivoSemana,
+    });
+  }
+}
+
+// El catálogo es de los dos perfiles e importar un backup lo sustituye entero:
+// uno viejo se llevaba por delante los ejercicios que no conocía. Los que falten
+// vuelven solos; nunca se quita ni se cambia uno que ya esté.
+async function completarCatalogo(): Promise<void> {
+  const actual: Ejercicio[] | undefined = await get(G.catalogo);
+  if (!actual) {
+    await set(G.catalogo, CATALOGO);
+    return;
+  }
+  const ids = new Set(actual.map((e) => e.id));
+  const faltan = CATALOGO.filter((e) => !ids.has(e.id));
+  if (faltan.length) await set(G.catalogo, [...actual, ...faltan]);
 }
 
 const espejarLocal = (p: PerfilId) => {
@@ -56,7 +91,7 @@ export async function initDB(): Promise<void> {
   // defecto en memoria y el selector (guard del Layout) se encarga de pedirlo.
   perfilActivo = esPerfilValido(guardado) ? guardado : PERFIL_POR_DEFECTO;
   if (esPerfilValido(guardado)) espejarLocal(guardado);
-  if (!(await get(G.catalogo))) await set(G.catalogo, CATALOGO);
+  await completarCatalogo();
   await sembrarPerfil(perfilActivo);
 }
 

@@ -17,6 +17,7 @@ import { initDB, getConfig, setConfig, getPerfilActivo, setPerfilActivo, resetDB
 import { horarioDe } from '../src/lib/horarios';
 import { dietaDe } from '../src/lib/dietas';
 import { PERFILES, perfil as perfilDe } from '../src/lib/perfiles';
+import { CATALOGO, CONFIG_INICIAL, CONFIG_YASMINA, RUTINA_YASMINA } from '../src/lib/seed';
 
 describe('jornadas por perfil', () => {
   // Ninguno de los dos las usa ya: entrenan por sensaciones, no por turno.
@@ -28,6 +29,11 @@ describe('jornadas por perfil', () => {
 
   it('todo perfil declara si usa jornadas', () => {
     for (const p of PERFILES) expect(typeof p.usaJornadas).toBe('boolean');
+  });
+
+  it('solo Yasmina va en modo sencillo', () => {
+    expect(perfilDe('yasmina').modoSencillo).toBe(true);
+    expect(perfilDe('jose').modoSencillo).toBe(false);
   });
 });
 
@@ -96,6 +102,52 @@ describe('multi-perfil', () => {
       expect(d.resumen.length).toBeGreaterThan(0);
     }
     expect(dietaDe('yasmina').macros[0].valor).toBe('1.825');
+  });
+
+  it('la rutina vigente de Yasmina llega sola, activa y sin tocar sus sesiones', async () => {
+    const vieja = { id: 'rutina-yasmina', nombre: 'Rueda de 4', dias: [] };
+    store.set('perfilActivo', 'yasmina');
+    store.set('yasmina:config', { ...CONFIG_YASMINA, rutinaActivaId: 'rutina-yasmina', entrenosObjetivoSemana: 4, puntero: { ultimoDiaCompletadoId: 'yb' } });
+    store.set('yasmina:rutinas', [vieja]);
+    store.set('yasmina:sesiones', [{ id: 'agosto' }]);
+    await initDB();
+    const rutinas = store.get('yasmina:rutinas') as { id: string }[];
+    expect(rutinas.map((r) => r.id)).toEqual(['rutina-yasmina', RUTINA_YASMINA.id]);
+    const config = await getConfig();
+    expect(config.rutinaActivaId).toBe(RUTINA_YASMINA.id);
+    expect(config.entrenosObjetivoSemana).toBe(3);
+    expect(config.puntero.ultimoDiaCompletadoId).toBeNull();
+    expect(config.macros.kcal).toBe(1825);
+    expect(store.get('yasmina:sesiones')).toEqual([{ id: 'agosto' }]);
+  });
+
+  it('la rutina vigente solo se añade una vez y no pisa el puntero después', async () => {
+    store.set('perfilActivo', 'yasmina');
+    await initDB();
+    await setConfig({ ...(await getConfig()), puntero: { ultimoDiaCompletadoId: 'fa' } });
+    await initDB();
+    expect((store.get('yasmina:rutinas') as unknown[]).length).toBe(1);
+    expect((await getConfig()).puntero.ultimoDiaCompletadoId).toBe('fa');
+  });
+
+  it('a Jose no le cambia la rutina', async () => {
+    store.set('jose:rutinas', [{ id: 'rutina-arnold', nombre: 'Arnold', dias: [] }]);
+    store.set('jose:config', { ...CONFIG_INICIAL, rutinaActivaId: 'rutina-arnold' });
+    await initDB();
+    expect((store.get('jose:rutinas') as { id: string }[]).map((r) => r.id)).toEqual(['rutina-arnold']);
+    expect((await getConfig()).rutinaActivaId).toBe('rutina-arnold');
+  });
+
+  it('el catálogo recupera los ejercicios que le falten, sin quitar ni cambiar ninguno', async () => {
+    const propio = { ...CATALOGO[0], nota: 'nota cambiada en el móvil' };
+    const extra = { ...CATALOGO[1], id: 'solo-en-el-movil' };
+    store.set('catalogo', [propio, extra]);
+    await initDB();
+    const cat = store.get('catalogo') as { id: string; nota?: string }[];
+    expect(cat).toHaveLength(CATALOGO.length + 1);
+    expect(cat.find((e) => e.id === CATALOGO[0].id)?.nota).toBe('nota cambiada en el móvil');
+    expect(cat.some((e) => e.id === 'solo-en-el-movil')).toBe(true);
+    expect(cat.some((e) => e.id === 'crunch-declinado')).toBe(true);
   });
 
   it('reset solo afecta al perfil activo, no al otro ni al catálogo', async () => {

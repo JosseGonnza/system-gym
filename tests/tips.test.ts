@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { TIPS, hayTip, tipDe } from '../src/lib/tips';
+import { RUTINA_YASMINA } from '../src/lib/seed';
 
 describe('tips de ejecución', () => {
   it('todos dicen dónde se nota y dan al menos dos claves', () => {
@@ -24,13 +25,8 @@ describe('tips de ejecución', () => {
   });
 
   it('cubre las dos rutinas activas', () => {
-    const yasmina = [
-      'hip-thrust', 'rumano-mancuerna', 'curl-femoral', 'patada-gluteo', 'abduccion-cadera',
-      'press-banca-maquina', 'pec-deck', 'elevacion-lateral', 'face-pull', 'extension-triceps-polea',
-      'prensa-horizontal', 'extension-cuadriceps', 'gemelo-prensa', 'jalon-pecho', 'remo-maquina',
-      'curl-mancuerna', 'plancha', 'dead-bug', 'cardio-cinta', 'cardio-eliptica', 'cardio-bici',
-      'cardio-caminar',
-    ];
+    // La de Yasmina vive en el seed; la Arnold de Jose solo en su backup.
+    const yasmina = RUTINA_YASMINA.dias.flatMap((d) => d.ejercicios.map((e) => e.ejercicioId!));
     const jose = [
       'press-banca-maquina', 'jalon-pecho', 'press-inclinado-maquina', 'remo-maquina',
       'fondos-paralelas', 'press-militar-mancuerna', 'elevacion-lateral', 'face-pull', 'curl-z',
