@@ -83,6 +83,24 @@ describe('progresión doble', () => {
     const casi = sesionDe(4, [serie(40, 12, 'completada'), serie(40, 12, 'completada'), serie(40, 11, 'corta')]);
     expect(sugerir(doble, [casi], INCR_MIN).reps).toBe(12);
   });
+
+  it('peso fuera de la rejilla del incremento → suma el incremento, no salta de más', () => {
+    // Caso real (21/10): banca en máquina a 47,5 con +5 proponía 55, un +16 %.
+    const banca: EjercicioDef = { ...doble, ranuraId: 'a-banca-maq', repsObjetivo: [6, 10], incrementoKg: 5 };
+    const tope = sesionDe(3, [serie(47.5, 10, 'completada'), serie(47.5, 10, 'completada'), serie(47.5, 10, 'completada')]);
+    expect(sugerir(banca, [tope], INCR_MIN).peso).toBe(52.5);
+  });
+
+  it('con más series en la rutina que las hechas, no propone subir', () => {
+    const cuatro: EjercicioDef = { ...doble, series: 4 };
+    const tres = sesionDe(3, [
+      serie(40, 12, 'completada'),
+      serie(40, 12, 'completada'),
+      serie(40, 12, 'completada'),
+      serie(40, 12, 'pendiente'),
+    ]);
+    expect(sugerir(cuatro, [tres], INCR_MIN).peso).toBe(40);
+  });
 });
 
 describe('peso corporal', () => {

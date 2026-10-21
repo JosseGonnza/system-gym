@@ -24,6 +24,12 @@ function redondear(x: number, paso: number): number {
   return Math.round((Math.round(x / paso) * paso) * 100) / 100;
 }
 
+// Subir es sumar el incremento tal cual. Redondear al múltiplo del incremento
+// hacía saltar de más desde un peso fuera de rejilla (47,5 + 5 → 55).
+function sumar(x: number, incr: number): number {
+  return Math.round((x + incr) * 100) / 100;
+}
+
 function diasDesde(fecha: string): number {
   return Math.floor((Date.now() - new Date(`${fecha}T12:00:00`).getTime()) / 86_400_000);
 }
@@ -83,7 +89,7 @@ export function sugerir(e: EjercicioDef, historial: PuntoHistorial[], incremento
       return { ...VACIA, peso: pesoUlt, reps, texto: `Repite: ${fmtKg(pesoUlt)} kg × ${reps}`, aviso: avisoParon };
     }
     if (todasCompletas(ultimo, e)) {
-      const peso = redondear(pesoUlt + incr, incr);
+      const peso = sumar(pesoUlt, incr);
       return { ...VACIA, peso, reps, texto: `Sugerido: ${fmtKg(peso)} kg × ${reps} (+${fmtKg(incr)})` };
     }
     const previo = puntos[1];
@@ -113,7 +119,7 @@ export function sugerir(e: EjercicioDef, historial: PuntoHistorial[], incremento
       return { ...VACIA, peso: pesoUlt, reps: Math.min(hi, Math.max(lo, maxReps)), texto: `Repite: ${fmtKg(pesoUlt)} kg`, aviso: avisoParon };
     }
     if (todasAlTope(ultimo, e, hi)) {
-      const peso = redondear(pesoUlt + incr, incr);
+      const peso = sumar(pesoUlt, incr);
       return { ...VACIA, peso, reps: lo, texto: `Sube peso: ${fmtKg(peso)} kg × ${lo} (+${fmtKg(incr)})` };
     }
     const reps = Math.min(hi, Math.max(lo, maxReps + 1));
@@ -131,7 +137,7 @@ export function sugerir(e: EjercicioDef, historial: PuntoHistorial[], incremento
     };
   }
   if (todasAlTope(ultimo, e, hi)) {
-    const lastre = redondear(lastreUlt + incr, incr);
+    const lastre = sumar(lastreUlt, incr);
     return { ...VACIA, lastreKg: lastre, reps: lo, texto: `Añade lastre: +${fmtKg(lastre)} kg × ${lo}` };
   }
   const reps = Math.min(hi, Math.max(lo, maxReps + 1));
