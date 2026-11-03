@@ -1,4 +1,5 @@
 import { del, get, set } from 'idb-keyval';
+import type { DiaComidas } from './comidas';
 import type { BackupV1, BackupV2, Config, DiaDef, DiaRegistro, Ejercicio, EjercicioDef, Mediciones, PerfilId, Rutina, Sesion } from './types';
 import { CATALOGO, CONFIG_INICIAL, CONFIG_JEIK, CONFIG_YASMINA, RUTINA_1, RUTINA_JEIK, RUTINA_YASMINA } from './seed';
 import { esPerfilValido, PERFIL_POR_DEFECTO } from './perfiles';
@@ -7,7 +8,7 @@ import { esCardio } from './cardio';
 // Claves globales (compartidas entre perfiles).
 const G = { perfilActivo: 'perfilActivo', catalogo: 'catalogo' } as const;
 // Nombres de los datos que viven POR perfil → se guardan con prefijo `${perfil}:`.
-const PROPIOS = ['config', 'rutinas', 'sesiones', 'mediciones', 'diario'] as const;
+const PROPIOS = ['config', 'rutinas', 'sesiones', 'mediciones', 'diario', 'comidas'] as const;
 
 // Datos sembrados por perfil (config + rutina inicial). El catálogo es compartido.
 const SEED: Record<PerfilId, { config: Config; rutina: Rutina }> = {
@@ -49,6 +50,7 @@ async function sembrarPerfil(p: PerfilId): Promise<void> {
   if (!(await get(`${p}:sesiones`))) await set(`${p}:sesiones`, []);
   if (!(await get(`${p}:mediciones`))) await set(`${p}:mediciones`, MEDICIONES_VACIAS);
   if (!(await get(`${p}:diario`))) await set(`${p}:diario`, {});
+  if (!(await get(`${p}:comidas`))) await set(`${p}:comidas`, {});
 
   const vigente = RUTINA_VIGENTE[p];
   const rutinas: Rutina[] = (await get(`${p}:rutinas`)) ?? [];
@@ -128,6 +130,25 @@ export const getMediciones = () => get(pk('mediciones')) as Promise<Mediciones>;
 export const setMediciones = (m: Mediciones) => set(pk('mediciones'), m);
 export const getDiario = () => get(pk('diario')) as Promise<Record<string, DiaRegistro>>;
 
+export const getComidas = async (): Promise<Record<string, DiaComidas>> => (await get(pk('comidas'))) ?? {};
+
+export async function patchComidas(fecha: string, cambio: (d: DiaComidas) => DiaComidas): Promise<Record<string, DiaComidas>> {
+  const comidas = await getComidas();
+  const dia = cambio({ ...comidas[fecha] });
+  if (Object.keys(dia).length) comidas[fecha] = dia;
+  else delete comidas[fecha];
+  await set(pk('comidas'), comidas);
+  return comidas;
+}
+
+export async function anotarPeso(fecha: string, kg: number | null): Promise<Mediciones> {
+  const m = await getMediciones();
+  m.peso = m.peso.filter((e) => e.fecha !== fecha);
+  if (kg != null) m.peso.push({ fecha, kg });
+  await setMediciones(m);
+  return m;
+}
+
 export async function patchDia(fecha: string, patch: Partial<DiaRegistro>): Promise<Record<string, DiaRegistro>> {
   const diario = await getDiario();
   diario[fecha] = { ...diario[fecha], ...patch };
@@ -199,18 +220,19 @@ export function formatObjetivo(e: EjercicioDef): string {
 }
 
 export async function exportarBackup(): Promise<BackupV2> {
-  const [config, catalogo, rutinas, sesiones, mediciones, diario] = await Promise.all([
+  const [config, catalogo, rutinas, sesiones, mediciones, diario, comidas] = await Promise.all([
     getConfig(),
     getCatalogo(),
     getRutinas(),
     getSesiones(),
     getMediciones(),
     getDiario(),
+    getComidas(),
   ]);
   const exportadoISO = new Date().toISOString();
   const configActualizada = { ...config, ultimoExportISO: exportadoISO };
   await setConfig(configActualizada);
-  return { version: 2, app: 'gym', exportadoISO, perfil: perfilActivo, config: configActualizada, catalogo, rutinas, sesiones, mediciones, diario };
+  return { version: 2, app: 'gym', exportadoISO, perfil: perfilActivo, config: configActualizada, catalogo, rutinas, sesiones, mediciones, diario, comidas };
 }
 
 // Resetea SOLO el perfil activo (no toca el catálogo compartido ni el otro perfil).
@@ -232,5 +254,6 @@ export async function importarBackup(data: unknown): Promise<void> {
     set(pk('sesiones'), b.sesiones ?? []),
     set(pk('mediciones'), b.mediciones ?? MEDICIONES_VACIAS),
     set(pk('diario'), b.diario ?? {}),
+    set(pk('comidas'), ('comidas' in b && b.comidas) || {}),
   ]);
 }

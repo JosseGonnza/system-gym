@@ -1,4 +1,6 @@
 export type TipoProgresion = 'lineal' | 'doble' | 'pesoCorporal' | 'tiempo' | 'libre' | 'sensacion';
+import type { DiaComidas } from './comidas';
+
 export type EstadoSerie = 'pendiente' | 'completada' | 'fallo' | 'corta';
 export type Sensacion = 'facil' | 'bien' | 'duro';
 export type EstadoSesion = 'finalizada' | 'borrador';
@@ -22,6 +24,8 @@ export interface Perfil {
   proximaVez?: boolean;
   // «Cómo se hace» con dibujo animado, pasos y aviso de espalda (lib/tecnica).
   dibujos?: boolean;
+  // Seguimiento con Jose: diario de comidas, peso de la mañana y semana en Hoy.
+  seguimiento?: boolean;
 }
 
 export type Implemento = 'barra' | 'barraZ' | 'multipower' | 'mancuerna' | 'maquina' | 'polea' | 'kettlebell' | 'corporal';
@@ -169,4 +173,5 @@ export interface BackupV2 {
   sesiones: Sesion[];
   mediciones: Mediciones;
   diario: Record<string, DiaRegistro>;
+  comidas?: Record<string, DiaComidas>;
 }
