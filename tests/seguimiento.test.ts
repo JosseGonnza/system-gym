@@ -12,7 +12,7 @@ vi.mock('idb-keyval', () => {
 });
 
 import * as idb from 'idb-keyval';
-import { anotarMedida, exportarBackup, fijarPerfil, getDomingos, getMediciones, importarBackup, initDB, patchDomingo, resetDB } from '../src/lib/db';
+import { anotarMedida, exportarBackup, fijarPerfil, getConfig, getDomingos, getMediciones, importarBackup, initDB, leerBackup, patchDomingo, resetDB } from '../src/lib/db';
 import { RUTINA_JEIK } from '../src/lib/seed';
 import { asunto, domingoACerrar, domingosHasta, mailto, resumenSemana, textoSeguimiento } from '../src/lib/seguimiento';
 import type { Mediciones, Sesion } from '../src/lib/types';
@@ -105,6 +105,26 @@ describe('resumen y correo', () => {
     expect(t.endsWith('Bien')).toBe(true);
   });
 
+  it('cada entreno lleva la hora de empezar y la de finalizar', () => {
+    const conHoras = (s: Sesion, extra: Partial<Sesion>) => ({ ...s, ...extra });
+    const empezada = new Date(2026, 10, 3, 18, 5).toISOString();
+    const terminada = new Date(2026, 10, 3, 19, 2).toISOString();
+    const primera = new Date(2026, 10, 3, 18, 12).toISOString();
+    const ses = [
+      conHoras(SESIONES[0], { empezadaISO: empezada, terminadaISO: terminada, inicioISO: primera, duracionMin: 50 }),
+      conHoras(SESIONES[1], { empezadaISO: new Date(2026, 10, 4, 7, 30).toISOString() }),
+    ];
+    const t = textoSeguimiento('2026-11-08', {}, resumenSemana('2026-11-08', ses, RUTINA_JEIK, MED, COMIDAS), RUTINA_JEIK, COMIDAS);
+    expect(t).toContain('- mar 3: Full body A · 18:05 → 19:02 · 50 min');
+    expect(t).toContain('- mié 4: cardio, bici, 30 min · 07:30');
+  });
+
+  it('si no le dio a finalizar, se dice', () => {
+    const ses = [{ ...SESIONES[0], inicioISO: new Date(2026, 10, 3, 18, 0).toISOString(), finISO: new Date(2026, 10, 3, 19, 0).toISOString() }];
+    const t = textoSeguimiento('2026-11-08', {}, resumenSemana('2026-11-08', ses, RUTINA_JEIK, MED, COMIDAS), RUTINA_JEIK, COMIDAS);
+    expect(t).toContain('- mar 3: Full body A · 18:00 → 19:00 (sin finalizar)');
+  });
+
   it('el mailto lleva asunto y cuerpo codificados', () => {
     expect(asunto('2026-11-15')).toBe('Seguimiento semana 2');
     const m = mailto('jose@ejemplo.com', '2026-11-08', 'a & b\r\nc');
@@ -126,6 +146,16 @@ describe('guardado del domingo', () => {
     await anotarMedida('cintura', '2026-11-08', 88);
     await anotarMedida('cintura', '2026-11-08', 87.5);
     expect((await getMediciones()).cintura).toEqual([{ fecha: '2026-11-08', cm: 87.5 }]);
+  });
+
+  it('preparar la copia del domingo no la cuenta como export', async () => {
+    await initDB();
+    await fijarPerfil('jeik');
+    const b = await leerBackup();
+    expect(b.perfil).toBe('jeik');
+    expect((await getConfig()).ultimoExportISO).toBeNull();
+    await exportarBackup();
+    expect((await getConfig()).ultimoExportISO).not.toBeNull();
   });
 
   it('el backup lleva los domingos y el import los devuelve', async () => {
