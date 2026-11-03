@@ -69,7 +69,6 @@ import Ico from '../components/Ico.astro';
   document.getElementById('perfil-actual')!.textContent = `Estás en el perfil de ${actual.nombre} ${actual.emoji}`;
   // En modo sencillo el peso lo ajustan las caritas: el incremento no se toca
   if (actual.modoSencillo) document.getElementById('sec-motor')!.classList.add('hidden');
-  if (actual.oculto) document.getElementById('sec-perfil')!.classList.add('hidden');
 
   const elUltimo = document.getElementById('ultimo-export')!;
   const inputIncremento = document.getElementById('incremento') as HTMLInputElement;

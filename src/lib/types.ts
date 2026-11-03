@@ -18,8 +18,6 @@ export interface Perfil {
   // La app le dice qué hacer y no le pregunta: una carita por ejercicio, sin
   // avisos, sin datos de sueño ni energía.
   modoSencillo: boolean;
-  // Entra por su propia URL y no ve el selector ni a los demás.
-  oculto?: boolean;
   // La sensación se marca como lo que hará la próxima vez (subir, igual, bajar)
   // y cada ejercicio puede llevar una molestia aparte.
   proximaVez?: boolean;

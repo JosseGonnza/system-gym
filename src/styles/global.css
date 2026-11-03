@@ -223,7 +223,7 @@ html[data-perfil='selector'] main {
   align-items: center;
   gap: 1rem;
   width: 100%;
-  padding: 1.7rem 1.4rem;
+  padding: 1.4rem 1.4rem;
   text-align: left;
   border-radius: 16px;
   transition: transform 0.12s ease;
@@ -277,6 +277,13 @@ html[data-perfil='selector'] main {
 
 .sel-yasmina .sel-nombre {
   font-weight: 700;
+}
+
+.sel-jeik {
+  background: #161c26;
+  border: 1px solid #e39a4e;
+  color: #e8ecf2;
+  font-family: 'Inter Variable', system-ui, sans-serif;
 }
 
 html {

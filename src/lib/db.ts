@@ -109,17 +109,6 @@ export async function setPerfilActivo(p: PerfilId): Promise<void> {
   await sembrarPerfil(p);
 }
 
-// Entrada por URL propia: el perfil queda fijado en este móvil y el selector
-// deja de estar a mano.
-export async function fijarPerfil(p: PerfilId): Promise<void> {
-  await setPerfilActivo(p);
-  try {
-    if (typeof localStorage !== 'undefined') localStorage.setItem('perfilFijo', p);
-  } catch {
-    /* sin storage: el selector seguirá accesible, sin más */
-  }
-}
-
 export const getConfig = async (): Promise<Config> => ({ ...SEED[perfilActivo].config, ...(await get(pk('config'))) });
 export const setConfig = (c: Config) => set(pk('config'), c);
 export const getCatalogo = async (): Promise<Ejercicio[]> => (await get(G.catalogo)) ?? CATALOGO;

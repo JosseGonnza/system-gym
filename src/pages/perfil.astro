@@ -21,6 +21,11 @@ import { svgDot } from '../lib/iconos-dot';
       <span class="sel-emoji">🍂</span>
       <span class="sel-nombre">Chai Rutine</span>
     </button>
+
+    <button id="perfil-jeik" class="sel-card sel-jeik">
+      <span class="sel-emoji">🔶</span>
+      <span class="sel-nombre">Jeik</span>
+    </button>
   </div>
 </Layout>
 
@@ -35,6 +40,10 @@ import { svgDot } from '../lib/iconos-dot';
   });
   document.getElementById('perfil-yasmina')?.addEventListener('click', async () => {
     await setPerfilActivo('yasmina');
+    location.href = '/';
+  });
+  document.getElementById('perfil-jeik')?.addEventListener('click', async () => {
+    await setPerfilActivo('jeik');
     location.href = '/';
   });
 </script>

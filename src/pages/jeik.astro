@@ -2,7 +2,7 @@
 // Entrada de Jeik. NO usa el Layout, como /nothing: necesita su propio manifest
 // para que la app instalada arranque aquí y no en /. En iPhone, la app de la
 // pantalla de inicio no comparte datos con Safari: cada arranque pasa por esta
-// página, que fija el perfil antes de entrar.
+// página, que elige su perfil antes de entrar.
 ---
 
 <!doctype html>
@@ -77,10 +77,10 @@
       <a id="entrar" aria-disabled="true">Entrar →</a>
     </main>
     <script>
-      import { initDB, fijarPerfil } from '../lib/db';
+      import { initDB, setPerfilActivo } from '../lib/db';
 
       await initDB();
-      await fijarPerfil('jeik');
+      await setPerfilActivo('jeik');
       if (document.documentElement.classList.contains('cargando')) location.replace('/');
       const entrar = document.getElementById('entrar')!;
       entrar.setAttribute('href', '/');
