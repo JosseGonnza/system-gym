@@ -1428,6 +1428,7 @@ import Ico from '../components/Ico.astro';
     }
     soltarPantalla();
     pararRest();
+    sesion!.terminadaISO = new Date().toISOString();
     await finalizarSesion(sesion!);
     const ahora = new Date();
     renderFin(sencillo ? mesHistorial(await getSesiones(), diario, ahora.getFullYear(), ahora.getMonth()).entrenos : 0);

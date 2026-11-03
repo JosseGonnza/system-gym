@@ -137,6 +137,10 @@ export interface Sesion {
   fecha: string;
   inicioISO: string | null;
   finISO: string | null;
+  // Cuándo pulsó Empezar y Finalizar. inicio/fin son la primera y la última
+  // serie (la duración sale de ahí aunque se olvide de finalizar).
+  empezadaISO?: string | null;
+  terminadaISO?: string | null;
   rutinaId: string;
   diaId: string;
   estado: EstadoSesion;

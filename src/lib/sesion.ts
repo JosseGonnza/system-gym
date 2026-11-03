@@ -10,6 +10,8 @@ export function crearSesion(rutina: Rutina, dia: DiaDef, sugerencias: Map<string
     fecha: hoyISO(),
     inicioISO: null,
     finISO: null,
+    empezadaISO: new Date().toISOString(),
+    terminadaISO: null,
     rutinaId: rutina.id,
     diaId: dia.id,
     estado: 'borrador',

@@ -82,9 +82,20 @@ export function resumenSemana(
 
 const diasDistintos = (xs: Sesion[]) => new Set(xs.map((s) => s.fecha)).size;
 
+const hora = (iso: string) => new Date(iso).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+
+// De Empezar a Finalizar; sin ellos (sesiones de antes), de la primera serie a la última.
+function horario(s: Sesion): string {
+  const desde = s.empezadaISO ?? s.inicioISO;
+  const hasta = s.terminadaISO ?? s.finISO;
+  if (!desde) return '';
+  const fin = hasta ? ` → ${hora(hasta)}${s.terminadaISO ? '' : ' (sin finalizar)'}` : '';
+  return ` · ${hora(desde)}${fin}${s.duracionMin ? ` · ${s.duracionMin} min` : ''}`;
+}
+
 function lineasGym(s: Sesion, rutina: Rutina): string[] {
   const dia = rutina.dias.find((d) => d.id === s.diaId);
-  const out = [`- ${diaCorto(s.fecha)}: ${dia?.nombre ?? s.diaId}`];
+  const out = [`- ${diaCorto(s.fecha)}: ${dia?.nombre ?? s.diaId}${horario(s)}`];
   for (const e of s.ejercicios) {
     const hechas = e.series.filter((x) => x.estado !== 'pendiente');
     if (!hechas.length) continue;
@@ -107,7 +118,7 @@ function lineasGym(s: Sesion, rutina: Rutina): string[] {
 function lineaCardio(s: Sesion): string {
   const usada = s.ejercicios.find((e) => e.series.some((x) => x.estado !== 'pendiente' || (x.segundos ?? 0) > 0)) ?? s.ejercicios[0];
   const seg = usada?.series[0]?.segundos;
-  return `- ${diaCorto(s.fecha)}: cardio, ${usada?.nombre.toLowerCase() ?? 'sin máquina'}${seg ? `, ${Math.round(seg / 60)} min` : ''}`;
+  return `- ${diaCorto(s.fecha)}: cardio, ${usada?.nombre.toLowerCase() ?? 'sin máquina'}${seg ? `, ${Math.round(seg / 60)} min` : ''}${s.empezadaISO ? ` · ${hora(s.empezadaISO)}` : ''}`;
 }
 
 export function asunto(domingo: string): string {
