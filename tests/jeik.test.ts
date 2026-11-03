@@ -12,7 +12,7 @@ vi.mock('idb-keyval', () => {
 });
 
 import * as idb from 'idb-keyval';
-import { fijarPerfil, getConfig, getPerfilActivo, getRutinas, initDB, siguienteDia } from '../src/lib/db';
+import { setPerfilActivo, getConfig, getPerfilActivo, getRutinas, initDB, siguienteDia } from '../src/lib/db';
 import { dietaDe } from '../src/lib/dietas';
 import { horarioDe } from '../src/lib/horarios';
 import { perfil, PERFILES } from '../src/lib/perfiles';
@@ -25,18 +25,18 @@ beforeEach(() => store.clear());
 const fuerza = RUTINA_JEIK.dias.filter((d) => !d.fueraDeRueda).flatMap((d) => d.ejercicios);
 
 describe('perfil de Jeik', () => {
-  it('va oculto, en modo sencillo, con «la próxima vez» y dibujos', () => {
+  it('va en modo sencillo, con «la próxima vez», dibujos y seguimiento', () => {
     const j = perfil('jeik');
-    expect(j).toMatchObject({ oculto: true, modoSencillo: true, proximaVez: true, dibujos: true });
+    expect(j).toMatchObject({ modoSencillo: true, proximaVez: true, dibujos: true, seguimiento: true });
     for (const p of PERFILES.filter((x) => x.id !== 'jeik')) {
-      expect(p.oculto, p.id).toBeFalsy();
       expect(p.proximaVez, p.id).toBeFalsy();
+      expect(p.seguimiento, p.id).toBeFalsy();
     }
   });
 
-  it('entrando por su URL queda como perfil activo con su rutina y 3 días por semana', async () => {
+  it('al elegirlo queda como perfil activo con su rutina y 3 días por semana', async () => {
     await initDB();
-    await fijarPerfil('jeik');
+    await setPerfilActivo('jeik');
     expect(getPerfilActivo()).toBe('jeik');
     expect(store.get('perfilActivo')).toBe('jeik');
     expect((await getRutinas()).map((r) => r.id)).toEqual([RUTINA_JEIK.id]);
@@ -49,7 +49,7 @@ describe('perfil de Jeik', () => {
   it('no toca los datos de Jose al entrar', async () => {
     store.set('jose:sesiones', [{ id: 'de-jose' }]);
     await initDB();
-    await fijarPerfil('jeik');
+    await setPerfilActivo('jeik');
     expect(store.get('jose:sesiones')).toEqual([{ id: 'de-jose' }]);
     expect(store.get('jeik:sesiones')).toEqual([]);
   });

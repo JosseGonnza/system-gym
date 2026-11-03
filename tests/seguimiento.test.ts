@@ -12,7 +12,7 @@ vi.mock('idb-keyval', () => {
 });
 
 import * as idb from 'idb-keyval';
-import { anotarMedida, exportarBackup, fijarPerfil, getConfig, getDomingos, getMediciones, importarBackup, initDB, leerBackup, patchDomingo, resetDB } from '../src/lib/db';
+import { setPerfilActivo, anotarMedida, exportarBackup, getConfig, getDomingos, getMediciones, importarBackup, initDB, leerBackup, patchDomingo, resetDB } from '../src/lib/db';
 import { RUTINA_JEIK } from '../src/lib/seed';
 import { asunto, domingoACerrar, domingosHasta, mailto, resumenSemana, textoSeguimiento } from '../src/lib/seguimiento';
 import type { Mediciones, Sesion } from '../src/lib/types';
@@ -139,7 +139,7 @@ describe('resumen y correo', () => {
 describe('guardado del domingo', () => {
   it('se guarda por partes y la cintura va a mediciones', async () => {
     await initDB();
-    await fijarPerfil('jeik');
+    await setPerfilActivo('jeik');
     await patchDomingo('2026-11-08', { hambre: 2 });
     await patchDomingo('2026-11-08', { cerrado: true });
     expect((await getDomingos())['2026-11-08']).toEqual({ hambre: 2, cerrado: true });
@@ -150,7 +150,7 @@ describe('guardado del domingo', () => {
 
   it('preparar la copia del domingo no la cuenta como export', async () => {
     await initDB();
-    await fijarPerfil('jeik');
+    await setPerfilActivo('jeik');
     const b = await leerBackup();
     expect(b.perfil).toBe('jeik');
     expect((await getConfig()).ultimoExportISO).toBeNull();
@@ -160,7 +160,7 @@ describe('guardado del domingo', () => {
 
   it('el backup lleva los domingos y el import los devuelve', async () => {
     await initDB();
-    await fijarPerfil('jeik');
+    await setPerfilActivo('jeik');
     await patchDomingo('2026-11-08', { salidas: 2, fotos: ['frente'] });
     const b = await exportarBackup();
     await resetDB();

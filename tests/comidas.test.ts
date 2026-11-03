@@ -23,7 +23,7 @@ import {
   resumenComidas,
   totalesDia,
 } from '../src/lib/comidas';
-import { anotarMedida, exportarBackup, fijarPerfil, getComidas, getMediciones, importarBackup, initDB, patchComidas, resetDB } from '../src/lib/db';
+import { setPerfilActivo, anotarMedida, exportarBackup, getComidas, getMediciones, importarBackup, initDB, patchComidas, resetDB } from '../src/lib/db';
 import { deposito, enNavidad, fase, lunesDe, metaGym, semanaDe, semanaN } from '../src/lib/plan-jeik';
 
 const store = (idb as unknown as { _store: Map<string, unknown> })._store;
@@ -117,7 +117,7 @@ describe('calendario del plan', () => {
 describe('guardado', () => {
   it('las comidas viven en el perfil y un día vacío desaparece', async () => {
     await initDB();
-    await fijarPerfil('jeik');
+    await setPerfilActivo('jeik');
     await patchComidas('2026-11-03', (d) => ({ ...d, desayuno: { tipo: 'opcion', id: 'd1' } }));
     expect((store.get('jeik:comidas') as object)).toEqual({ '2026-11-03': { desayuno: { tipo: 'opcion', id: 'd1' } } });
     await patchComidas('2026-11-03', (d) => {
@@ -129,7 +129,7 @@ describe('guardado', () => {
 
   it('el peso del día se sustituye, no se duplica', async () => {
     await initDB();
-    await fijarPerfil('jeik');
+    await setPerfilActivo('jeik');
     await anotarMedida('peso', '2026-11-03', 74.6);
     await anotarMedida('peso', '2026-11-03', 74.4);
     expect((await getMediciones()).peso).toEqual([{ fecha: '2026-11-03', kg: 74.4 }]);
@@ -139,7 +139,7 @@ describe('guardado', () => {
 
   it('el backup lleva las comidas y el import las devuelve', async () => {
     await initDB();
-    await fijarPerfil('jeik');
+    await setPerfilActivo('jeik');
     await patchComidas('2026-11-03', () => ({ snack: [{ t: 'fruta', kcal: 80, p: 1 }] }));
     const b = await exportarBackup();
     expect(b.comidas).toEqual({ '2026-11-03': { snack: [{ t: 'fruta', kcal: 80, p: 1 }] } });
@@ -151,7 +151,7 @@ describe('guardado', () => {
 
   it('un backup viejo sin comidas deja el diario vacío', async () => {
     await initDB();
-    await fijarPerfil('jeik');
+    await setPerfilActivo('jeik');
     await patchComidas('2026-11-03', () => ({ cena: { tipo: 'salto' } }));
     const { comidas: _sin, ...viejo } = await exportarBackup();
     await importarBackup(viejo);
