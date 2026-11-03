@@ -90,6 +90,26 @@ html[data-perfil='jeik'] .btn {
   color: #1a1206;
 }
 
+/* Plato de Jeik: cada parte con su color, el centro con las kcal */
+html[data-perfil='jeik'] {
+  --c-prot: #de8c76;
+  --c-carb: #e8a24f;
+  --c-verd: #7dbb93;
+  --c-gras: #d2c062;
+}
+
+.plato-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.plato-borde { fill: var(--color-surface2); stroke: var(--color-line); stroke-width: 2; }
+.plato-kcal { fill: var(--color-ink); font-family: var(--font-num); font-size: 26px; font-weight: 800; }
+.plato-sub { fill: var(--color-mut); font-size: 9px; font-weight: 700; letter-spacing: 0.06em; }
+
+.rueda { scrollbar-width: none; }
+.rueda::-webkit-scrollbar { display: none; }
+
 /* Fondo cozy de Yasmina (la mascota con hojas de otoño): panel fijo que acaba
    justo encima del nav inferior, para que la barra no tape la escena. Robusto en iOS. */
 .fondo-yasmina {

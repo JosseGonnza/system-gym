@@ -3,68 +3,194 @@ import Layout from '../layouts/Layout.astro';
 ---
 
 <Layout title="Dieta">
-  <section id="macros" class="grid grid-cols-4 gap-2"></section>
-  <div id="platos" class="mt-4 space-y-3"></div>
-  <p id="resumen" class="mt-4 px-1 text-xs text-mut"></p>
-  <div class="deco-matcha mt-5 flex justify-center">
-    <img src="/iconos/deco-matcha.png" alt="" width="60" height="60" />
-  </div>
+  <section id="estatica">
+    <section id="macros" class="grid grid-cols-4 gap-2"></section>
+    <div id="platos" class="mt-4 space-y-3"></div>
+    <p id="resumen" class="mt-4 px-1 text-xs text-mut"></p>
+    <div class="deco-matcha mt-5 flex justify-center">
+      <img src="/iconos/deco-matcha.png" alt="" width="60" height="60" />
+    </div>
+  </section>
+  <section id="diario" class="hidden"></section>
 </Layout>
 
 <script>
-  import { initDB, getPerfilActivo } from '../lib/db';
+  import { initDB, getPerfilActivo, getComidas, hoyISO } from '../lib/db';
   import { dietaDe } from '../lib/dietas';
   import { iconoEl } from '../lib/iconos';
+  import { perfil } from '../lib/perfiles';
+  import { BLOQUES, OBJETIVO_DIA, SNACK_DIA, infoComida, totalesDia, PLATO_DEF, type SegId, type SelPlato } from '../lib/comidas';
+  import { abrirComida, abrirSnack, boton, el, platoEl, quitarSnack } from '../lib/hoja-comida';
+  import { fmtFecha, sumarDias } from '../lib/plan-jeik';
 
   const $ = (id: string) => document.getElementById(id)!;
 
   await initDB();
-  const dieta = dietaDe(getPerfilActivo());
 
-  $('macros').replaceChildren(
-    ...dieta.macros.map((m) => {
-      const div = document.createElement('div');
-      div.className = 'card px-1 py-3 text-center';
-      const v = document.createElement('p');
-      v.className = `text-base font-extrabold ${m.color}`;
-      v.textContent = m.valor;
-      const u = document.createElement('p');
-      u.className = 'mt-0.5 text-[10px] uppercase tracking-wide text-mut';
-      u.textContent = m.unidad;
-      div.append(v, u);
-      return div;
-    }),
-  );
+  if (perfil(getPerfilActivo()).seguimiento) {
+    $('estatica').remove();
+    $('diario').classList.remove('hidden');
+    await diario();
+  } else {
+    estatica();
+  }
 
-  $('platos').replaceChildren(
-    ...dieta.platos.map((p) => {
-      const sec = document.createElement('section');
-      sec.className = 'card';
-      const h = document.createElement('h2');
-      h.className = 'flex items-center gap-2 text-base font-bold';
-      h.append(iconoEl(p.icono, p.emoji, 26), p.nombre);
-      sec.append(h);
-      if (p.kcal) {
-        const k = document.createElement('p');
-        k.className = 'mt-0.5 text-xs font-semibold text-vio-hi';
-        k.textContent = p.kcal;
-        sec.append(k);
-      }
-      const f = document.createElement('p');
-      f.className = 'mt-2 text-sm font-medium text-vio-soft';
-      f.textContent = p.formula;
-      sec.append(f);
-      const ul = document.createElement('ul');
-      ul.className = 'mt-1.5 space-y-1 text-sm text-mut';
-      for (const d of p.detalle) {
-        const li = document.createElement('li');
-        li.textContent = d;
-        ul.append(li);
-      }
-      sec.append(ul);
-      return sec;
-    }),
-  );
+  // Un toque por comida, el snack libre, lo que va sumando el día y la guía del
+  // plato para cuando cocina.
+  async function diario() {
+    const hoy = hoyISO();
+    let fecha = hoy;
+    let guia: { tipo: 'comida' | 'cena'; sel: SelPlato; seg: SegId } = { tipo: 'comida', sel: { ...PLATO_DEF }, seg: 'prot' };
+    const miles = (n: number) => Math.round(n).toLocaleString('es-ES');
 
-  $('resumen').textContent = dieta.resumen;
+    const pintar = async () => {
+      const dia = (await getComidas())[fecha];
+      const tot = totalesDia(dia);
+
+      const nav = el(
+        'div',
+        'flex items-center justify-between rounded-xl border border-line bg-surface px-2 py-1.5',
+        boton('h-10 w-10 text-2xl text-mut', '‹', () => {
+          fecha = sumarDias(fecha, -1);
+          void pintar();
+        }),
+        el('span', 'text-sm font-bold capitalize', `${fecha === hoy ? 'Hoy, ' : ''}${fmtFecha(fecha)}`),
+        boton(`h-10 w-10 text-2xl ${fecha >= hoy ? 'invisible' : 'text-mut'}`, '›', () => {
+          fecha = sumarDias(fecha, 1);
+          void pintar();
+        }),
+      );
+
+      const filas = el(
+        'div',
+        'mt-3 grid gap-2',
+        ...BLOQUES.map((b) => {
+          const inf = infoComida(b.id, dia?.[b.id]);
+          const marca = !inf ? '' : inf.clase === 'plan' ? '✓' : inf.clase === 'otra' ? '~' : '–';
+          const color = !inf ? 'border-line' : inf.clase === 'plan' ? 'border-ok/60' : inf.clase === 'otra' ? 'border-warn/60' : 'border-line opacity-70';
+          const bola = !inf ? 'border-line text-mut' : inf.clase === 'plan' ? 'border-ok bg-ok/20 text-ok' : inf.clase === 'otra' ? 'border-warn bg-warn/20 text-warn' : 'border-line text-mut';
+          const btn = boton(`card flex w-full min-w-0 items-center gap-3 text-left transition active:scale-[.98] ${color}`, null, () => void abrirComida(fecha, b.id, () => void pintar()));
+          btn.append(
+            el('span', `grid h-8 w-8 shrink-0 place-items-center rounded-full border-2 text-sm font-extrabold ${bola}`, marca),
+            el('span', 'min-w-0 flex-1', el('span', 'block font-bold', b.nombre), el('span', 'block truncate text-sm text-mut', inf ? inf.texto : `Elegir · ≈ ${b.kcal} kcal · ${b.p} g prot`)),
+            el('span', 'num shrink-0 text-xs text-mut', inf?.kcal ? `≈ ${miles(inf.kcal)}` : inf ? '' : '›'),
+          );
+          return btn;
+        }),
+      );
+
+      const snacks = dia?.snack ?? [];
+      const snack = el(
+        'section',
+        'card mt-4',
+        el('div', 'flex items-baseline justify-between', el('h2', 'text-base font-bold', 'Snack'), el('span', 'text-xs font-semibold text-mut', `libre · ≈ ${SNACK_DIA.kcal} kcal`)),
+        snacks.length
+          ? el(
+              'ul',
+              'mt-2 divide-y divide-line',
+              ...snacks.map((s, i) => {
+                const x = boton('-my-1 px-2 text-xl text-mut', '×', () => void quitarSnack(fecha, i).then(pintar));
+                x.setAttribute('aria-label', `Quitar ${s.t}`);
+                return el('li', 'flex items-center gap-2 py-2 text-sm', el('span', 'flex-1', s.t), el('span', 'num text-xs text-mut', s.kcal ? `≈ ${s.kcal}` : ''), x);
+              }),
+            )
+          : null,
+        boton('btn-2 mt-3 py-2.5 text-sm', '+ Añadir algo', () => abrirSnack(fecha, () => void pintar())),
+        el('p', 'mt-2 text-xs text-mut', 'Tu hueco para lo que comas fuera de los tres bloques: a media mañana, por la tarde o un picoteo. Las veces que haga falta.'),
+      );
+
+      const barra = (valor: number, obj: number, cls: string) => {
+        const b = el('div', 'mt-1.5 h-2 overflow-hidden rounded-full bg-surface2');
+        const r = el('div', `h-full rounded-full ${cls}`);
+        r.style.width = `${Math.min(100, (valor / obj) * 100)}%`;
+        b.append(r);
+        return b;
+      };
+      const totales = el(
+        'section',
+        'card mt-4',
+        el('div', 'grid grid-cols-2 gap-4',
+          el('div', '', el('p', 'eyebrow', 'Energía'), el('p', 'num mt-1 text-lg font-extrabold', `≈ ${miles(tot.kcal)} `, el('span', 'text-xs font-semibold text-mut', `/ ${miles(OBJETIVO_DIA.kcal)} kcal`)), barra(tot.kcal, OBJETIVO_DIA.kcal, 'bg-vio')),
+          el('div', '', el('p', 'eyebrow', 'Proteína'), el('p', 'num mt-1 text-lg font-extrabold', `≈ ${Math.round(tot.p)} `, el('span', 'text-xs font-semibold text-mut', `/ ${OBJETIVO_DIA.p} g`)), barra(tot.p, OBJETIVO_DIA.p, 'bg-ok')),
+        ),
+        el('p', 'mt-3 text-xs text-mut', `Cuenta lo que sale del plan y los snacks de la lista.${tot.otras ? ` Lo que apuntaste como «otra cosa» (${tot.otras}) lo miramos juntos.` : ''} No hace falta pesar: los gramos son para hacerte una idea, a ojo vale.`),
+      );
+
+      const tipos = el(
+        'div',
+        'mt-3 grid grid-cols-2 gap-1 rounded-xl bg-surface2 p-1',
+        ...(['comida', 'cena'] as const).map((t) =>
+          boton(`rounded-lg py-2 text-sm font-bold ${guia.tipo === t ? 'bg-vio text-bg' : 'text-mut'}`, `${t === 'comida' ? 'Comida' : 'Cena'} · ≈ ${BLOQUES.find((b) => b.id === t)!.kcal} kcal`, () => {
+            guia = { ...guia, tipo: t };
+            void pintar();
+          }),
+        ),
+      );
+      const plato = el(
+        'section',
+        'card mt-4',
+        el('div', 'flex items-baseline justify-between', el('h2', 'text-base font-bold', 'Tu plato'), el('span', 'text-xs font-semibold text-mut', 'Comida y cena')),
+        el('p', 'mt-1 text-xs text-mut', 'Las dos comidas fuertes del día. Así se reparte un plato tuyo: toca cada parte para ver qué poner y cuánto.'),
+        tipos,
+        el('div', 'mt-4', platoEl(guia.tipo, guia.sel, guia.seg, (sel, seg) => {
+          guia = { ...guia, sel, seg };
+          void pintar();
+        })),
+      );
+
+      $('diario').replaceChildren(nav, filas, snack, totales, plato);
+    };
+    await pintar();
+  }
+
+  function estatica() {
+    const dieta = dietaDe(getPerfilActivo());
+
+    $('macros').replaceChildren(
+      ...dieta.macros.map((m) => {
+        const div = document.createElement('div');
+        div.className = 'card px-1 py-3 text-center';
+        const v = document.createElement('p');
+        v.className = `text-base font-extrabold ${m.color}`;
+        v.textContent = m.valor;
+        const u = document.createElement('p');
+        u.className = 'mt-0.5 text-[10px] uppercase tracking-wide text-mut';
+        u.textContent = m.unidad;
+        div.append(v, u);
+        return div;
+      }),
+    );
+
+    $('platos').replaceChildren(
+      ...dieta.platos.map((p) => {
+        const sec = document.createElement('section');
+        sec.className = 'card';
+        const h = document.createElement('h2');
+        h.className = 'flex items-center gap-2 text-base font-bold';
+        h.append(iconoEl(p.icono, p.emoji, 26), p.nombre);
+        sec.append(h);
+        if (p.kcal) {
+          const k = document.createElement('p');
+          k.className = 'mt-0.5 text-xs font-semibold text-vio-hi';
+          k.textContent = p.kcal;
+          sec.append(k);
+        }
+        const f = document.createElement('p');
+        f.className = 'mt-2 text-sm font-medium text-vio-soft';
+        f.textContent = p.formula;
+        sec.append(f);
+        const ul = document.createElement('ul');
+        ul.className = 'mt-1.5 space-y-1 text-sm text-mut';
+        for (const d of p.detalle) {
+          const li = document.createElement('li');
+          li.textContent = d;
+          ul.append(li);
+        }
+        sec.append(ul);
+        return sec;
+      }),
+    );
+
+    $('resumen').textContent = dieta.resumen;
+  }
 </script>
