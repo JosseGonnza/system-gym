@@ -7,7 +7,7 @@ import Layout from '../layouts/Layout.astro';
 </Layout>
 
 <script>
-  import { initDB, getConfig, getRutinas, getSesiones, getMediciones, getComidas, getDomingos, patchDomingo, anotarMedida, hoyISO } from '../lib/db';
+  import { initDB, getConfig, getRutinas, getSesiones, getMediciones, getComidas, getDomingos, patchDomingo, anotarMedida, hoyISO, leerBackup } from '../lib/db';
   import { boton, el } from '../lib/dom';
   import { CARDIO_SEMANA, fmtCorto, metaGym, semanaN } from '../lib/plan-jeik';
   import {
@@ -34,13 +34,27 @@ import Layout from '../layouts/Layout.astro';
   const domingo = domingoACerrar(hoy, await getDomingos());
   let d: Domingo = (await getDomingos())[domingo] ?? {};
   const email = import.meta.env.PUBLIC_EMAIL_SEGUIMIENTO ?? '';
+  // La copia completa va preparada de antemano: el menú de compartir solo se
+  // abre si se llama en el mismo toque, sin esperas a la base de datos.
+  let copia = await leerBackup();
 
   const dec = (n: number) => n.toLocaleString('es-ES', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
   const dias = (xs: { fecha: string }[]) => new Set(xs.map((s) => s.fecha)).size;
   const guardar = async (cambio: Partial<Domingo>) => {
     d = await patchDomingo(domingo, cambio);
+    copia = await leerBackup();
     pintar();
   };
+
+  function descargar(archivo: File) {
+    const url = URL.createObjectURL(archivo);
+    const a = el('a');
+    a.href = url;
+    a.download = archivo.name;
+    a.click();
+    // Safari necesita el enlace vivo un momento antes de soltarlo
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+  }
 
   const tarjeta = (...hijos: (Node | null)[]) => el('section', 'card mt-4', ...hijos);
   const titulo = (t: string, extra?: string) =>
@@ -69,7 +83,6 @@ import Layout from '../layouts/Layout.astro';
 
   function pintar() {
     const r = resumenSemana(domingo, sesiones, rutina, mediciones, comidas);
-    const texto = textoSeguimiento(domingo, d, r, rutina, comidas);
     const sem = semanaN(domingo);
 
     const cabecera = el(
@@ -113,6 +126,7 @@ import Layout from '../layouts/Layout.astro';
       const v = inCintura.value === '' ? null : Number(inCintura.value.replace(',', '.'));
       if (v != null && (!Number.isFinite(v) || v < 40 || v > 200)) return;
       mediciones = await anotarMedida('cintura', domingo, v);
+      copia = await leerBackup();
       pintar();
     });
     const como = el(
@@ -165,21 +179,31 @@ import Layout from '../layouts/Layout.astro';
     area.rows = 3;
     area.placeholder = 'Molestias en la espalda, días raros, cenas fuera, dudas…';
     area.value = d.nota ?? '';
-    const enviar = el('a', 'btn mt-4', d.cerrado ? 'Enviado ✓ · enviar otra vez' : 'Enviar el seguimiento a Jose');
-    enviar.href = mailto(email, domingo, texto);
-    enviar.target = '_blank';
-    enviar.rel = 'noopener';
-    // La nota se guarda sin repintar (perdería el foco) y el enlace se rehace al vuelo.
-    area.addEventListener('input', () => {
-      d = { ...d, nota: area.value };
-      enviar.href = mailto(email, domingo, textoSeguimiento(domingo, d, r, rutina, comidas));
-    });
+    // La nota se guarda sin repintar: perdería el foco.
+    area.addEventListener('input', () => (d = { ...d, nota: area.value }));
     area.addEventListener('change', () => void patchDomingo(domingo, { nota: area.value }));
-    enviar.addEventListener('click', () => {
-      void patchDomingo(domingo, { nota: area.value, cerrado: true }).then((x) => {
-        d = x;
-        setTimeout(pintar, 300);
-      });
+
+    // El resumen va como texto y todos sus datos en un archivo: el mismo
+    // formato que los backups, para que Jose lo repase entero.
+    const enviar = boton('btn mt-4', d.cerrado ? 'Enviado ✓ · enviar otra vez' : 'Enviar el seguimiento a Jose', () => {
+      const cerrado: Domingo = { ...d, nota: area.value, cerrado: true };
+      const resumen = textoSeguimiento(domingo, cerrado, r, rutina, comidas);
+      const datos = { ...copia, domingos: { ...copia.domingos, [domingo]: cerrado } };
+      const archivo = new File([JSON.stringify(datos)], `gym-backup-jeik-semana-${sem}-${domingo}.json`, { type: 'application/json' });
+      const marcar = () =>
+        void patchDomingo(domingo, cerrado).then((x) => {
+          d = x;
+          pintar();
+        });
+      if (navigator.canShare?.({ files: [archivo] })) {
+        navigator.share({ files: [archivo], title: asunto(domingo), text: resumen }).then(marcar, () => {
+          /* ha cerrado el menú sin enviar */
+        });
+      } else {
+        descargar(archivo);
+        location.href = mailto(email, domingo, resumen);
+        marcar();
+      }
     });
 
     const preguntas = tarjeta(
@@ -203,7 +227,12 @@ import Layout from '../layouts/Layout.astro';
       'div',
       '',
       enviar,
-      el('p', 'mt-2 text-xs text-mut', `Se abre tu correo con el asunto «${asunto(domingo)}» y el resumen ya escrito: solo te queda darle a enviar. `, copiar),
+      el(
+        'p',
+        'mt-2 text-xs text-mut',
+        'Se abre el menú de compartir con el resumen de tu semana y un archivo con todos tus datos. Elige Mail o WhatsApp y mándaselo a Jose. ',
+        copiar,
+      ),
     );
 
     const filas = domingosHasta(domingo).map((dom) => {

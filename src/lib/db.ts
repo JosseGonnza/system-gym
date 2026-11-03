@@ -236,7 +236,9 @@ export function formatObjetivo(e: EjercicioDef): string {
   return `${e.series}×${reps}`;
 }
 
-export async function exportarBackup(): Promise<BackupV2> {
+// La copia tal cual, sin marcar la fecha de export: el domingo la prepara al
+// pintar para compartirla en el mismo toque.
+export async function leerBackup(): Promise<BackupV2> {
   const [config, catalogo, rutinas, sesiones, mediciones, diario, comidas, domingos] = await Promise.all([
     getConfig(),
     getCatalogo(),
@@ -247,10 +249,14 @@ export async function exportarBackup(): Promise<BackupV2> {
     getComidas(),
     getDomingos(),
   ]);
-  const exportadoISO = new Date().toISOString();
-  const configActualizada = { ...config, ultimoExportISO: exportadoISO };
-  await setConfig(configActualizada);
-  return { version: 2, app: 'gym', exportadoISO, perfil: perfilActivo, config: configActualizada, catalogo, rutinas, sesiones, mediciones, diario, comidas, domingos };
+  return { version: 2, app: 'gym', exportadoISO: new Date().toISOString(), perfil: perfilActivo, config, catalogo, rutinas, sesiones, mediciones, diario, comidas, domingos };
+}
+
+export async function exportarBackup(): Promise<BackupV2> {
+  const b = await leerBackup();
+  const config = { ...b.config, ultimoExportISO: b.exportadoISO };
+  await setConfig(config);
+  return { ...b, config };
 }
 
 // Resetea SOLO el perfil activo (no toca el catálogo compartido ni el otro perfil).
