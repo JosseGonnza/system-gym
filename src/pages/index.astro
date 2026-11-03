@@ -5,6 +5,7 @@ import Ico from '../components/Ico.astro';
 
 <Layout title="Hoy">
   <p id="fecha" class="-mt-1 mb-4 text-sm font-medium capitalize text-mut"></p>
+  <p id="plan-linea" class="-mt-3 mb-4 hidden text-sm text-mut"></p>
 
   <section id="bloque-jornada">
     <div id="sel-jornada" class="grid grid-cols-3 gap-2"></div>
@@ -47,6 +48,46 @@ import Ico from '../components/Ico.astro';
   <section id="otras" class="mt-4 hidden">
     <p class="eyebrow px-1">O si prefieres</p>
     <div id="otras-lista" class="mt-2 grid gap-2"></div>
+  </section>
+
+  <section id="seguimiento" class="hidden">
+    <section class="card mt-4">
+      <div class="flex items-baseline justify-between">
+        <h2 class="text-base font-bold">Peso de esta mañana</h2>
+        <p id="peso-cuenta" class="text-xs font-semibold text-mut"></p>
+      </div>
+      <div class="mt-2 flex items-center gap-2">
+        <input
+          id="peso-hoy"
+          type="number"
+          inputmode="decimal"
+          step="0.1"
+          placeholder="74,5"
+          class="num w-28 rounded-xl border border-line bg-surface2 px-3 py-2.5 text-lg font-bold"
+        />
+        <span class="text-sm text-mut">kg</span>
+        <span id="peso-ok" class="text-sm font-semibold text-ok opacity-0 transition-opacity">✓ Guardado</span>
+      </div>
+      <p class="mt-2 text-xs text-mut">
+        En ayunas y después de ir al baño. Tres o cuatro mañanas a la semana. Un día suelto no dice nada; el domingo
+        sale la media sola.
+      </p>
+    </section>
+
+    <section class="card mt-4">
+      <div class="flex items-baseline justify-between">
+        <h2 class="text-base font-bold">Comidas de hoy</h2>
+        <p id="comidas-cuenta" class="text-xs font-semibold text-mut"></p>
+      </div>
+      <div id="comidas-hoy" class="mt-3 grid grid-cols-4 gap-2"></div>
+      <p class="mt-2 text-xs text-mut">Un toque por comida. Verde si fue del plan, ámbar si fue otra cosa. El snack, cuando te apetezca.</p>
+    </section>
+
+    <section class="card mt-4">
+      <h2 class="text-base font-bold">Esta semana</h2>
+      <div id="semana-dias" class="mt-3 grid grid-cols-7 gap-1.5"></div>
+      <div id="semana-cuentas" class="mt-3 grid grid-cols-3 gap-2"></div>
+    </section>
   </section>
 
   <section id="card-otono" class="card mt-4 hidden">
@@ -115,7 +156,12 @@ import Ico from '../components/Ico.astro';
     getCatalogo,
     getMediciones,
     getPerfilActivo,
+    getComidas,
+    anotarPeso,
   } from '../lib/db';
+  import { BLOQUES, infoComida } from '../lib/comidas';
+  import { abrirComida, abrirSnack, boton, el } from '../lib/hoja-comida';
+  import { CARDIO_SEMANA, INICIO, deposito, enNavidad, fase, fmtFecha, metaGym, semanaDe, semanaN } from '../lib/plan-jeik';
   import { perfil } from '../lib/perfiles';
   import { horarioDe } from '../lib/horarios';
   import { ventanaDias, diasDesdeUltimaVez, mesHistorial } from '../lib/historial';
@@ -138,7 +184,7 @@ import Ico from '../components/Ico.astro';
   const rutina = rutinas.find((r) => r.id === config.rutinaActivaId) ?? rutinas[0];
   let diario = await getDiario();
   const catalogo = await getCatalogo();
-  const mediciones = await getMediciones();
+  let mediciones = await getMediciones();
 
   const hoy = hoyISO();
   const mananaDate = new Date();
@@ -510,7 +556,72 @@ import Ico from '../components/Ico.astro';
         : 'Cada marca es un día que has venido.';
   }
 
+  // Seguimiento: la semana del plan, el peso de la mañana y las comidas a un
+  // toque. La tarjeta de hojas del mes se cambia por la semana en curso.
+  async function pintarSeguimiento() {
+    const linea = $('plan-linea');
+    const sem = semanaN(hoy);
+    linea.textContent =
+      hoy < INICIO
+        ? `Arrancas el ${fmtFecha(INICIO)}.`
+        : `Semana ${sem} · fase ${fase(sem)} · ${enNavidad(hoy) ? 'Navidad: toca mantener' : `deja ${deposito(sem)} repeticiones en el depósito`}`;
+
+    const semana = semanaDe(hoy);
+    const pesos = mediciones.peso.filter((p) => semana.includes(p.fecha));
+    $('peso-cuenta').textContent = `${pesos.length} de 3–4`;
+    const inPeso = $('peso-hoy') as HTMLInputElement;
+    const pesoHoy = mediciones.peso.find((p) => p.fecha === hoy);
+    if (document.activeElement !== inPeso) inPeso.value = pesoHoy ? String(pesoHoy.kg) : '';
+
+    const comidas = await getComidas();
+    const dia = comidas[hoy];
+    const hechas = BLOQUES.filter((b) => dia?.[b.id]).length;
+    $('comidas-cuenta').textContent = `${hechas} de 3`;
+    const pastilla = (texto: string, clase: string | undefined, alPulsar: () => void) => {
+      const tono =
+        clase === 'plan' ? 'border-ok bg-ok/15 text-ok' : clase === 'otra' ? 'border-warn bg-warn/15 text-warn' : clase === 'salto' ? 'border-line text-mut line-through' : 'border-line text-mut';
+      return boton(`rounded-xl border-2 py-2.5 text-sm font-bold transition active:scale-95 ${tono}`, texto, alPulsar);
+    };
+    const nSnack = dia?.snack?.length ?? 0;
+    $('comidas-hoy').replaceChildren(
+      ...BLOQUES.map((b) => pastilla(b.corto, infoComida(b.id, dia?.[b.id])?.clase, () => void abrirComida(hoy, b.id, () => void pintarSeguimiento()))),
+      pastilla(nSnack > 1 ? `Snack ×${nSnack}` : 'Snack', nSnack ? 'plan' : undefined, () => abrirSnack(hoy, () => void pintarSeguimiento())),
+    );
+
+    const fin = sesiones.filter((s) => s.estado === 'finalizada' && semana.includes(s.fecha));
+    const esCardio = (diaId: string) => !!rutina.dias.find((d) => d.id === diaId)?.fueraDeRueda;
+    const fechasGym = new Set(fin.filter((s) => !esCardio(s.diaId)).map((s) => s.fecha));
+    const fechasCardio = new Set(fin.filter((s) => esCardio(s.diaId)).map((s) => s.fecha));
+    $('semana-dias').replaceChildren(
+      ...semana.map((f, i) => {
+        const g = fechasGym.has(f);
+        const c = fechasCardio.has(f);
+        const diaGym = g ? rutina.dias.find((d) => d.id === fin.find((s) => s.fecha === f && !esCardio(s.diaId))!.diaId) : undefined;
+        const marca = g ? (diaGym?.nombre.slice(-1) ?? '✓') + (c ? '+' : '') : c ? '♥' : f < hoy ? '·' : '';
+        return el(
+          'div',
+          'flex flex-col items-center gap-1',
+          el('span', `text-[10px] font-bold ${f === hoy ? 'text-vio-hi' : 'text-mut'}`, 'LMXJVSD'[i]),
+          el(
+            'span',
+            `flex h-9 w-full items-center justify-center rounded-lg border text-sm font-bold ${g ? 'border-vio/60 bg-vio/20 text-vio-hi' : c ? 'border-ok/50 bg-ok/15 text-ok' : 'border-line/60 text-mut'} ${f === hoy ? 'ring-1 ring-vio' : ''}`,
+            marca,
+          ),
+        );
+      }),
+    );
+    const media = pesos.length ? pesos.reduce((n, p) => n + p.kg, 0) / pesos.length : null;
+    const cuenta = (label: string, valor: string, de?: string) =>
+      el('div', 'rounded-xl bg-surface2 p-2.5 text-center', el('p', 'text-[10px] font-bold uppercase tracking-wide text-mut', label), el('p', 'num mt-0.5 text-lg font-extrabold', valor, de ? el('span', 'text-xs text-mut', de) : null));
+    $('semana-cuentas').replaceChildren(
+      cuenta('Gimnasio', String(fechasGym.size), `/${metaGym(hoy)}`),
+      cuenta('Cardio', String(fechasCardio.size), `/${CARDIO_SEMANA}`),
+      cuenta('Peso medio', media ? media.toLocaleString('es-ES', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) : '—'),
+    );
+  }
+
   function render() {
+    if (sencillo && yo.seguimiento) void pintarSeguimiento();
     if (sencillo) return pintarSencillo();
     if (usaJornadas) {
       pintarSelector($('sel-jornada'), hoy);
@@ -534,7 +645,25 @@ import Ico from '../components/Ico.astro';
   if (sencillo) {
     for (const id of ['card-semana', 'aviso-abandono', 'chip-descansos', 'acciones-dia']) $(id).classList.add('hidden');
     $('otras').classList.remove('hidden');
-    $('card-otono').classList.remove('hidden');
+    if (yo.seguimiento) {
+      $('seguimiento').classList.remove('hidden');
+      $('plan-linea').classList.remove('hidden');
+    } else {
+      $('card-otono').classList.remove('hidden');
+    }
+  }
+
+  if (yo.seguimiento) {
+    const inPeso = $('peso-hoy') as HTMLInputElement;
+    inPeso.addEventListener('change', async () => {
+      const v = inPeso.value === '' ? null : Number(inPeso.value.replace(',', '.'));
+      if (v != null && (!Number.isFinite(v) || v < 30 || v > 250)) return;
+      mediciones = await anotarPeso(hoy, v);
+      const ok = $('peso-ok');
+      ok.classList.remove('opacity-0');
+      setTimeout(() => ok.classList.add('opacity-0'), 1500);
+      void pintarSeguimiento();
+    });
   }
 
   render();
