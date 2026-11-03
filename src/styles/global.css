@@ -504,6 +504,24 @@ html[data-perfil='yasmina'] .tabbar > div {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+/* Jeik: Hoy · Entreno · Comida · Domingo · Plan. Progreso se abre desde el Domingo. */
+.tab-jeik {
+  display: none;
+}
+
+html[data-perfil='jeik'] .tab-jeik {
+  display: flex;
+}
+
+html[data-perfil='jeik'] .tab-dieta,
+html[data-perfil='jeik'] .tab-progreso {
+  display: none;
+}
+
+html[data-perfil='jeik'] .tabbar > div {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
 /* Iconos de pestaña: puntos en Jose, ilustración en Yasmina, emoji de reserva */
 .tab-img {
   display: none;

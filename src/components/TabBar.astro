@@ -9,6 +9,10 @@ const tabs = [
   { href: '/entreno', label: 'Entreno', icon: '🏋️', id: 'nav-entreno' },
   { href: '/dieta', label: 'Dieta', icon: '🍱', id: 'nav-dieta' },
   { href: '/progreso', label: 'Progreso', icon: '📊', id: 'nav-progreso' },
+  // Las de Jeik: como el prototipo que aprobó. El CSS las muestra solo en su perfil.
+  { href: '/dieta', label: 'Comida', icon: '🍽️', id: 'nav-comida', jeik: true },
+  { href: '/domingo', label: 'Domingo', icon: '📝', id: 'nav-domingo', jeik: true },
+  { href: '/plan', label: 'Plan', icon: '🧭', id: 'nav-plan', jeik: true },
 ];
 const activo = (href: string) => (href === '/' ? path === '/' : path.startsWith(href));
 ---
@@ -23,11 +27,11 @@ const activo = (href: string) => (href === '/' ? path === '/' : path.startsWith(
             href={t.href}
             aria-current={on ? 'page' : undefined}
             aria-label={t.label}
-            class={`tab ${t.id === 'nav-dieta' ? 'tab-dieta' : ''} has-img has-tab-dot flex flex-col items-center gap-0.5 py-2.5 text-xs font-semibold ${on ? 'tab-on text-vio-hi' : 'text-mut'}`}
+            class={`tab ${t.id === 'nav-dieta' ? 'tab-dieta' : ''} ${t.id === 'nav-progreso' ? 'tab-progreso' : ''} ${t.jeik ? 'tab-jeik' : 'has-img has-tab-dot'} flex flex-col items-center gap-0.5 py-2.5 text-xs font-semibold ${on ? 'tab-on text-vio-hi' : 'text-mut'}`}
           >
             <span class="tab-ico text-2xl leading-none">
-              <span class="tab-dot" set:html={svgDot(t.id, 30)} />
-              <img src={`/iconos/${t.id}.png`} alt="" class="tab-img" width="28" height="28" />
+              {!t.jeik && <span class="tab-dot" set:html={svgDot(t.id, 30)} />}
+              {!t.jeik && <img src={`/iconos/${t.id}.png`} alt="" class="tab-img" width="28" height="28" />}
               <span class="tab-emoji">{t.icon}</span>
             </span>
             <span class="tab-label">{t.label}</span>

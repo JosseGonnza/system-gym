@@ -1,0 +1,174 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { BLOQUES, OBJETIVO_DIA, SNACK_DIA } from '../lib/comidas';
+import { BLOQUE, INICIO, NAVIDAD, REVISION, fmtCorto, sumarDias } from '../lib/plan-jeik';
+
+const ini = (n: number) => fmtCorto(sumarDias(INICIO, (n - 1) * 7));
+const fin = (n: number) => fmtCorto(sumarDias(INICIO, n * 7 - 1));
+const kcal = (id: string) => BLOQUES.find((b) => b.id === id)!.kcal;
+const fases = [
+  { n: 'Volver', desde: 1, hasta: 4, p: 'Coges costumbre. Entrenas suave y cuidas la proteína.' },
+  { n: 'Construir', desde: 5, hasta: 18, p: 'Entrenas en serio: sube el peso y baja la cintura. En Navidad, mantener.' },
+  { n: 'Afinar', desde: 19, hasta: 26, p: 'Con fotos y cintura delante: más tamaño o terminar de definir.' },
+];
+const ritmo = [
+  { quien: 'Cada día · tú · 2 min', t: 'Marcas lo que haces', p: 'El entreno, en el gimnasio. Cada comida con un toque. Si te pesas esa mañana, lo apuntas.' },
+  { quien: 'Cada domingo · tú · 5 min', t: 'Cierras la semana', p: 'Cintura, tus tres fotos y cómo te has notado. Le das a enviar y me llega por correo como «Seguimiento semana X».' },
+  { quien: 'Cada mes · los dos', t: 'Revisión del mes', p: `Vemos el mes entero y hacia dónde vamos. Se cambia lo que haga falta de la rutina, la comida y la app, y seguimos. La primera, el ${fmtCorto(REVISION)}.` },
+];
+const numeros = [
+  [OBJETIVO_DIA.kcal.toLocaleString('es-ES'), 'kcal'],
+  [`${OBJETIVO_DIA.p} g`, 'proteína'],
+  ['265 g', 'hidratos'],
+  ['70 g', 'grasa'],
+];
+---
+
+<Layout title="El plan">
+  <p class="eyebrow">Jeik · 36 años · 74 kg · 1,72 m</p>
+  <p class="mt-1 text-sm text-mut">
+    Seis meses, del {ini(1)} al {fin(26)}. Tú lo vas marcando, yo lo leo y lo vamos ajustando juntos.
+  </p>
+
+  <section class="card mt-4">
+    <h2 class="text-base font-bold">Tu semana</h2>
+    <div class="mt-3 grid grid-cols-3 gap-2 text-center">
+      {
+        [['3', 'días de gym'], ['2', 'de cardio'], ['1 h 15', 'como mucho']].map(([v, u]) => (
+          <div class="rounded-xl bg-surface2 p-2.5">
+            <p class="num text-lg font-extrabold">{v}</p>
+            <p class="text-[11px] text-mut">{u}</p>
+          </div>
+        ))
+      }
+    </div>
+    <p class="mt-3 text-sm text-mut">
+      Los días los eliges tú. El gimnasio va en rueda, A → B → C → A…: si un lunes no puedes, lo haces el martes y
+      sigues por donde ibas. Nada se pierde ni se acumula. Cada día es de cuerpo entero, así que con tres basta. El
+      cardio, los dos días que mejor te vengan.
+    </p>
+    <p class="mt-2 text-sm text-mut">
+      Todo con máquinas y poleas, y nada que cargue la zona lumbar: fuera peso muerto, rumano y sentadilla. Cada
+      ejercicio tiene su «Cómo se hace» con un dibujo del movimiento.
+    </p>
+  </section>
+
+  <section class="card mt-4">
+    <div class="flex items-baseline justify-between">
+      <h2 class="text-base font-bold">Bloque {BLOQUE}</h2>
+      <span class="text-xs font-semibold text-mut">{ini(1)} – {fmtCorto(REVISION)}</span>
+    </div>
+    <p class="mt-2 text-sm text-mut">
+      La rutina de este primer mes es la base: pocas series, pesos cómodos y técnica. En la revisión del {
+        fmtCorto(REVISION)
+      } miramos qué ha subido, qué te ha molestado y qué te cuesta, y montamos el bloque 2 con esos cambios. Tus marcas
+      se guardan: si un ejercicio sigue, continúas por donde ibas.
+    </p>
+  </section>
+
+  <section class="card mt-4">
+    <h2 class="text-base font-bold">Cómo vamos a trabajar</h2>
+    <ol class="mt-3 space-y-3">
+      {
+        ritmo.map((x) => (
+          <li class="border-l-2 border-vio pl-3">
+            <p class="text-[11px] font-bold uppercase tracking-wide text-vio">{x.quien}</p>
+            <h3 class="mt-0.5 font-bold">{x.t}</h3>
+            <p class="mt-0.5 text-sm text-mut">{x.p}</p>
+          </li>
+        ))
+      }
+    </ol>
+    <p class="mt-3 text-sm text-mut">Dudas sueltas entre medias, por WhatsApp.</p>
+  </section>
+
+  <section class="card mt-4">
+    <div class="flex items-baseline justify-between">
+      <h2 class="text-base font-bold">Tus números</h2>
+      <span class="text-xs font-semibold text-mut">al día</span>
+    </div>
+    <div class="mt-3 grid grid-cols-4 gap-2 text-center">
+      {
+        numeros.map(([v, u]) => (
+          <div class="rounded-xl bg-surface2 px-1 py-2.5">
+            <p class="num text-base font-extrabold">{v}</p>
+            <p class="text-[11px] text-mut">{u}</p>
+          </div>
+        ))
+      }
+    </div>
+    <p class="mt-3 text-sm text-mut">
+      Repartidos en tres comidas y un snack: desayuno ligero ≈ {kcal('desayuno')}, comida ≈ {kcal('comida')} y cena ≈ {
+        kcal('cena')
+      }, que son las fuertes, y ≈ {SNACK_DIA.kcal} de snack libre para lo que comas fuera de horas. Las opciones de cada
+      comida ya salen con esas cuentas hechas.
+    </p>
+  </section>
+
+  <section class="card mt-4">
+    <h2 class="text-base font-bold">Salidas y Navidad</h2>
+    <ul class="mt-3 space-y-3 text-sm">
+      <li>
+        <p class="font-bold">De fiesta</p>
+        <p class="text-mut">
+          Una o dos noches al mes entran en el plan. Antes de salir, cena con proteína; entre copa y copa, agua; mejor
+          cerveza o copas con refresco zero. Al día siguiente, plan normal: nada de saltarte comidas para compensar.
+        </p>
+      </li>
+      <li>
+        <p class="font-bold">Báscula</p>
+        <p class="text-mut">
+          Después de una salida puede subir uno o dos kilos durante dos o tres días. Es líquido, no grasa: lo que cuenta
+          es la media de la semana.
+        </p>
+      </li>
+      <li>
+        <p class="font-bold">Navidad</p>
+        <p class="text-mut">
+          Del {fmtCorto(NAVIDAD[0])} al {fmtCorto(NAVIDAD[1])} el objetivo es mantener, no bajar. Con dos días de gimnasio
+          por semana vale. Las comidas de fiesta se apuntan como «otra cosa» y a disfrutarlas. En enero seguimos, sin
+          castigos.
+        </p>
+      </li>
+    </ul>
+  </section>
+
+  <section class="card mt-4">
+    <h2 class="text-base font-bold">Por dónde vamos</h2>
+    <div class="mt-3 space-y-2">
+      {
+        fases.map((f) => (
+          <div class="fase rounded-xl border border-line bg-surface2 p-3" data-desde={f.desde} data-hasta={f.hasta}>
+            <div class="flex items-baseline justify-between">
+              <p class="font-bold">{f.n}</p>
+              <p class="text-xs text-mut">
+                {ini(f.desde)} – {fin(f.hasta)}
+              </p>
+            </div>
+            <p class="mt-1 text-sm text-mut">{f.p}</p>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="card mt-4">
+    <h2 class="text-base font-bold">Tus datos</h2>
+    <p class="mt-2 text-sm text-mut">
+      Todo se guarda en tu móvil, y las fotos en tu galería. Lo único que me llega es el correo del domingo.
+    </p>
+  </section>
+</Layout>
+
+<script>
+  import { hoyISO } from '../lib/db';
+  import { semanaN } from '../lib/plan-jeik';
+
+  const sem = semanaN(hoyISO());
+  for (const f of document.querySelectorAll<HTMLElement>('.fase')) {
+    if (sem >= Number(f.dataset.desde) && sem <= Number(f.dataset.hasta)) {
+      f.classList.remove('border-line');
+      f.classList.add('border-vio', 'bg-vio/10');
+    }
+  }
+</script>
