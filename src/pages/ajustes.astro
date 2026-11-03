@@ -4,7 +4,7 @@ import Ico from '../components/Ico.astro';
 ---
 
 <Layout title="Ajustes">
-  <section class="card">
+  <section id="sec-perfil" class="card">
     <h2 class="flex items-center gap-2 text-base font-bold"><Ico id="perfil" emoji="🧑" /> Perfil</h2>
     <p id="perfil-actual" class="mt-1 text-sm text-mut">—</p>
     <a href="/perfil" class="btn-2 mt-3">🔄 Cambiar de perfil</a>
@@ -69,6 +69,7 @@ import Ico from '../components/Ico.astro';
   document.getElementById('perfil-actual')!.textContent = `Estás en el perfil de ${actual.nombre} ${actual.emoji}`;
   // En modo sencillo el peso lo ajustan las caritas: el incremento no se toca
   if (actual.modoSencillo) document.getElementById('sec-motor')!.classList.add('hidden');
+  if (actual.oculto) document.getElementById('sec-perfil')!.classList.add('hidden');
 
   const elUltimo = document.getElementById('ultimo-export')!;
   const inputIncremento = document.getElementById('incremento') as HTMLInputElement;

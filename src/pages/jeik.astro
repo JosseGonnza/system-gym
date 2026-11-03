@@ -1,0 +1,90 @@
+---
+// Entrada de Jeik. NO usa el Layout, como /nothing: necesita su propio manifest
+// para que la app instalada arranque aquí y no en /. En iPhone, la app de la
+// pantalla de inicio no comparte datos con Safari: cada arranque pasa por esta
+// página, que fija el perfil antes de entrar.
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <link rel="manifest" href="/manifest-jeik.webmanifest" />
+    <meta name="theme-color" content="#0d1118" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="GYM" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <title>GYM · Jeik</title>
+    <style>
+      :root { color-scheme: dark; }
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        display: grid;
+        place-items: center;
+        padding: 2rem 1.5rem;
+        background: #0d1118;
+        color: #e8ecf2;
+        font-family: system-ui, sans-serif;
+      }
+      main { max-width: 22rem; display: flex; flex-direction: column; gap: 1.25rem; }
+      h1 { font-size: 1.4rem; margin: 0; }
+      p { margin: 0; font-size: 0.95rem; line-height: 1.6; color: #a6b0c1; }
+      h2 { font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: #e39a4e; margin: 0 0 0.4rem; }
+      ol { margin: 0; padding-left: 1.2rem; font-size: 0.95rem; line-height: 1.8; color: #a6b0c1; }
+      ol strong { color: #e8ecf2; }
+      a {
+        display: block;
+        text-align: center;
+        padding: 0.9rem;
+        border-radius: 10px;
+        background: #e39a4e;
+        color: #1a1206;
+        font-weight: 700;
+        text-decoration: none;
+      }
+      a[aria-disabled] { opacity: 0.5; }
+      .cargando main { display: none; }
+    </style>
+    <script is:inline>
+      try {
+        if (matchMedia('(display-mode: standalone)').matches || navigator.standalone) {
+          document.documentElement.classList.add('cargando');
+        }
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <main>
+      <h1>Hola, Jeik</h1>
+      <p>Antes de nada, ponla en la pantalla de inicio. Así se abre como una app y tus datos quedan a salvo.</p>
+      <div>
+        <h2>iPhone (Safari)</h2>
+        <ol>
+          <li>Toca <strong>Compartir</strong>, el cuadrado con la flecha.</li>
+          <li>Elige <strong>Añadir a pantalla de inicio</strong>.</li>
+          <li>Ábrela siempre desde ese icono.</li>
+        </ol>
+      </div>
+      <div>
+        <h2>Android (Chrome)</h2>
+        <ol>
+          <li>Abre el menú <strong>⋮</strong>.</li>
+          <li>Toca <strong>Instalar aplicación</strong> o <strong>Añadir a pantalla de inicio</strong>.</li>
+        </ol>
+      </div>
+      <a id="entrar" aria-disabled="true">Entrar →</a>
+    </main>
+    <script>
+      import { initDB, fijarPerfil } from '../lib/db';
+
+      await initDB();
+      await fijarPerfil('jeik');
+      if (document.documentElement.classList.contains('cargando')) location.replace('/');
+      const entrar = document.getElementById('entrar')!;
+      entrar.setAttribute('href', '/');
+      entrar.removeAttribute('aria-disabled');
+    </script>
+  </body>
+</html>

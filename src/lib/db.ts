@@ -1,6 +1,6 @@
 import { del, get, set } from 'idb-keyval';
 import type { BackupV1, BackupV2, Config, DiaDef, DiaRegistro, Ejercicio, EjercicioDef, Mediciones, PerfilId, Rutina, Sesion } from './types';
-import { CATALOGO, CONFIG_INICIAL, CONFIG_YASMINA, RUTINA_1, RUTINA_YASMINA } from './seed';
+import { CATALOGO, CONFIG_INICIAL, CONFIG_JEIK, CONFIG_YASMINA, RUTINA_1, RUTINA_JEIK, RUTINA_YASMINA } from './seed';
 import { esPerfilValido, PERFIL_POR_DEFECTO } from './perfiles';
 import { esCardio } from './cardio';
 
@@ -13,6 +13,7 @@ const PROPIOS = ['config', 'rutinas', 'sesiones', 'mediciones', 'diario'] as con
 const SEED: Record<PerfilId, { config: Config; rutina: Rutina }> = {
   jose: { config: CONFIG_INICIAL, rutina: RUTINA_1 },
   yasmina: { config: CONFIG_YASMINA, rutina: RUTINA_YASMINA },
+  jeik: { config: CONFIG_JEIK, rutina: RUTINA_JEIK },
 };
 
 // Rutina que llega con un deploy: si el perfil no la tiene, se añade y pasa a
@@ -21,6 +22,7 @@ const SEED: Record<PerfilId, { config: Config; rutina: Rutina }> = {
 // Jose cambia de rutina importando backups.
 const RUTINA_VIGENTE: Partial<Record<PerfilId, { rutina: Rutina; objetivoSemana: number }>> = {
   yasmina: { rutina: RUTINA_YASMINA, objetivoSemana: CONFIG_YASMINA.entrenosObjetivoSemana },
+  jeik: { rutina: RUTINA_JEIK, objetivoSemana: CONFIG_JEIK.entrenosObjetivoSemana },
 };
 
 const MEDICIONES_VACIAS: Mediciones = { peso: [], cintura: [] };
@@ -101,6 +103,17 @@ export async function setPerfilActivo(p: PerfilId): Promise<void> {
   await set(G.perfilActivo, p);
   espejarLocal(p);
   await sembrarPerfil(p);
+}
+
+// Entrada por URL propia: el perfil queda fijado en este móvil y el selector
+// deja de estar a mano.
+export async function fijarPerfil(p: PerfilId): Promise<void> {
+  await setPerfilActivo(p);
+  try {
+    if (typeof localStorage !== 'undefined') localStorage.setItem('perfilFijo', p);
+  } catch {
+    /* sin storage: el selector seguirá accesible, sin más */
+  }
 }
 
 export const getConfig = async (): Promise<Config> => ({ ...SEED[perfilActivo].config, ...(await get(pk('config'))) });

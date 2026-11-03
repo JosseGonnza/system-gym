@@ -4,8 +4,8 @@ export type Sensacion = 'facil' | 'bien' | 'duro';
 export type EstadoSesion = 'finalizada' | 'borrador';
 export type Jornada = 'manana' | 'tarde' | 'libre' | 'laboratorio' | 'ett';
 
-export type PerfilId = 'jose' | 'yasmina';
-export type Tema = 'nothing' | 'otono';
+export type PerfilId = 'jose' | 'yasmina' | 'jeik';
+export type Tema = 'nothing' | 'otono' | 'pizarra';
 export interface Perfil {
   id: PerfilId;
   nombre: string;
@@ -15,6 +15,13 @@ export interface Perfil {
   // La app le dice qué hacer y no le pregunta: una carita por ejercicio, sin
   // avisos, sin datos de sueño ni energía.
   modoSencillo: boolean;
+  // Entra por su propia URL y no ve el selector ni a los demás.
+  oculto?: boolean;
+  // La sensación se marca como lo que hará la próxima vez (subir, igual, bajar)
+  // y cada ejercicio puede llevar una molestia aparte.
+  proximaVez?: boolean;
+  // «Cómo se hace» con dibujo animado, pasos y aviso de espalda (lib/tecnica).
+  dibujos?: boolean;
 }
 
 export type Implemento = 'barra' | 'barraZ' | 'multipower' | 'mancuerna' | 'maquina' | 'polea' | 'kettlebell' | 'corporal';
@@ -117,6 +124,7 @@ export interface EjercicioReg {
   nombre: string;
   series: SerieReg[];
   sensacion?: Sensacion;
+  molestia?: boolean;
 }
 
 export interface Sesion {

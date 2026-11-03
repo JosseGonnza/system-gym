@@ -127,7 +127,9 @@ import Ico from '../components/Ico.astro';
   const $ = (id: string) => document.getElementById(id)!;
 
   await initDB();
-  const { usaJornadas, modoSencillo: sencillo } = perfil(getPerfilActivo());
+  const yo = perfil(getPerfilActivo());
+  const { usaJornadas, modoSencillo: sencillo } = yo;
+  const otono = yo.tema === 'otono';
   const { jornadas: JORNADAS, pautas: PAUTAS, alarmas: ALARMAS } = horarioDe(getPerfilActivo());
   await cerrarBorradoresCaducados();
   const config = await getConfig();
@@ -443,7 +445,7 @@ import Ico from '../components/Ico.astro';
     $('entreno-eyebrow').textContent = hecho ? 'Hoy has hecho' : sugerido ? 'Hoy te toca' : 'Hoy haces';
     $('dia-simbolo').replaceChildren(iconoEl(iconoDeDia(rutina.dias, dia), dia.emoji, 30));
     $('dia-nombre').textContent = dia.nombre;
-    $('dia-ultima').textContent = hecho ? '¡Hecho! Te lo has ganado 🍂' : duracionDe(dia);
+    $('dia-ultima').textContent = hecho ? `¡Hecho! Te lo has ganado ${yo.emoji}` : duracionDe(dia);
     const nombres = dia.ejercicios.map((e) => e.nombre);
     $('dia-ejercicios').replaceChildren(
       ...(dia.fueraDeRueda && nombres.length > 1
@@ -497,10 +499,15 @@ import Ico from '../components/Ico.astro';
     const n = mesHistorial(sesiones, diario, ahora.getFullYear(), ahora.getMonth()).entrenos;
     $('otono-mes').textContent = `Tu ${ahora.toLocaleDateString('es-ES', { month: 'long' })}`;
     $('otono-cuenta').textContent = n === 1 ? '1 día' : `${n} días`;
-    $('otono-hojas').textContent = '🍂'.repeat(Math.min(n, 20));
+    $('otono-hojas').textContent = yo.emoji.repeat(Math.min(n, 20));
     $('otono-hojas').classList.toggle('hidden', n === 0);
-    $('otono-frase').textContent =
-      n === 0 ? 'Cada día que vengas caerá aquí una hoja. La primera puede ser hoy.' : 'Cada hoja es un día que has venido.';
+    $('otono-frase').textContent = otono
+      ? n === 0
+        ? 'Cada día que vengas caerá aquí una hoja. La primera puede ser hoy.'
+        : 'Cada hoja es un día que has venido.'
+      : n === 0
+        ? 'Cada día que vengas sumará aquí. El primero puede ser hoy.'
+        : 'Cada marca es un día que has venido.';
   }
 
   function render() {

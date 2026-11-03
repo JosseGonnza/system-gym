@@ -38,11 +38,26 @@ const base = Astro.site ?? Astro.url;
           stored = localStorage.getItem('perfilActivo');
         } catch (e) {}
         var path = location.pathname.replace(/\/+$/, '') || '/';
+        var fijo = null;
+        try {
+          fijo = localStorage.getItem('perfilFijo');
+        } catch (e) {}
+        // Quien entra por su URL (/jeik) no ve el selector: le devolvemos a Hoy.
+        // /perfil#soltar lo libera (por si se abre en el móvil equivocado).
+        if (fijo && path === '/perfil') {
+          if (location.hash === '#soltar') {
+            try {
+              localStorage.removeItem('perfilFijo');
+            } catch (e) {}
+          } else {
+            location.replace('/');
+          }
+        }
         var esSelector = path === '/perfil';
-        var p = esSelector ? 'selector' : stored === 'jose' || stored === 'yasmina' ? stored : 'jose';
+        var p = esSelector ? 'selector' : stored === 'jose' || stored === 'yasmina' || stored === 'jeik' ? stored : 'jose';
         document.documentElement.dataset.perfil = p;
         document.documentElement.style.setProperty('color-scheme', 'dark');
-        var tc = { jose: '#000000', yasmina: '#1d130d', selector: '#000000' }[p];
+        var tc = { jose: '#000000', yasmina: '#1d130d', jeik: '#0d1118', selector: '#000000' }[p];
         document.addEventListener('DOMContentLoaded', function () {
           var m = document.querySelector('meta[name="theme-color"]');
           if (m) m.setAttribute('content', tc);

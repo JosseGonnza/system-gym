@@ -99,6 +99,8 @@ const YASMINA: HorarioPerfil = {
   },
 };
 
-export const HORARIOS: Record<PerfilId, HorarioPerfil> = { jose: JOSE, yasmina: YASMINA };
+const SIN_JORNADAS: HorarioPerfil = { jornadas: [], alarmas: {}, pautas: {} };
+
+export const HORARIOS: Record<PerfilId, HorarioPerfil> = { jose: JOSE, yasmina: YASMINA, jeik: SIN_JORNADAS };
 
 export const horarioDe = (p: PerfilId): HorarioPerfil => HORARIOS[p];

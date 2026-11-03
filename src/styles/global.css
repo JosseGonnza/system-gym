@@ -55,6 +55,41 @@ html[data-perfil='yasmina'] {
   --radius-btn: 0.9rem;
 }
 
+/* Jeik — "Pizarra": gris azulado y ámbar, los colores del prototipo que vio y
+   le gustaron. Sobrio y legible en el gimnasio. */
+html[data-perfil='jeik'] {
+  color-scheme: dark;
+  --color-bg: #0d1118;
+  --color-surface: #161c26;
+  --color-surface2: #1f2733;
+  --color-line: #39455a;
+  --color-vio: #e39a4e;
+  --color-vio-hi: #f2b47a;
+  --color-vio-soft: #f0c9a0;
+  --color-ink: #e8ecf2;
+  --color-mut: #a6b0c1;
+  --color-ok: #82b898;
+  --color-warn: #e0ae45;
+  --color-bad: #f2867c;
+
+  --font-display: 'Inter Variable', system-ui, sans-serif;
+  --font-body: 'Inter Variable', system-ui, sans-serif;
+  --font-num: 'JetBrains Mono Variable', ui-monospace, monospace;
+  --font-dot: 'Inter Variable', system-ui, sans-serif;
+  --radius-card: 10px;
+  --radius-btn: 10px;
+}
+
+html[data-perfil='jeik'] .eyebrow {
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--color-vio);
+}
+
+html[data-perfil='jeik'] .btn {
+  color: #1a1206;
+}
+
 /* Fondo cozy de Yasmina (la mascota con hojas de otoño): panel fijo que acaba
    justo encima del nav inferior, para que la barra no tape la escena. Robusto en iOS. */
 .fondo-yasmina {
@@ -570,3 +605,24 @@ html[data-perfil='yasmina'] .has-ico .ico-img {
 html[data-perfil='yasmina'] .deco-matcha {
   display: flex;
 }
+
+/* Dibujo de técnica (Jeik): figura en tinta, máquina en línea, final en ámbar tenue */
+.tec-fig svg {
+  display: block;
+  width: 100%;
+  max-width: 22rem;
+  height: auto;
+  margin-inline: auto;
+  background: var(--color-bg);
+  border-radius: var(--radius-card);
+}
+.tec-fig .suelo { stroke: var(--color-line); stroke-width: 2; }
+.tec-fig .maq { stroke: var(--color-line); stroke-width: 5; stroke-linecap: round; }
+.tec-fig .palanca { stroke: var(--color-line); stroke-width: 4; stroke-linecap: round; }
+.tec-fig .cable { stroke: var(--color-mut); stroke-width: 1.5; }
+.tec-fig .pieza { stroke: var(--color-vio); stroke-width: 6; stroke-linecap: round; fill: var(--color-vio); }
+.tec-fig circle.pieza { stroke: none; }
+.tec-fig .fantasma { stroke: var(--color-vio); stroke-width: 7; stroke-linecap: round; opacity: 0.25; }
+.tec-fig .fantasma-c { fill: var(--color-vio); opacity: 0.25; }
+.tec-fig .cuerpo { stroke: var(--color-ink); stroke-width: 7; stroke-linecap: round; }
+.tec-fig .cabeza { fill: var(--color-ink); }
