@@ -1,4 +1,4 @@
-import type { Config, Ejercicio, Rutina } from './types';
+import type { Config, Ejercicio, EjercicioDef, Rutina } from './types';
 
 // ───────────────────────── Biblioteca de ejercicios ─────────────────────────
 // Pesos de barra del gym de Jose: barra Z = 7 kg, barra recta larga = 20 kg (config.),
@@ -59,6 +59,11 @@ export const CATALOGO: Ejercicio[] = [
   { id: 'cardio-eliptica', nombre: 'Elíptica', patron: 'cardio', implemento: 'corporal', entrada: 'ninguna', ejecucion: 'bilateral', pesoBaseKg: 0, nota: 'Sin impacto. Buena opción si la rodilla anda sensible' },
   { id: 'cardio-bici', nombre: 'Bicicleta estática', patron: 'cardio', implemento: 'corporal', entrada: 'ninguna', ejecucion: 'bilateral', pesoBaseKg: 0, nota: 'Sillín alto para no cerrar mucho la rodilla' },
   { id: 'cardio-caminar', nombre: 'Caminar', patron: 'cardio', implemento: 'corporal', entrada: 'ninguna', ejecucion: 'bilateral', pesoBaseKg: 0, nota: 'Cuenta igual. La constancia gana a la intensidad' },
+  // — Añadidos para Jeik: máquinas sin carga en la zona lumbar —
+  { id: 'jalon-maquina', nombre: 'Jalón en máquina', patron: 'traccionV', implemento: 'maquina', entrada: 'directa', ejecucion: 'bilateral', pesoBaseKg: 0 },
+  { id: 'press-hombro-maquina', nombre: 'Press de hombro en máquina', patron: 'empujeV', implemento: 'maquina', entrada: 'directa', ejecucion: 'bilateral', pesoBaseKg: 0 },
+  { id: 'abductor-maquina', nombre: 'Abductores en máquina', patron: 'aislamiento', implemento: 'maquina', entrada: 'directa', ejecucion: 'bilateral', pesoBaseKg: 0 },
+  { id: 'curl-polea-barra', nombre: 'Curl de bíceps en polea', patron: 'aislamiento', implemento: 'polea', entrada: 'directa', ejecucion: 'bilateral', pesoBaseKg: 0 },
 ];
 
 // ───────────────────────────────── Rutina ───────────────────────────────────
@@ -197,6 +202,96 @@ export const CONFIG_YASMINA: Config = {
   rutinaActivaId: RUTINA_YASMINA.id,
   fechaInicioPlan: '2026-06-18',
   macros: { kcal: 1825, prot: 140, grasa: 65, carbo: 170 },
+  puntero: { ultimoDiaCompletadoId: null },
+  incrementoMinimoKg: 1.25,
+  entrenosObjetivoSemana: 3,
+  restTimerActivo: true,
+  ultimoExportISO: null,
+};
+
+// ───────────────────────── Perfil de Jeik ─────────────────────────
+// Bloque 1 (2/11 – 29/11/2026): full body A/B/C en rueda y cardio suelto que no
+// la mueve. Solo máquinas y poleas: tiene la zona lumbar delicada (le duelen el
+// peso muerto y el rumano) y los pesos libres le cuestan. Prensa, femoral y
+// laterales repiten ranura entre días para que el historial sea uno solo.
+const INTRO_JEIK =
+  'Calienta 5 minutos en bici, elíptica o cinta suave. Luego 10 puentes de glúteo en el suelo y dos series ligeras del primer ejercicio, que no cuentan. Si algo te molesta en la espalda, para ese ejercicio, márcalo como Molestia y sigue.';
+
+const prensaJeik: EjercicioDef = { ranuraId: 'j-prensa', ejercicioId: 'prensa-horizontal', nombre: 'Prensa de piernas', tipoProgresion: 'sensacion', series: 3, repsObjetivo: [10, 12], incrementoKg: 5, restSeg: 120, nota: 'Baja hasta donde el culo siga pegado al respaldo' };
+const femoralJeik: EjercicioDef = { ranuraId: 'j-femoral', ejercicioId: 'curl-femoral', nombre: 'Curl femoral sentado', tipoProgresion: 'sensacion', series: 3, repsObjetivo: [10, 12], incrementoKg: 2.5, restSeg: 90 };
+const lateralesJeik: EjercicioDef = { ranuraId: 'j-laterales', ejercicioId: 'elevacion-lateral-polea', nombre: 'Elevaciones laterales en polea', tipoProgresion: 'sensacion', series: 3, repsObjetivo: [12, 15], incrementoKg: 1.25, restSeg: 60, nota: 'Un brazo cada vez' };
+
+export const RUTINA_JEIK: Rutina = {
+  id: 'rutina-jeik-b1',
+  nombre: 'Full body A/B/C · bloque 1',
+  dias: [
+    {
+      id: 'ja',
+      nombre: 'Full body A',
+      emoji: '🦵',
+      icono: 'dia-pierna',
+      intro: INTRO_JEIK,
+      ejercicios: [
+        prensaJeik,
+        femoralJeik,
+        { ranuraId: 'j-jalon-neutro', ejercicioId: 'jalon-pecho', nombre: 'Jalón al pecho agarre neutro', tipoProgresion: 'sensacion', series: 3, repsObjetivo: [8, 12], incrementoKg: 2.5, restSeg: 120 },
+        { ranuraId: 'j-press-pecho', ejercicioId: 'press-banca-maquina', nombre: 'Press de pecho en máquina', tipoProgresion: 'sensacion', series: 3, repsObjetivo: [8, 12], incrementoKg: 2.5, restSeg: 120 },
+        lateralesJeik,
+        { ranuraId: 'j-plancha', ejercicioId: 'plancha', nombre: 'Plancha sobre antebrazos', tipoProgresion: 'tiempo', series: 2, repsObjetivo: null, incrementoKg: null, restSeg: 60, segObjetivo: 30, nota: 'Dale a ▶ y la app te cuenta los 30 segundos' },
+      ],
+    },
+    {
+      id: 'jb',
+      nombre: 'Full body B',
+      emoji: '💪',
+      icono: 'dia-espalda',
+      intro: INTRO_JEIK,
+      ejercicios: [
+        { ranuraId: 'j-extension', ejercicioId: 'extension-cuadriceps', nombre: 'Extensión de pierna en máquina', tipoProgresion: 'sensacion', series: 3, repsObjetivo: [12, 15], incrementoKg: 2.5, restSeg: 90 },
+        { ranuraId: 'j-remo', ejercicioId: 'remo-maquina', nombre: 'Remo en máquina con apoyo en el pecho', tipoProgresion: 'sensacion', series: 3, repsObjetivo: [8, 12], incrementoKg: 2.5, restSeg: 120 },
+        { ranuraId: 'j-press-inclinado', ejercicioId: 'press-inclinado-maquina', nombre: 'Press inclinado en máquina', tipoProgresion: 'sensacion', series: 3, repsObjetivo: [8, 12], incrementoKg: 2.5, restSeg: 120 },
+        { ranuraId: 'j-pecdeck', ejercicioId: 'pec-deck', nombre: 'Aperturas en máquina (pec deck)', tipoProgresion: 'sensacion', series: 2, repsObjetivo: [12, 15], incrementoKg: 2.5, restSeg: 60 },
+        { ranuraId: 'j-abductor', ejercicioId: 'abductor-maquina', nombre: 'Abductores en máquina', tipoProgresion: 'sensacion', series: 2, repsObjetivo: [15, 20], incrementoKg: 2.5, restSeg: 60 },
+        lateralesJeik,
+        { ranuraId: 'j-triceps', ejercicioId: 'extension-triceps-polea', nombre: 'Tríceps en polea con barra', tipoProgresion: 'sensacion', series: 2, repsObjetivo: [10, 12], incrementoKg: 2.5, restSeg: 60 },
+      ],
+    },
+    {
+      id: 'jc',
+      nombre: 'Full body C',
+      emoji: '🏋️',
+      icono: 'dia-empuje',
+      intro: INTRO_JEIK,
+      ejercicios: [
+        prensaJeik,
+        femoralJeik,
+        { ranuraId: 'j-jalon-maquina', ejercicioId: 'jalon-maquina', nombre: 'Jalón en máquina', tipoProgresion: 'sensacion', series: 3, repsObjetivo: [8, 12], incrementoKg: 2.5, restSeg: 120 },
+        { ranuraId: 'j-press-hombro', ejercicioId: 'press-hombro-maquina', nombre: 'Press de hombro en máquina', tipoProgresion: 'sensacion', series: 2, repsObjetivo: [8, 12], incrementoKg: 2.5, restSeg: 90 },
+        { ranuraId: 'j-curl', ejercicioId: 'curl-polea-barra', nombre: 'Curl de bíceps en polea', tipoProgresion: 'sensacion', series: 2, repsObjetivo: [10, 12], incrementoKg: 2.5, restSeg: 60 },
+        { ranuraId: 'j-deadbug', ejercicioId: 'dead-bug', nombre: 'Dead bug (bicho muerto)', tipoProgresion: 'sensacion', series: 2, repsObjetivo: 8, incrementoKg: null, restSeg: 45, nota: '8 por lado, despacio' },
+      ],
+    },
+    {
+      id: 'jcardio',
+      nombre: 'Cardio suave',
+      emoji: '🚶',
+      icono: 'dia-cardio',
+      fueraDeRueda: true,
+      intro: 'Elige máquina y tiempo, de 30 a 40 minutos a un ritmo en el que puedas hablar. No mueve la rueda.',
+      ejercicios: [
+        { ranuraId: 'j-cardio-cinta', ejercicioId: 'cardio-cinta', nombre: 'Cinta inclinada', tipoProgresion: 'tiempo', series: 1, repsObjetivo: null, incrementoKg: null, restSeg: 0 },
+        { ranuraId: 'j-cardio-bici', ejercicioId: 'cardio-bici', nombre: 'Bici', tipoProgresion: 'tiempo', series: 1, repsObjetivo: null, incrementoKg: null, restSeg: 0 },
+        { ranuraId: 'j-cardio-eliptica', ejercicioId: 'cardio-eliptica', nombre: 'Elíptica', tipoProgresion: 'tiempo', series: 1, repsObjetivo: null, incrementoKg: null, restSeg: 0 },
+        { ranuraId: 'j-cardio-caminar', ejercicioId: 'cardio-caminar', nombre: 'Paseo fuera', tipoProgresion: 'tiempo', series: 1, repsObjetivo: null, incrementoKg: null, restSeg: 0 },
+      ],
+    },
+  ],
+};
+
+export const CONFIG_JEIK: Config = {
+  rutinaActivaId: RUTINA_JEIK.id,
+  fechaInicioPlan: '2026-11-02',
+  macros: { kcal: 2300, prot: 150, grasa: 70, carbo: 265 },
   puntero: { ultimoDiaCompletadoId: null },
   incrementoMinimoKg: 1.25,
   entrenosObjetivoSemana: 3,
