@@ -1,0 +1,239 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Domingo">
+  <section id="domingo"></section>
+</Layout>
+
+<script>
+  import { initDB, getConfig, getRutinas, getSesiones, getMediciones, getComidas, getDomingos, patchDomingo, anotarMedida, hoyISO } from '../lib/db';
+  import { boton, el } from '../lib/dom';
+  import { CARDIO_SEMANA, fmtCorto, metaGym, semanaN } from '../lib/plan-jeik';
+  import {
+    FOTOS,
+    SALIDAS,
+    asunto,
+    domingoACerrar,
+    domingosHasta,
+    mailto,
+    primerDomingo,
+    resumenSemana,
+    textoSeguimiento,
+    type Domingo,
+  } from '../lib/seguimiento';
+
+  await initDB();
+  const config = await getConfig();
+  const rutinas = await getRutinas();
+  const rutina = rutinas.find((r) => r.id === config.rutinaActivaId) ?? rutinas[0];
+  const sesiones = await getSesiones();
+  const comidas = await getComidas();
+  let mediciones = await getMediciones();
+  const hoy = hoyISO();
+  const domingo = domingoACerrar(hoy, await getDomingos());
+  let d: Domingo = (await getDomingos())[domingo] ?? {};
+  const email = import.meta.env.PUBLIC_EMAIL_SEGUIMIENTO ?? '';
+
+  const dec = (n: number) => n.toLocaleString('es-ES', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  const dias = (xs: { fecha: string }[]) => new Set(xs.map((s) => s.fecha)).size;
+  const guardar = async (cambio: Partial<Domingo>) => {
+    d = await patchDomingo(domingo, cambio);
+    pintar();
+  };
+
+  const tarjeta = (...hijos: (Node | null)[]) => el('section', 'card mt-4', ...hijos);
+  const titulo = (t: string, extra?: string) =>
+    el('div', 'flex items-baseline justify-between', el('h2', 'text-base font-bold', t), extra ? el('span', 'text-xs font-semibold text-mut', extra) : null);
+  const nota = (t: string) => el('p', 'mt-2 text-xs text-mut', t);
+  const cuenta = (label: string, valor: string, de?: string) =>
+    el('div', 'rounded-xl bg-surface2 p-2.5 text-center', el('p', 'text-[10px] font-bold uppercase tracking-wide text-mut', label), el('p', 'num mt-0.5 text-lg font-extrabold', valor, de ? el('span', 'text-xs text-mut', de) : null));
+
+  function escala(campo: 'hambre' | 'sueno' | 'energia', pregunta: string, bajo: string, alto: string) {
+    return el(
+      'div',
+      'mt-4',
+      el('p', 'text-sm font-bold', pregunta),
+      el(
+        'div',
+        'mt-1.5 grid grid-cols-5 gap-1.5',
+        ...[1, 2, 3, 4, 5].map((n) =>
+          boton(`rounded-lg border-2 py-2 font-bold ${d[campo] === n ? 'border-vio bg-vio/20 text-vio-hi' : 'border-line bg-surface2 text-mut'}`, String(n), () =>
+            void guardar({ [campo]: d[campo] === n ? undefined : n }),
+          ),
+        ),
+      ),
+      el('div', 'mt-1 flex justify-between text-[11px] text-mut', el('span', '', bajo), el('span', '', alto)),
+    );
+  }
+
+  function pintar() {
+    const r = resumenSemana(domingo, sesiones, rutina, mediciones, comidas);
+    const texto = textoSeguimiento(domingo, d, r, rutina, comidas);
+    const sem = semanaN(domingo);
+
+    const cabecera = el(
+      'div',
+      '',
+      el('p', 'eyebrow', `Seguimiento · domingo ${fmtCorto(domingo)}`),
+      el('h2', 'mt-1 text-2xl font-extrabold', 'Cierra la semana'),
+      el(
+        'p',
+        'mt-1 text-sm text-mut',
+        hoy < primerDomingo()
+          ? `Tu primer domingo de seguimiento es el ${fmtCorto(primerDomingo())}. Puedes ir viéndolo.`
+          : domingo < hoy
+            ? 'Te quedó sin cerrar la semana pasada. Ciérrala ahora, que todavía estás a tiempo.'
+            : domingo === hoy
+              ? 'Cinco minutos, por la mañana y en ayunas.'
+              : 'Se rellena el domingo por la mañana. Puedes ir viéndolo.',
+      ),
+    );
+
+    const semana = tarjeta(
+      titulo('Tu semana, ya contada', `semana ${sem}`),
+      el(
+        'div',
+        'mt-3 grid grid-cols-3 gap-2',
+        cuenta('Gimnasio', String(dias(r.gym)), `/${metaGym(domingo)}`),
+        cuenta('Cardio', String(dias(r.cardio)), `/${CARDIO_SEMANA}`),
+        cuenta('Peso medio', r.media != null ? dec(r.media) : '—'),
+      ),
+      nota(`Comidas: ${r.comidas.plan} del plan, ${r.comidas.otra} otra cosa, ${r.comidas.salto} saltadas y ${r.comidas.snacks} snacks. Peso medio de ${r.pesos.length} mañanas.`),
+    );
+
+    const inCintura = el('input', 'num w-28 rounded-xl border border-line bg-surface2 px-3 py-2.5 text-lg font-bold');
+    inCintura.type = 'number';
+    inCintura.inputMode = 'decimal';
+    inCintura.step = '0.5';
+    inCintura.placeholder = '88,0';
+    const cinturaDomingo = mediciones.cintura.find((c) => c.fecha === domingo);
+    inCintura.value = cinturaDomingo ? String(cinturaDomingo.cm) : '';
+    inCintura.addEventListener('change', async () => {
+      const v = inCintura.value === '' ? null : Number(inCintura.value.replace(',', '.'));
+      if (v != null && (!Number.isFinite(v) || v < 40 || v > 200)) return;
+      mediciones = await anotarMedida('cintura', domingo, v);
+      pintar();
+    });
+    const como = el(
+      'ul',
+      'mt-3 space-y-1 text-xs text-mut',
+      ...[
+        ['Dónde', 'A la altura del ombligo.'],
+        ['Cómo', 'Sin apretar la cinta, después de soltar el aire.'],
+        ['Siempre', 'Igual: domingo, en ayunas, después del baño.'],
+      ].map(([k, v]) => el('li', 'flex gap-2', el('b', 'w-16 shrink-0 text-ink', k), el('span', '', v))),
+    );
+    const cintura = tarjeta(titulo('Cintura'), el('div', 'mt-2 flex items-center gap-2', inCintura, el('span', 'text-sm text-mut', 'cm')), como);
+
+    const hechas = d.fotos ?? [];
+    const fotos = tarjeta(
+      titulo('Tres fotos', `${hechas.length} de 3`),
+      el(
+        'div',
+        'mt-3 grid grid-cols-3 gap-2',
+        ...FOTOS.map((f) => {
+          const on = hechas.includes(f.id);
+          const b = boton(
+            `flex flex-col items-center gap-1 rounded-xl border-2 py-3 text-sm font-bold transition active:scale-95 ${on ? 'border-ok bg-ok/15 text-ok' : 'border-line bg-surface2 text-mut'}`,
+            null,
+            () => void guardar({ fotos: on ? hechas.filter((x) => x !== f.id) : [...hechas, f.id] }),
+          );
+          b.setAttribute('aria-pressed', String(on));
+          b.append(el('span', 'text-2xl leading-none', on ? '✓' : '📷'), f.nombre);
+          return b;
+        }),
+      ),
+      nota('Hazlas con la cámara del móvil: misma hora, misma luz, misma ropa y a la misma distancia. Se quedan en tu galería y las vemos juntos en la revisión del mes. Aquí solo marca las que tengas.'),
+    );
+
+    const salidas = el(
+      'div',
+      'mt-4',
+      el('p', 'text-sm font-bold', 'Salidas de fiesta'),
+      el(
+        'div',
+        'mt-1.5 grid grid-cols-3 gap-1.5',
+        ...SALIDAS.map((t, v) =>
+          boton(`rounded-lg border-2 py-2 text-sm font-bold ${d.salidas === v ? 'border-vio bg-vio/20 text-vio-hi' : 'border-line bg-surface2 text-mut'}`, t, () =>
+            void guardar({ salidas: d.salidas === v ? undefined : (v as 0 | 1 | 2) }),
+          ),
+        ),
+      ),
+    );
+    const area = el('textarea', 'mt-1.5 w-full rounded-xl border border-line bg-surface2 px-3 py-2.5 text-sm');
+    area.rows = 3;
+    area.placeholder = 'Molestias en la espalda, días raros, cenas fuera, dudas…';
+    area.value = d.nota ?? '';
+    const enviar = el('a', 'btn mt-4', d.cerrado ? 'Enviado ✓ · enviar otra vez' : 'Enviar el seguimiento a Jose');
+    enviar.href = mailto(email, domingo, texto);
+    enviar.target = '_blank';
+    enviar.rel = 'noopener';
+    // La nota se guarda sin repintar (perdería el foco) y el enlace se rehace al vuelo.
+    area.addEventListener('input', () => {
+      d = { ...d, nota: area.value };
+      enviar.href = mailto(email, domingo, textoSeguimiento(domingo, d, r, rutina, comidas));
+    });
+    area.addEventListener('change', () => void patchDomingo(domingo, { nota: area.value }));
+    enviar.addEventListener('click', () => {
+      void patchDomingo(domingo, { nota: area.value, cerrado: true }).then((x) => {
+        d = x;
+        setTimeout(pintar, 300);
+      });
+    });
+
+    const preguntas = tarjeta(
+      titulo('¿Cómo ha ido la semana?'),
+      escala('hambre', 'Hambre', 'ninguna', 'mucha'),
+      escala('sueno', 'Sueño', 'fatal', 'genial'),
+      escala('energia', 'Energía en el gimnasio', 'sin fuerzas', 'a tope'),
+      salidas,
+      el('div', 'mt-4', el('p', 'text-sm font-bold', 'Algo que contar'), area),
+    );
+
+    const copiar = boton('font-semibold text-vio-hi underline', '¿No se abre? Copia el texto', async () => {
+      try {
+        await navigator.clipboard.writeText(`${asunto(domingo)}\n\n${textoSeguimiento(domingo, d, r, rutina, comidas)}`);
+        copiar.textContent = 'Copiado ✓ Pégalo en un correo o en WhatsApp';
+      } catch {
+        copiar.textContent = 'No se ha podido copiar';
+      }
+    });
+    const envio = el(
+      'div',
+      '',
+      enviar,
+      el('p', 'mt-2 text-xs text-mut', `Se abre tu correo con el asunto «${asunto(domingo)}» y el resumen ya escrito: solo te queda darle a enviar. `, copiar),
+    );
+
+    const filas = domingosHasta(domingo).map((dom) => {
+      const x = resumenSemana(dom, sesiones, rutina, mediciones, comidas);
+      return el(
+        'tr',
+        `border-t border-line ${dom === domingo ? 'font-bold text-ink' : 'text-mut'}`,
+        el('td', 'py-1.5', String(semanaN(dom))),
+        el('td', 'num', `${dias(x.gym)}/${metaGym(dom)}`),
+        el('td', 'num', `${dias(x.cardio)}/${CARDIO_SEMANA}`),
+        el('td', 'num', x.media != null ? dec(x.media) : '—'),
+        el('td', 'num', x.cintura != null ? dec(x.cintura) : '—'),
+      );
+    });
+    const progreso = el('a', 'mt-3 block text-sm font-semibold text-vio-hi', 'Ver tu progreso: calendario y gráficas →');
+    progreso.href = '/progreso';
+    const tabla = tarjeta(
+      titulo('Tus semanas'),
+      el(
+        'table',
+        'mt-2 w-full text-left text-sm',
+        el('thead', '', el('tr', 'text-[10px] uppercase tracking-wide text-mut', ...['Sem.', 'Gym', 'Cardio', 'Peso', 'Cintura'].map((t) => el('th', 'pb-1 font-bold', t)))),
+        el('tbody', '', ...filas),
+      ),
+      nota('Si la báscula sube y la cintura baja, estás ganando músculo sin ganar tripa.'),
+      progreso,
+    );
+
+    document.getElementById('domingo')!.replaceChildren(cabecera, semana, cintura, fotos, preguntas, envio, tabla);
+  }
+
+  pintar();
+</script>

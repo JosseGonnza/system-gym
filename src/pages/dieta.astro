@@ -20,7 +20,8 @@ import Layout from '../layouts/Layout.astro';
   import { iconoEl } from '../lib/iconos';
   import { perfil } from '../lib/perfiles';
   import { BLOQUES, OBJETIVO_DIA, SNACK_DIA, infoComida, totalesDia, PLATO_DEF, type SegId, type SelPlato } from '../lib/comidas';
-  import { abrirComida, abrirSnack, boton, el, platoEl, quitarSnack } from '../lib/hoja-comida';
+  import { abrirComida, abrirSnack, platoEl, quitarSnack } from '../lib/hoja-comida';
+  import { boton, el } from '../lib/dom';
   import { fmtFecha, sumarDias } from '../lib/plan-jeik';
 
   const $ = (id: string) => document.getElementById(id)!;

@@ -1,5 +1,6 @@
 import { del, get, set } from 'idb-keyval';
 import type { DiaComidas } from './comidas';
+import type { Domingo } from './seguimiento';
 import type { BackupV1, BackupV2, Config, DiaDef, DiaRegistro, Ejercicio, EjercicioDef, Mediciones, PerfilId, Rutina, Sesion } from './types';
 import { CATALOGO, CONFIG_INICIAL, CONFIG_JEIK, CONFIG_YASMINA, RUTINA_1, RUTINA_JEIK, RUTINA_YASMINA } from './seed';
 import { esPerfilValido, PERFIL_POR_DEFECTO } from './perfiles';
@@ -8,7 +9,7 @@ import { esCardio } from './cardio';
 // Claves globales (compartidas entre perfiles).
 const G = { perfilActivo: 'perfilActivo', catalogo: 'catalogo' } as const;
 // Nombres de los datos que viven POR perfil → se guardan con prefijo `${perfil}:`.
-const PROPIOS = ['config', 'rutinas', 'sesiones', 'mediciones', 'diario', 'comidas'] as const;
+const PROPIOS = ['config', 'rutinas', 'sesiones', 'mediciones', 'diario', 'comidas', 'domingos'] as const;
 
 // Datos sembrados por perfil (config + rutina inicial). El catálogo es compartido.
 const SEED: Record<PerfilId, { config: Config; rutina: Rutina }> = {
@@ -51,6 +52,7 @@ async function sembrarPerfil(p: PerfilId): Promise<void> {
   if (!(await get(`${p}:mediciones`))) await set(`${p}:mediciones`, MEDICIONES_VACIAS);
   if (!(await get(`${p}:diario`))) await set(`${p}:diario`, {});
   if (!(await get(`${p}:comidas`))) await set(`${p}:comidas`, {});
+  if (!(await get(`${p}:domingos`))) await set(`${p}:domingos`, {});
 
   const vigente = RUTINA_VIGENTE[p];
   const rutinas: Rutina[] = (await get(`${p}:rutinas`)) ?? [];
@@ -141,12 +143,27 @@ export async function patchComidas(fecha: string, cambio: (d: DiaComidas) => Dia
   return comidas;
 }
 
-export async function anotarPeso(fecha: string, kg: number | null): Promise<Mediciones> {
+// Una medida por día: la nueva sustituye a la de esa fecha y null la borra.
+export async function anotarMedida(tipo: 'peso' | 'cintura', fecha: string, valor: number | null): Promise<Mediciones> {
   const m = await getMediciones();
-  m.peso = m.peso.filter((e) => e.fecha !== fecha);
-  if (kg != null) m.peso.push({ fecha, kg });
+  if (tipo === 'peso') {
+    m.peso = m.peso.filter((e) => e.fecha !== fecha);
+    if (valor != null) m.peso.push({ fecha, kg: valor });
+  } else {
+    m.cintura = m.cintura.filter((e) => e.fecha !== fecha);
+    if (valor != null) m.cintura.push({ fecha, cm: valor });
+  }
   await setMediciones(m);
   return m;
+}
+
+export const getDomingos = async (): Promise<Record<string, Domingo>> => (await get(pk('domingos'))) ?? {};
+
+export async function patchDomingo(fecha: string, cambio: Partial<Domingo>): Promise<Domingo> {
+  const domingos = await getDomingos();
+  domingos[fecha] = { ...domingos[fecha], ...cambio };
+  await set(pk('domingos'), domingos);
+  return domingos[fecha];
 }
 
 export async function patchDia(fecha: string, patch: Partial<DiaRegistro>): Promise<Record<string, DiaRegistro>> {
@@ -220,7 +237,7 @@ export function formatObjetivo(e: EjercicioDef): string {
 }
 
 export async function exportarBackup(): Promise<BackupV2> {
-  const [config, catalogo, rutinas, sesiones, mediciones, diario, comidas] = await Promise.all([
+  const [config, catalogo, rutinas, sesiones, mediciones, diario, comidas, domingos] = await Promise.all([
     getConfig(),
     getCatalogo(),
     getRutinas(),
@@ -228,11 +245,12 @@ export async function exportarBackup(): Promise<BackupV2> {
     getMediciones(),
     getDiario(),
     getComidas(),
+    getDomingos(),
   ]);
   const exportadoISO = new Date().toISOString();
   const configActualizada = { ...config, ultimoExportISO: exportadoISO };
   await setConfig(configActualizada);
-  return { version: 2, app: 'gym', exportadoISO, perfil: perfilActivo, config: configActualizada, catalogo, rutinas, sesiones, mediciones, diario, comidas };
+  return { version: 2, app: 'gym', exportadoISO, perfil: perfilActivo, config: configActualizada, catalogo, rutinas, sesiones, mediciones, diario, comidas, domingos };
 }
 
 // Resetea SOLO el perfil activo (no toca el catálogo compartido ni el otro perfil).
@@ -255,5 +273,6 @@ export async function importarBackup(data: unknown): Promise<void> {
     set(pk('mediciones'), b.mediciones ?? MEDICIONES_VACIAS),
     set(pk('diario'), b.diario ?? {}),
     set(pk('comidas'), ('comidas' in b && b.comidas) || {}),
+    set(pk('domingos'), ('domingos' in b && b.domingos) || {}),
   ]);
 }

@@ -1,5 +1,6 @@
 export type TipoProgresion = 'lineal' | 'doble' | 'pesoCorporal' | 'tiempo' | 'libre' | 'sensacion';
 import type { DiaComidas } from './comidas';
+import type { Domingo } from './seguimiento';
 
 export type EstadoSerie = 'pendiente' | 'completada' | 'fallo' | 'corta';
 export type Sensacion = 'facil' | 'bien' | 'duro';
@@ -174,4 +175,5 @@ export interface BackupV2 {
   mediciones: Mediciones;
   diario: Record<string, DiaRegistro>;
   comidas?: Record<string, DiaComidas>;
+  domingos?: Record<string, Domingo>;
 }

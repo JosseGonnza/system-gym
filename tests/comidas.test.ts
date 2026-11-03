@@ -23,7 +23,7 @@ import {
   resumenComidas,
   totalesDia,
 } from '../src/lib/comidas';
-import { anotarPeso, exportarBackup, fijarPerfil, getComidas, getMediciones, importarBackup, initDB, patchComidas, resetDB } from '../src/lib/db';
+import { anotarMedida, exportarBackup, fijarPerfil, getComidas, getMediciones, importarBackup, initDB, patchComidas, resetDB } from '../src/lib/db';
 import { deposito, enNavidad, fase, lunesDe, metaGym, semanaDe, semanaN } from '../src/lib/plan-jeik';
 
 const store = (idb as unknown as { _store: Map<string, unknown> })._store;
@@ -130,10 +130,10 @@ describe('guardado', () => {
   it('el peso del día se sustituye, no se duplica', async () => {
     await initDB();
     await fijarPerfil('jeik');
-    await anotarPeso('2026-11-03', 74.6);
-    await anotarPeso('2026-11-03', 74.4);
+    await anotarMedida('peso', '2026-11-03', 74.6);
+    await anotarMedida('peso', '2026-11-03', 74.4);
     expect((await getMediciones()).peso).toEqual([{ fecha: '2026-11-03', kg: 74.4 }]);
-    await anotarPeso('2026-11-03', null);
+    await anotarMedida('peso', '2026-11-03', null);
     expect((await getMediciones()).peso).toEqual([]);
   });
 

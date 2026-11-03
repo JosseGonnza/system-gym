@@ -21,22 +21,7 @@ import {
   type Snack,
 } from './comidas';
 import { fmtFecha } from './plan-jeik';
-
-type Hijo = Node | string | null | undefined | false;
-
-export function el<K extends keyof HTMLElementTagNameMap>(tag: K, clase = '', ...hijos: Hijo[]): HTMLElementTagNameMap[K] {
-  const e = document.createElement(tag);
-  if (clase) e.className = clase;
-  for (const h of hijos) if (h) e.append(h);
-  return e;
-}
-
-export function boton(clase: string, texto: Hijo, alPulsar: () => void): HTMLButtonElement {
-  const b = el('button', clase, texto);
-  b.type = 'button';
-  b.addEventListener('click', alPulsar);
-  return b;
-}
+import { boton, el } from './dom';
 
 const miles = (n: number) => Math.round(n).toLocaleString('es-ES');
 
