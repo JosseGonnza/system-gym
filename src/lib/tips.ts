@@ -161,6 +161,16 @@ export const TIPS: Record<string, Tip> = {
     error:
       'Si lo notas en el cuello o el trapecio: baja peso y hunde los hombros antes de empezar. Es de los ejercicios donde menos peso hace falta.',
   },
+  'elevacion-lateral-polea': {
+    donde: 'En el lateral del hombro, como una hombrera.',
+    claves: [
+      'Polea abajo y un brazo cada vez; el cable pasa por delante del cuerpo.',
+      'Sube con el meñique un pelín más alto que el pulgar, sin pasar de la altura del hombro.',
+      'Baja despacio: la polea tira todo el recorrido y ahí está la gracia.',
+    ],
+    error:
+      'Si lo notas en el cuello o el trapecio: baja peso y hunde los hombros antes de empezar. Si pincha dentro del hombro, para ese ejercicio.',
+  },
   'face-pull': {
     donde: 'En la parte de atrás del hombro y entre los omóplatos.',
     claves: [
