@@ -144,41 +144,59 @@ export const CONFIG_INICIAL: Config = {
 };
 
 // ───────────────────────── Perfil de Yasmina ─────────────────────────
-// Full body de otoño (21/10/2026): dos días que se alternan y un día suave de
-// cardio que no mueve la rueda. Máquinas, cuidando rodillas (condromalacia) y
-// hombro (tendinitis). Las ranuras que ya existían conservan su id: así arranca
-// con sus últimos pesos en vez de calibrar de cero.
+// Tres días en rueda (04/11/2026), mismo esqueleto que la Arnold de Jose pero al
+// revés: glúteo y pierna abren cada día y el torso va detrás. Día suave de cardio
+// que no mueve la rueda. Máquinas, cuidando rodillas (condromalacia) y hombro
+// (sin press por encima de la cabeza). Las ranuras que ya existían conservan su
+// id: así arranca con sus últimos pesos en vez de calibrar de cero.
 const INTRO_FUERZA = 'Calienta 5 minutos en la cinta o la elíptica, suave. Luego, ejercicio a ejercicio: aquí tienes todo.';
 
 export const RUTINA_YASMINA: Rutina = {
-  id: 'rutina-yasmina-otono',
-  nombre: 'Full body · 3 días + día suave',
+  id: 'rutina-yasmina-3dias',
+  nombre: 'Rueda de 3 · glúteo delante + día suave',
   dias: [
     {
-      id: 'fa',
-      nombre: 'Full body A',
+      id: 'y1',
+      nombre: 'Glúteo + Pecho + Espalda',
       emoji: '🍑',
       icono: 'dia-gluteo',
       intro: INTRO_FUERZA,
       ejercicios: [
-        { ranuraId: 'yd1-hipthrust', ejercicioId: 'hip-thrust', nombre: 'Hip thrust', tipoProgresion: 'sensacion', series: 3, repsObjetivo: 12, incrementoKg: 2.5, restSeg: 90 },
-        { ranuraId: 'yd1-prensa', ejercicioId: 'prensa-horizontal', nombre: 'Prensa horizontal', tipoProgresion: 'sensacion', series: 3, repsObjetivo: 12, incrementoKg: 5, restSeg: 90, nota: 'Sin bajar tanto que pinche la rodilla' },
-        { ranuraId: 'yd2-press', ejercicioId: 'press-banca-maquina', nombre: 'Press de pecho en máquina', tipoProgresion: 'sensacion', series: 3, repsObjetivo: 12, incrementoKg: 2.5, restSeg: 90 },
-        { ranuraId: 'yd2-jalon', ejercicioId: 'jalon-pecho', nombre: 'Jalón al pecho', tipoProgresion: 'sensacion', series: 3, repsObjetivo: 12, incrementoKg: 2.5, restSeg: 90, nota: 'Tira con los codos, no con las manos' },
+        { ranuraId: 'yd1-hipthrust', ejercicioId: 'hip-thrust', nombre: 'Hip thrust', tipoProgresion: 'sensacion', series: 3, repsObjetivo: [8, 12], incrementoKg: 2.5, restSeg: 120 },
+        { ranuraId: 'yd1-prensa', ejercicioId: 'prensa-horizontal', nombre: 'Prensa horizontal', tipoProgresion: 'sensacion', series: 3, repsObjetivo: [10, 12], incrementoKg: 5, restSeg: 90, nota: 'Pies altos en la plataforma. Sin bajar tanto que pinche la rodilla' },
+        { ranuraId: 'yd2-press', ejercicioId: 'press-banca-maquina', nombre: 'Press de pecho en máquina', tipoProgresion: 'sensacion', series: 3, repsObjetivo: [10, 12], incrementoKg: 2.5, restSeg: 90 },
+        { ranuraId: 'yd2-jalon', ejercicioId: 'jalon-pecho', nombre: 'Jalón al pecho', tipoProgresion: 'sensacion', series: 3, repsObjetivo: [10, 12], incrementoKg: 2.5, restSeg: 90, nota: 'Tira con los codos, no con las manos' },
+        { ranuraId: 'yd2-remo', ejercicioId: 'remo-maquina', nombre: 'Remo en máquina', tipoProgresion: 'sensacion', series: 3, repsObjetivo: [10, 12], incrementoKg: 2.5, restSeg: 90, nota: 'Junta los omóplatos antes de doblar los codos' },
         { ranuraId: 'yd3-plancha', ejercicioId: 'plancha', nombre: 'Plancha', tipoProgresion: 'tiempo', series: 3, repsObjetivo: null, incrementoKg: null, restSeg: 60, segObjetivo: 30, nota: 'Dale a ▶ y la app te cuenta los 30 segundos' },
       ],
     },
     {
-      id: 'fb',
-      nombre: 'Full body B',
+      id: 'y2',
+      nombre: 'Femoral + Hombro + Brazos',
+      emoji: '🪖',
+      icono: 'dia-hombro',
+      intro: INTRO_FUERZA,
+      ejercicios: [
+        { ranuraId: 'yd1-femoral', ejercicioId: 'curl-femoral', nombre: 'Curl femoral sentado', tipoProgresion: 'sensacion', series: 3, repsObjetivo: [10, 12], incrementoKg: 2.5, restSeg: 90 },
+        { ranuraId: 'yd1-gluteo', ejercicioId: 'patada-gluteo', nombre: 'Patada de glúteo', tipoProgresion: 'sensacion', series: 3, repsObjetivo: 12, incrementoKg: 2.5, restSeg: 60, nota: 'Cada pierna hace sus 12' },
+        { ranuraId: 'y-laterales', ejercicioId: 'elevacion-lateral-polea', nombre: 'Elevación lateral en polea', tipoProgresion: 'sensacion', series: 3, repsObjetivo: [12, 15], incrementoKg: 1.25, restSeg: 60, nota: 'Un brazo cada vez y poco peso. Sin pasar de la altura del hombro' },
+        { ranuraId: 'y-facepull', ejercicioId: 'face-pull', nombre: 'Face pull', tipoProgresion: 'sensacion', series: 3, repsObjetivo: 15, incrementoKg: 1.25, restSeg: 60 },
+        { ranuraId: 'y-curl', ejercicioId: 'curl-polea-cuerda', nombre: 'Curl de bíceps en polea', tipoProgresion: 'sensacion', series: 3, repsObjetivo: [10, 12], incrementoKg: 1.25, restSeg: 60 },
+        { ranuraId: 'y-triceps', ejercicioId: 'extension-triceps-polea', nombre: 'Extensión de tríceps en polea', tipoProgresion: 'sensacion', series: 3, repsObjetivo: 12, incrementoKg: 1.25, restSeg: 60 },
+      ],
+    },
+    {
+      id: 'y3',
+      nombre: 'Full body',
       emoji: '🦵',
       icono: 'dia-pierna',
       intro: INTRO_FUERZA,
       ejercicios: [
-        { ranuraId: 'yd1-femoral', ejercicioId: 'curl-femoral', nombre: 'Curl femoral sentado', tipoProgresion: 'sensacion', series: 3, repsObjetivo: 12, incrementoKg: 2.5, restSeg: 90 },
-        { ranuraId: 'yd1-gluteo', ejercicioId: 'patada-gluteo', nombre: 'Patada de glúteo', tipoProgresion: 'sensacion', series: 3, repsObjetivo: 12, incrementoKg: 2.5, restSeg: 60, nota: 'Cada pierna hace sus 12' },
-        { ranuraId: 'y-extension', ejercicioId: 'extension-cuadriceps', nombre: 'Extensión de cuádriceps', tipoProgresion: 'sensacion', series: 3, repsObjetivo: 12, incrementoKg: 2.5, restSeg: 60, nota: 'Solo el tramo final, con la rodilla casi estirada' },
-        { ranuraId: 'yd2-remo', ejercicioId: 'remo-maquina', nombre: 'Remo en máquina', tipoProgresion: 'sensacion', series: 3, repsObjetivo: 12, incrementoKg: 2.5, restSeg: 90, nota: 'Junta los omóplatos antes de doblar los codos' },
+        { ranuraId: 'y-hipthrust-ligero', ejercicioId: 'hip-thrust', nombre: 'Hip thrust (más reps)', tipoProgresion: 'sensacion', series: 3, repsObjetivo: [12, 15], incrementoKg: 2.5, restSeg: 90, nota: 'Menos peso que el otro día y más repeticiones' },
+        { ranuraId: 'y-extension', ejercicioId: 'extension-cuadriceps', nombre: 'Extensión de cuádriceps', tipoProgresion: 'sensacion', series: 3, repsObjetivo: [12, 15], incrementoKg: 2.5, restSeg: 60, nota: 'Solo el tramo final, con la rodilla casi estirada' },
+        { ranuraId: 'y-hiperextension', ejercicioId: 'hiperextension', nombre: 'Hiperextensiones', tipoProgresion: 'sensacion', series: 3, repsObjetivo: [12, 15], incrementoKg: null, restSeg: 60, nota: 'Espalda un poco redondeada y aprieta el glúteo para subir. Para en línea recta' },
+        { ranuraId: 'y-pecdeck', ejercicioId: 'pec-deck', nombre: 'Aperturas en pec deck', tipoProgresion: 'sensacion', series: 3, repsObjetivo: [12, 15], incrementoKg: 2.5, restSeg: 60 },
+        { ranuraId: 'y-remo-polea', ejercicioId: 'remo-polea', nombre: 'Remo en polea baja', tipoProgresion: 'sensacion', series: 3, repsObjetivo: [12, 15], incrementoKg: 2.5, restSeg: 60, nota: 'Junta los omóplatos antes de doblar los codos' },
         { ranuraId: 'yd3-deadbug', ejercicioId: 'dead-bug', nombre: 'Dead bug', tipoProgresion: 'sensacion', series: 3, repsObjetivo: 10, incrementoKg: null, restSeg: 45, nota: '10 por lado, despacio' },
       ],
     },
