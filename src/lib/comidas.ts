@@ -39,11 +39,11 @@ export const OBJETIVO_DIA = { kcal: 2300, p: 150 };
 export const SNACK_DIA = { kcal: 400, p: 20 };
 
 export const SNACKS: Required<Snack>[] = [
-  { t: 'Una pieza de fruta', kcal: 80, p: 1 },
-  { t: 'Yogur o skyr', kcal: 110, p: 12 },
-  { t: 'Puñado de frutos secos', kcal: 180, p: 6 },
+  { t: 'Un plátano o una manzana', kcal: 90, p: 1 },
+  { t: 'Dos yogures 0 %', kcal: 100, p: 10 },
+  { t: 'Pavo en lonchas y una manzana', kcal: 150, p: 14 },
   { t: 'Batido de proteína', kcal: 130, p: 24 },
-  { t: 'Bocadillito de pavo o atún', kcal: 250, p: 18 },
+  { t: 'Bocadillito de pavo o jamón york', kcal: 250, p: 18 },
   { t: 'Tostada con queso fresco', kcal: 180, p: 10 },
 ];
 
@@ -58,21 +58,21 @@ export interface Opcion {
 export const OPCIONES: Record<BloqueId, Opcion[]> = {
   desayuno: [
     { id: 'd1', nombre: 'Café con leche y tostada de pavo', items: [['200 ml', 'leche semi en el café'], ['40 g', 'pan'], ['40 g', 'pavo en lonchas'], ['', 'tomate']], kcal: 240, p: 18 },
-    { id: 'd2', nombre: 'Skyr con fruta', items: [['150 g', 'skyr o yogur proteico'], ['1', 'pieza de fruta'], ['10 g', 'nueces']], kcal: 230, p: 18 },
+    { id: 'd2', nombre: 'Yogur 0 % con plátano y avena', items: [['2', 'yogures naturales 0 %'], ['1', 'plátano'], ['20 g', 'avena']], kcal: 265, p: 14 },
     { id: 'd3', nombre: 'Queso batido con avena', items: [['200 g', 'queso batido 0 %'], ['25 g', 'avena'], ['', 'canela al gusto']], kcal: 190, p: 19 },
-    { id: 'd4', nombre: 'Café con leche y una fruta', items: [['200 ml', 'leche semi en el café'], ['1', 'pieza de fruta']], kcal: 160, p: 8 },
+    { id: 'd4', nombre: 'Café con leche y un plátano', items: [['200 ml', 'leche semi en el café'], ['1', 'plátano']], kcal: 195, p: 8 },
   ],
   comida: [
-    { id: 'c1', nombre: 'Pollo con arroz y verdura', items: [['220 g', 'pechuga de pollo'], ['120 g', 'arroz (en crudo)'], ['200 g', 'verdura'], ['15 g', 'aceite de oliva'], ['1', 'fruta']], kcal: 915, p: 64 },
+    { id: 'c1', nombre: 'Pollo con arroz y verdura', items: [['220 g', 'pechuga de pollo'], ['120 g', 'arroz (en crudo)'], ['200 g', 'verdura'], ['15 g', 'aceite de oliva'], ['1', 'naranja']], kcal: 905, p: 64 },
     { id: 'c2', nombre: 'Lentejas con ternera', items: [['100 g', 'lentejas (en seco)'], ['120 g', 'ternera magra'], ['200 g', 'patata'], ['', 'verdura del guiso'], ['15 g', 'aceite'], ['40 g', 'pan']], kcal: 915, p: 56 },
-    { id: 'c3', nombre: 'Pasta con atún y tomate', items: [['120 g', 'pasta (en crudo)'], ['2 latas', 'atún al natural'], ['200 g', 'tomate triturado'], ['100 g', 'verdura'], ['15 g', 'aceite'], ['20 g', 'queso rallado']], kcal: 865, p: 51 },
-    { id: 'c4', nombre: 'Ternera con patatas', items: [['220 g', 'ternera magra'], ['350 g', 'patata'], ['', 'ensalada'], ['15 g', 'aceite'], ['40 g', 'pan'], ['1', 'fruta']], kcal: 925, p: 59 },
+    { id: 'c5', nombre: 'Pasta boloñesa de ternera', items: [['120 g', 'pasta (en crudo)'], ['150 g', 'ternera picada magra'], ['200 g', 'tomate triturado'], ['100 g', 'verdura'], ['15 g', 'aceite'], ['20 g', 'queso rallado']], kcal: 915, p: 57 },
+    { id: 'c4', nombre: 'Ternera con patatas', items: [['220 g', 'ternera magra'], ['350 g', 'patata'], ['', 'ensalada'], ['15 g', 'aceite'], ['40 g', 'pan'], ['1', 'manzana']], kcal: 925, p: 59 },
   ],
   cena: [
     { id: 'n1', nombre: 'Merluza con patata', items: [['280 g', 'merluza o pescado blanco'], ['300 g', 'patata'], ['', 'verdura'], ['15 g', 'aceite'], ['40 g', 'pan']], kcal: 780, p: 61 },
     { id: 'n2', nombre: 'Tortilla francesa con pavo', items: [['3', 'huevos'], ['80 g', 'pavo en lonchas'], ['80 g', 'pan'], ['60 g', 'queso fresco'], ['', 'ensalada'], ['10 g', 'aceite']], kcal: 720, p: 53 },
-    { id: 'n3', nombre: 'Salmón con boniato', items: [['180 g', 'salmón'], ['250 g', 'boniato'], ['', 'verdura'], ['40 g', 'pan'], ['5 g', 'aceite']], kcal: 785, p: 47 },
-    { id: 'n4', nombre: 'Pollo con arroz', items: [['220 g', 'pechuga de pollo'], ['80 g', 'arroz (en crudo)'], ['', 'verdura'], ['10 g', 'aceite'], ['1', 'fruta']], kcal: 730, p: 61 },
+    { id: 'n5', nombre: 'Lomo con boniato', items: [['200 g', 'lomo de cerdo'], ['250 g', 'boniato'], ['', 'verdura'], ['40 g', 'pan'], ['10 g', 'aceite']], kcal: 740, p: 55 },
+    { id: 'n4', nombre: 'Pollo con arroz', items: [['220 g', 'pechuga de pollo'], ['80 g', 'arroz (en crudo)'], ['', 'verdura'], ['10 g', 'aceite'], ['2', 'kiwis']], kcal: 740, p: 61 },
   ],
 };
 
@@ -107,8 +107,6 @@ export const ALIMENTOS: Record<SegId, Alimento[]> = {
     { id: 'ternera', nombre: 'Ternera magra', m: [21, 0, 6, 140] },
     { id: 'lomo', nombre: 'Lomo de cerdo', m: [22, 0, 5, 135] },
     { id: 'merluza', nombre: 'Merluza o pescado blanco', m: [17, 0, 2, 90] },
-    { id: 'salmon', nombre: 'Salmón', m: [20, 0, 13, 200] },
-    { id: 'atun', nombre: 'Atún al natural', m: [25, 0, 1, 110] },
   ],
   carb: [
     { id: 'arroz', nombre: 'Arroz', m: [7, 78, 1, 350], cocido: 3 },
@@ -122,7 +120,7 @@ export const ALIMENTOS: Record<SegId, Alimento[]> = {
   gras: [
     { id: 'aceite', nombre: 'Aceite de oliva', m: [0, 0, 100, 900], fijo: 10, ojo: '1 cucharada sopera' },
     { id: 'aguacate', nombre: 'Aguacate', m: [2, 2, 15, 160], fijo: 60, ojo: 'medio pequeño' },
-    { id: 'nada', nombre: 'Nada más', m: [0, 0, 0, 0], fijo: 0, ojo: 'si llevas salmón o ternera, ya va dentro' },
+    { id: 'nada', nombre: 'Nada más', m: [0, 0, 0, 0], fijo: 0, ojo: 'si llevas ternera o lomo, ya va dentro' },
   ],
 };
 
