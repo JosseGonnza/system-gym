@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
   capitulos,
+  cielo,
+  marca,
+  mediasSemanales,
+  racha,
+  tendenciaSemanal,
   estrellasMes,
   etiquetaMarcador,
   faseLunar,
@@ -152,5 +157,58 @@ describe('frases del mes', () => {
   it('el número va en letra y concuerda en singular', () => {
     const una = Array.from({ length: 5 }, (_, i) => fraseMes(1, sumarDias('2026-01-01', i)));
     expect(una).toContain('Una estrella encendida. El bosque lo nota.');
+  });
+});
+
+describe('el diario', () => {
+  const rutina = { id: 'r', dias: [{ id: 'a' }, { id: 's', fueraDeRueda: true }] } as unknown as Rutina;
+  const fin = (fecha: string, diaId = 'a') => sesion(fecha, diaId);
+
+  it('racha: semanas seguidas llegando al objetivo; la semana a medias no la rompe', () => {
+    // Semanas del 19/10, 26/10 y 2/11 con 3; la del 9/11 (en curso) con 1
+    const s = ['2026-10-19', '2026-10-21', '2026-10-23', '2026-10-26', '2026-10-28', '2026-10-30', '2026-11-02', '2026-11-04', '2026-11-06', '2026-11-09'].map((f) => fin(f));
+    expect(racha(s, [rutina], 3, '2026-11-13')).toEqual({ actual: 3, mejor: 3 });
+  });
+
+  it('racha: un hueco la corta, el día suave no cuenta y la mejor se recuerda', () => {
+    const s = [
+      ...['2026-09-07', '2026-09-08', '2026-09-09', '2026-09-14', '2026-09-15', '2026-09-16'].map((f) => fin(f)),
+      fin('2026-09-21'),
+      ...['2026-11-09', '2026-11-10', '2026-11-11'].map((f) => fin(f)),
+      fin('2026-11-12', 's'),
+    ];
+    expect(racha(s, [rutina], 3, '2026-11-13')).toEqual({ actual: 1, mejor: 2 });
+    expect(racha([], [rutina], 3, '2026-11-13')).toEqual({ actual: 0, mejor: 0 });
+  });
+
+  it('el cielo: 12 meses con sus días; entreno, suave o nada, y el futuro marcado', () => {
+    const c = cielo([fin('2026-11-09'), fin('2026-11-10', 's')], [rutina], 2026, '2026-11-13');
+    expect(c).toHaveLength(12);
+    expect(c[1]).toHaveLength(28);
+    expect(c[10][8]).toEqual({ fecha: '2026-11-09', tipo: 'entreno', futuro: false });
+    expect(c[10][9].tipo).toBe('suave');
+    expect(c[10][10].tipo).toBe('nada');
+    expect(c[10][13].futuro).toBe(true);
+  });
+
+  it('medias semanales y tendencia por semana', () => {
+    const e = [
+      { fecha: '2026-10-19', v: 64 },
+      { fecha: '2026-10-21', v: 63.6 },
+      { fecha: '2026-10-27', v: 63.5 },
+      { fecha: '2026-11-09', v: 63.2 },
+    ];
+    const m = mediasSemanales(e);
+    expect(m.map((x) => x.lunes)).toEqual(['2026-10-19', '2026-10-26', '2026-11-09']);
+    expect(m[0].media).toBeCloseTo(63.8);
+    // (0, 63,8), (1, 63,5), (3, 63,2) → pendiente −0,9 / 4,67
+    expect(tendenciaSemanal(m)).toBeCloseTo(-0.1929, 4);
+    expect(tendenciaSemanal(m.slice(0, 1))).toBeNull();
+  });
+
+  it('la marca: valor de ahora, la primera y las 6 últimas', () => {
+    const s = [10, 12.5, 12.5, 15, 15, 17.5, 20].map((p, i) => sesion(`2026-0${i + 3}-01`, 'a', [ej('hip', [p])]));
+    expect(marca(s, 'hip', false)).toEqual({ actual: 20, primera: { fecha: '2026-03-01', v: 10 }, ultimos: [12.5, 12.5, 15, 15, 17.5, 20] });
+    expect(marca(s, 'otra', false)).toBeNull();
   });
 });
