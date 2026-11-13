@@ -4,6 +4,7 @@ import Ico from '../components/Ico.astro';
 ---
 
 <Layout title="Entreno">
+  <section id="vista-grimorio" class="hidden"></section>
   <section id="vista-inicio" class="hidden">
     <div class="card glow border-vio/40">
       <p class="eyebrow">Hoy toca</p>
@@ -15,6 +16,13 @@ import Ico from '../components/Ico.astro';
   </section>
 
   <section id="vista-sesion" class="hidden">
+    <div id="gm-top-ses" class="gm-top-ses" hidden>
+      <button id="gm-salir" type="button" class="gm-x" aria-label="Salir del entreno">
+        <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M5 5l14 14M19 5L5 19"></path></svg>
+      </button>
+      <span id="gm-cap" class="gm-cap"></span>
+      <span class="gm-x-hueco"></span>
+    </div>
     <div class="mb-3 flex items-center justify-between">
       <p id="progreso" class="eyebrow"></p>
       <div id="sesion-datos" class="flex items-center gap-3 text-sm">
@@ -38,12 +46,14 @@ import Ico from '../components/Ico.astro';
     <p id="sesion-intro" class="mb-3 hidden px-1 text-sm text-mut"></p>
     <div id="tarjeta"></div>
 
+    <div id="pie-sesion">
     <div id="nav-tarjetas" class="mt-4 grid grid-cols-2 gap-2">
       <button id="btn-prev" class="btn-2 py-3">← Anterior</button>
       <button id="btn-next" class="btn py-3">Siguiente →</button>
     </div>
     <button id="btn-finalizar" class="btn-2 mt-2 border-vio/40 text-vio-hi">🏁 Finalizar sesión</button>
     <a id="link-guardar" href="/" class="mt-2 block text-center text-sm font-semibold text-mut">💾 Guardar y salir (sigue en borrador)</a>
+    </div>
     <textarea
       id="in-notas"
       rows="2"
@@ -125,6 +135,7 @@ import Ico from '../components/Ico.astro';
     diaSugerido,
     formatObjetivo,
     getPerfilActivo,
+    patchDia,
   } from '../lib/db';
   import { perfil } from '../lib/perfiles';
   import { mesHistorial } from '../lib/historial';
@@ -171,6 +182,11 @@ import Ico from '../components/Ico.astro';
   await cerrarBorradoresCaducados();
   const yo = perfil(getPerfilActivo());
   const sencillo = yo.modoSencillo;
+  // Yasmina: el Grimorio en vez de la vista de inicio, y la sesión del modo
+  // sencillo a pantalla completa con su ropa (lib/sesion-grimorio.ts). La
+  // lógica de la sesión es la misma para todos.
+  const grimorio = yo.tema === 'grimorio';
+  const gm = grimorio ? await import('../lib/sesion-grimorio') : null;
   const config = await getConfig();
   const catalogo = await getCatalogo();
   const catalogoMap = new Map(catalogo.map((x) => [x.id, x]));
@@ -254,12 +270,46 @@ import Ico from '../components/Ico.astro';
     return map;
   }
 
-  function mostrarVista(v: 'inicio' | 'sesion' | 'fin') {
-    for (const x of ['inicio', 'sesion', 'fin']) $(`vista-${x}`).classList.toggle('hidden', x !== v);
+  function mostrarVista(v: 'inicio' | 'sesion' | 'fin' | 'grimorio') {
+    for (const x of ['inicio', 'sesion', 'fin', 'grimorio']) $(`vista-${x}`).classList.toggle('hidden', x !== v);
+    if (grimorio) document.body.classList.toggle('gm-en-sesion', v === 'sesion');
+  }
+
+  // ---------- Grimorio (Yasmina) ----------
+  let paginaGrimorio = dia.id;
+  const objetivoGrimorio = (e: EjercicioDef) => formatObjetivo(e).replace('×', ' × ').replace('-', '–');
+
+  async function renderGrimorio() {
+    const { pintarGrimorio } = await import('../lib/vista-grimorio');
+    const titulo = document.querySelector('.appbar h1');
+    if (titulo) titulo.textContent = 'Grimorio';
+    pintarGrimorio($('vista-grimorio'), {
+      hoy,
+      rutina,
+      sesiones,
+      pagina: paginaGrimorio,
+      tocaId: dia.id,
+      objetivo: objetivoGrimorio,
+      unidad: (e) => (catalogoMap.get(e.ejercicioId ?? '')?.entrada === 'porLado' ? 'kg/lado' : 'kg'),
+      alCambiarPagina: (id) => {
+        paginaGrimorio = id;
+        void renderGrimorio();
+      },
+      // Como elegir otro día en Hoy: queda apuntado y la sesión es de ese día.
+      alEmpezar: async (id) => {
+        const elegido = rutina.dias.find((d) => d.id === id);
+        if (!elegido) return;
+        dia = elegido;
+        await patchDia(hoy, { diaElegidoId: id });
+        await empezar();
+      },
+    });
+    mostrarVista('grimorio');
   }
 
   // ---------- Vista inicio ----------
   function renderInicio() {
+    if (grimorio) return void renderGrimorio();
     const elInicio = $('inicio-dia');
     elInicio.classList.add('flex', 'items-center', 'gap-2');
     elInicio.replaceChildren(iconoEl(iconoDeDia(rutina.dias, dia), dia.emoji, 24), dia.nombre);
@@ -313,6 +363,22 @@ import Ico from '../components/Ico.astro';
     if (sencillo) {
       $('nav-tarjetas').style.display = gs.length > 1 ? '' : 'none';
       $('btn-next').classList.toggle('invisible', cardIdx === gs.length - 1);
+    }
+    // Grimorio: el avance en lunas (tocar una lleva a ese ejercicio, que hace
+    // de "Anterior") y el siguiente con su nombre.
+    if (gm) {
+      const hecho = (g: EjercicioDef[]) => g.every((e) => regDe(e).sensacion || regDe(e).series.every((s) => s.estado !== 'pendiente'));
+      elP.replaceChildren(
+        gm.lunasAvance(
+          gs.map((g, i) => (i === cardIdx ? 'actual' : hecho(g) ? 'llena' : 'vacia')),
+          gs.map((g) => g[0].nombre),
+          (i) => {
+            cardIdx = i;
+            renderCard();
+          },
+        ),
+      );
+      if (cardIdx < gs.length - 1) $('btn-next').textContent = `Siguiente · ${gs[cardIdx + 1][0].nombre}`;
     }
   }
 
@@ -675,6 +741,10 @@ import Ico from '../components/Ico.astro';
     const obj = document.createElement('p');
     obj.className = 'mt-1 text-lg font-bold text-vio-hi';
     obj.textContent = objetivoSencillo(e);
+    if (gm) {
+      h.className = 'gm-ses-h';
+      obj.className = 'gm-ses-obj';
+    }
     div.append(h, obj);
     if (e.nota) {
       const nota = document.createElement('p');
@@ -723,6 +793,7 @@ import Ico from '../components/Ico.astro';
       const centro = document.createElement('div');
       centro.append(input, unidad);
       fila.append(botonPaso('−', 'Menos peso', -paso), centro, botonPaso('+', 'Más peso', paso));
+      gm?.vestirCirculo(fila);
       pintar();
       div.append(fila);
     }
@@ -752,6 +823,7 @@ import Ico from '../components/Ico.astro';
       circulos.append(b);
     });
     series.append(lbl, circulos);
+    gm?.vestirSeries(series);
     div.append(series);
 
     const siguiente = reg.series.findIndex((s) => s.estado === 'pendiente');
@@ -770,6 +842,7 @@ import Ico from '../components/Ico.astro';
     const pregunta = document.createElement('p');
     pregunta.className = 'text-center font-display text-lg font-bold';
     pregunta.textContent = yo.proximaVez ? 'La próxima vez' : '¿Qué tal te ha ido?';
+    if (gm) pregunta.className = 'gm-pregunta';
     const caritas = document.createElement('div');
     caritas.className = 'mt-2.5 grid grid-cols-3 gap-2';
     for (const c of CARITAS) {
@@ -780,6 +853,12 @@ import Ico from '../components/Ico.astro';
       const em = document.createElement('span');
       em.className = 'text-3xl leading-none';
       em.textContent = c.emoji;
+      if (gm && !yo.proximaVez) {
+        b.className = `gm-cara${reg.sensacion === c.id ? ' gm-on' : ''}`;
+        b.setAttribute('aria-pressed', String(reg.sensacion === c.id));
+        em.className = '';
+        em.innerHTML = gm.CARAS[c.id];
+      }
       b.append(em, c.label);
       b.addEventListener('click', () => valorar(e, c.id));
       caritas.append(b);
@@ -1479,6 +1558,21 @@ import Ico from '../components/Ico.astro';
   if (sencillo) {
     for (const id of ['sesion-datos', 'in-notas', 'link-guardar']) $(id).classList.add('hidden');
     $('btn-finalizar').textContent = 'Terminar por hoy';
+  }
+
+  if (gm) {
+    $('gm-top-ses').hidden = false;
+    $('gm-cap').textContent = `Capítulo ${gm.capitulos(sesiones) + 1}`;
+    // Salir no borra nada: la sesión se queda esperando, como en el modo sencillo.
+    $('gm-salir').addEventListener('click', () => {
+      if (confirm('¿Sales del entreno? Lo que llevas queda guardado y te espera aquí.')) location.href = '/';
+    });
+    // Desde las píldoras de Hoy: abrir esa página del Grimorio.
+    if (location.hash.startsWith('#pagina-')) {
+      const id = location.hash.slice('#pagina-'.length);
+      if (rutina.dias.some((d) => d.id === id)) paginaGrimorio = id;
+      history.replaceState(null, '', '/entreno');
+    }
   }
 
   // ---------- Arranque ----------
