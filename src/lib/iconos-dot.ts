@@ -3,44 +3,6 @@
 // que es justo lo que son. Abstractos a propósito: sugieren, no dibujan.
 
 export const PATRONES: Record<string, string[]> = {
-  // ── Navegación ──
-  'nav-hoy': [
-    '.......',
-    '#######',
-    '#.....#',
-    '#..#..#',
-    '#.....#',
-    '#######',
-    '.......',
-  ],
-  'nav-entreno': [
-    '.......',
-    '.......',
-    '##.#.##',
-    '#######',
-    '##.#.##',
-    '.......',
-    '.......',
-  ],
-  'nav-dieta': [
-    '.......',
-    '.#...#.',
-    '.#...#.',
-    '#######',
-    '.#####.',
-    '..###..',
-    '.......',
-  ],
-  'nav-progreso': [
-    '.......',
-    '.....#.',
-    '...#.#.',
-    '...#.#.',
-    '.#.#.#.',
-    '.#.#.#.',
-    '.......',
-  ],
-
   // ── Días de rutina: cuatro figuras geométricas, una por día ──
   // Triángulo hacia abajo = la V del torso.
   'dia-empuje': [

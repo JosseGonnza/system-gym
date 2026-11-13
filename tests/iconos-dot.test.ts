@@ -34,12 +34,12 @@ describe('iconos de matriz de puntos', () => {
   });
 
   it('genera un círculo por punto encendido', () => {
-    const encendidos = PATRONES['nav-hoy'].join('').split('').filter((c) => c === '#').length;
-    expect(svgDot('nav-hoy', 22).match(/<circle/g)).toHaveLength(encendidos);
+    const encendidos = PATRONES['dia-empuje'].join('').split('').filter((c) => c === '#').length;
+    expect(svgDot('dia-empuje', 22).match(/<circle/g)).toHaveLength(encendidos);
   });
 
   it('hereda el color del texto y respeta el tamaño pedido', () => {
-    const svg = svgDot('nav-entreno', 26);
+    const svg = svgDot('dia-hombro', 26);
     expect(svg).toContain('fill="currentColor"');
     expect(svg).toContain('width="26"');
     expect(svg).toContain('viewBox="0 0 21 21"');
@@ -52,7 +52,6 @@ describe('iconos de matriz de puntos', () => {
 
   it('están los iconos que usa la interfaz', () => {
     for (const id of [
-      'nav-hoy', 'nav-entreno', 'nav-dieta', 'nav-progreso',
       'dia-empuje', 'dia-hombro', 'dia-pierna', 'dia-bombeo',
       'dia-coraza', 'dia-alas', 'dia-raices', 'dia-bomba',
       'ajustes', 'cambiar', 'descanso', 'manana', 'aviso', 'hecho', 'backup', 'record',
