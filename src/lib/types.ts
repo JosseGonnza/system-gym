@@ -27,6 +27,8 @@ export interface Perfil {
   seguimiento?: boolean;
   // Dieta de casa: la carta común de Jose y Yasmina, con compra y reparto.
   casa?: boolean;
+  // Cuadritos del último año en Progreso, como los commits de GitHub.
+  anual?: boolean;
 }
 
 export type Implemento = 'barra' | 'barraZ' | 'multipower' | 'mancuerna' | 'maquina' | 'polea' | 'kettlebell' | 'corporal';

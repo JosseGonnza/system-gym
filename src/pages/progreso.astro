@@ -4,6 +4,8 @@ import Ico from '../components/Ico.astro';
 ---
 
 <Layout title="Progreso">
+  <section id="card-anual" class="card mb-4 hidden"></section>
+
   <section class="card">
     <div class="flex items-center justify-between gap-2">
       <button id="mes-prev" class="rounded-lg border border-line px-3 py-1.5 text-sm font-bold active:scale-95">‹</button>
@@ -99,6 +101,7 @@ import Ico from '../components/Ico.astro';
   import { iconoEl, iconoDeDia } from '../lib/iconos';
   import { cerrarBorradoresCaducados } from '../lib/sesion';
   import { esCardio } from '../lib/cardio';
+  import { tarjetaAnual } from '../lib/vista-anual';
   import type { EjercicioDef, SerieReg } from '../lib/types';
 
   const $ = (id: string) => document.getElementById(id)!;
@@ -115,6 +118,7 @@ import Ico from '../components/Ico.astro';
   const sesiones = await getSesiones();
   const mediciones = await getMediciones();
   const diario = await getDiario();
+  if (perfil(getPerfilActivo()).anual) tarjetaAnual($('card-anual'), sesiones, hoyISO(), config.entrenosObjetivoSemana);
 
   function grafico(valores: { fecha: string; v: number }[], unidad: string): HTMLElement {
     const wrap = document.createElement('div');
