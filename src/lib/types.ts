@@ -25,6 +25,8 @@ export interface Perfil {
   dibujos?: boolean;
   // Seguimiento con Jose: diario de comidas, peso de la mañana y semana en Hoy.
   seguimiento?: boolean;
+  // Dieta de casa: la carta común de Jose y Yasmina, con compra y reparto.
+  casa?: boolean;
 }
 
 export type Implemento = 'barra' | 'barraZ' | 'multipower' | 'mancuerna' | 'maquina' | 'polea' | 'kettlebell' | 'corporal';

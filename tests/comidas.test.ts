@@ -149,6 +149,18 @@ describe('guardado', () => {
     expect(await getComidas()).toEqual(b.comidas);
   });
 
+  it('la dieta de casa guarda hechas, fuera de lista y carro en el perfil de cada uno', async () => {
+    await initDB();
+    await setPerfilActivo('yasmina');
+    await patchComidas('2026-11-16', () => ({ hecho: { merienda: true }, snack: [{ t: 'Barrita de proteína', kcal: 200, p: 20 }], compra: ['A:pollo'] }));
+    const b = await exportarBackup();
+    await resetDB();
+    await importarBackup(b);
+    expect((await getComidas())['2026-11-16']).toEqual({ hecho: { merienda: true }, snack: [{ t: 'Barrita de proteína', kcal: 200, p: 20 }], compra: ['A:pollo'] });
+    await setPerfilActivo('jose');
+    expect(await getComidas()).toEqual({});
+  });
+
   it('un backup viejo sin comidas deja el diario vacío', async () => {
     await initDB();
     await setPerfilActivo('jeik');

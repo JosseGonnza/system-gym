@@ -12,6 +12,7 @@ import Layout from '../layouts/Layout.astro';
     </div>
   </section>
   <section id="diario" class="hidden"></section>
+  <section id="casa" class="hidden"></section>
 </Layout>
 
 <script>
@@ -22,13 +23,19 @@ import Layout from '../layouts/Layout.astro';
   import { BLOQUES, OBJETIVO_DIA, SNACK_DIA, infoComida, totalesDia, PLATO_DEF, type SegId, type SelPlato } from '../lib/comidas';
   import { abrirComida, abrirSnack, platoEl, quitarSnack } from '../lib/hoja-comida';
   import { boton, el } from '../lib/dom';
+  import { dietaCasa } from '../lib/vista-casa';
   import { fmtFecha, sumarDias } from '../lib/plan-jeik';
 
   const $ = (id: string) => document.getElementById(id)!;
 
   await initDB();
 
-  if (perfil(getPerfilActivo()).seguimiento) {
+  const yo = getPerfilActivo();
+  if (perfil(yo).casa && (yo === 'jose' || yo === 'yasmina')) {
+    $('estatica').remove();
+    $('casa').classList.remove('hidden');
+    await dietaCasa($('casa'), yo);
+  } else if (perfil(yo).seguimiento) {
     $('estatica').remove();
     $('diario').classList.remove('hidden');
     await diario();

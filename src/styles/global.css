@@ -502,15 +502,6 @@ html[data-perfil='yasmina'] .tab-on .tab-ico {
   padding: 3px 9px;
 }
 
-/* Modo sencillo: sin pestaña de dieta, tres pestañas en vez de cuatro */
-html[data-perfil='yasmina'] .tab-dieta {
-  display: none;
-}
-
-html[data-perfil='yasmina'] .tabbar > div {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
 /* Jeik: Hoy · Entreno · Comida · Domingo · Plan. Progreso se abre desde el Domingo. */
 .tab-jeik {
   display: none;

@@ -18,7 +18,13 @@ export interface Snack {
   p?: number;
 }
 
-export type DiaComidas = Partial<Record<BloqueId, RegComida>> & { snack?: Snack[] };
+// Dieta de casa (lib/casa): `hecho` marca las comidas del plan, `snack` es lo
+// de fuera de lista y `compra`, en el lunes de cada semana, lo que va al carro.
+export type DiaComidas = Partial<Record<BloqueId, RegComida>> & {
+  snack?: Snack[];
+  hecho?: Partial<Record<'desayuno' | 'comida' | 'merienda' | 'cena', true>>;
+  compra?: string[];
+};
 
 export interface Bloque {
   id: BloqueId;
