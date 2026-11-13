@@ -20,6 +20,8 @@ import Ico from '../components/Ico.astro';
     </div>
   </section>
 
+  <section id="card-volumen" class="card mt-4 hidden"></section>
+
   <section id="card-peso-dieta" class="card mt-4 hidden"></section>
 
   <section class="card mt-4">
@@ -107,6 +109,7 @@ import Ico from '../components/Ico.astro';
   import { tarjetaAnual } from '../lib/vista-anual';
   import { REPS_MAX_1RM, mejorSerie } from '../lib/fuerza';
   import { tarjetaPesoDieta } from '../lib/vista-peso-dieta';
+  import { tarjetaVolumen } from '../lib/vista-volumen';
   import type { EjercicioDef, SerieReg } from '../lib/types';
 
   const $ = (id: string) => document.getElementById(id)!;
@@ -124,6 +127,7 @@ import Ico from '../components/Ico.astro';
   const mediciones = await getMediciones();
   const diario = await getDiario();
   if (perfil(getPerfilActivo()).anual) tarjetaAnual($('card-anual'), sesiones, hoyISO(), config.entrenosObjetivoSemana);
+  if (!sencillo) tarjetaVolumen($('card-volumen'), sesiones, rutinas, hoyISO());
   const yo = getPerfilActivo();
   const casa = perfil(yo).casa && (yo === 'jose' || yo === 'yasmina') ? yo : null;
   const comidas = casa ? await getComidas() : {};
