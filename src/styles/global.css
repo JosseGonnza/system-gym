@@ -803,6 +803,31 @@ html[data-perfil='yasmina'] .fondo-yasmina {
   font-style: normal;
 }
 
+.gm-marcador {
+  position: relative;
+}
+
+/* La hoja del día suave ocupa el sitio del número romano */
+.gm-marcador > svg {
+  display: block;
+  height: 18px;
+  margin: 0 auto;
+}
+
+/* El entreno que toca hoy: punto de cobre encima, como en la barra de pestañas */
+.gm-marcador.gm-toca::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  margin-left: -2.5px;
+  border-radius: 50%;
+  background: var(--cobre-hi);
+  box-shadow: 0 0 8px var(--cobre);
+}
+
 .gm-marcador.gm-on {
   color: var(--oro-hi);
   background: var(--glass2);

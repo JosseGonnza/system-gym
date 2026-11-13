@@ -64,16 +64,10 @@ describe('el Grimorio', () => {
     expect(ultimaVez(s, 'c')).toBeNull();
   });
 
-  it('marcapáginas: hoy, suave, nueva, día de la semana o fecha', () => {
-    const a = { id: 'a' } as DiaDef;
-    const suave = { id: 's', fueraDeRueda: true } as DiaDef;
-    const s = [sesion('2026-11-09', 'a')];
-    expect(etiquetaMarcador(a, s, '2026-11-13', true)).toBe('HOY');
-    expect(etiquetaMarcador(suave, s, '2026-11-13', false)).toBe('SUAVE');
-    expect(etiquetaMarcador({ id: 'b' } as DiaDef, s, '2026-11-13', false)).toBe('NUEVA');
-    expect(etiquetaMarcador(a, s, '2026-11-13', false)).toBe('LUN');
-    expect(etiquetaMarcador(a, s, '2026-11-09', false)).toBe('HECHA');
-    expect(etiquetaMarcador(a, s, '2026-11-30', false)).toBe('9 NOV');
+  it('marcapáginas: el nombre del entreno por su primera parte', () => {
+    expect(etiquetaMarcador({ nombre: 'Glúteo + Pecho + Espalda' } as DiaDef)).toBe('GLÚTEO');
+    expect(etiquetaMarcador({ nombre: 'Full body' } as DiaDef)).toBe('FULL BODY');
+    expect(etiquetaMarcador({ nombre: 'Día suave' } as DiaDef)).toBe('DÍA SUAVE');
   });
 });
 

@@ -92,8 +92,9 @@ export function pintarGrimorio(cont: HTMLElement, d: DatosGrimorio): void {
       b.setAttribute('aria-pressed', String(on));
       if (dia.fueraDeRueda) b.innerHTML = svgTrazo('dia-cardio', 16);
       else b.append(romano(rueda.indexOf(dia) + 1));
-      b.append(el('small', '', etiquetaMarcador(dia, d.sesiones, d.hoy, dia.id === d.tocaId)));
-      b.setAttribute('aria-label', `${dia.nombre}${on ? ', abierta' : ''}`);
+      b.append(el('small', '', etiquetaMarcador(dia)));
+      if (dia.id === d.tocaId) b.classList.add('gm-toca');
+      b.setAttribute('aria-label', `${dia.nombre}${dia.id === d.tocaId ? ', toca hoy' : ''}${on ? ', abierta' : ''}`);
       b.addEventListener('click', () => d.alCambiarPagina(dia.id));
       return b;
     }),

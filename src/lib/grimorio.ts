@@ -97,18 +97,10 @@ const finalizadas = (sesiones: Sesion[]) =>
 // del 13/11: los romanos largos quedan feos).
 export const capitulos = (sesiones: Sesion[]): number => finalizadas(sesiones).length;
 
-// Lo que pone bajo cada marcapáginas: HOY para el que toca, el día de la
-// semana si lo hizo hace menos de una semana, la fecha si fue antes.
-export function etiquetaMarcador(dia: DiaDef, sesiones: Sesion[], hoy: string, toca: boolean): string {
-  if (toca) return 'HOY';
-  if (dia.fueraDeRueda) return 'SUAVE';
-  const ultima = finalizadas(sesiones).filter((s) => s.diaId === dia.id).pop();
-  if (!ultima) return 'NUEVA';
-  const f = aFecha(ultima.fecha);
-  const dias = Math.round((aFecha(hoy).getTime() - f.getTime()) / 86_400_000);
-  if (dias === 0) return 'HECHA';
-  if (dias < 7) return f.toLocaleDateString('es-ES', { weekday: 'short' }).replace('.', '').toUpperCase();
-  return f.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }).replace('.', '').toUpperCase();
+// Lo que pone bajo cada marcapáginas: el entreno, por su primera parte
+// ("Glúteo + Pecho + Espalda" → GLÚTEO). Cuándo tocó lo dice ya la página.
+export function etiquetaMarcador(dia: DiaDef): string {
+  return (partes(dia.nombre)[0] ?? dia.nombre).toUpperCase();
 }
 
 // Peso (o segundos) de cada sesión para una ranura: el máximo de las series
