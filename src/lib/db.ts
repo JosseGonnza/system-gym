@@ -2,7 +2,7 @@ import { del, get, set } from 'idb-keyval';
 import type { DiaComidas } from './comidas';
 import type { Domingo } from './seguimiento';
 import type { BackupV1, BackupV2, Config, DiaDef, DiaRegistro, Ejercicio, EjercicioDef, Mediciones, PerfilId, Rutina, Sesion } from './types';
-import { CATALOGO, CONFIG_INICIAL, CONFIG_JEIK, CONFIG_YASMINA, RUTINA_1, RUTINA_JEIK, RUTINA_YASMINA } from './seed';
+import { CATALOGO, CONFIG_INICIAL, CONFIG_JEIK, CONFIG_YASMINA, RUTINA_1, RUTINA_JEIK, RUTINA_JOSE, RUTINA_YASMINA } from './seed';
 import { esPerfilValido, PERFIL_POR_DEFECTO } from './perfiles';
 import { esCardio } from './cardio';
 
@@ -20,9 +20,9 @@ const SEED: Record<PerfilId, { config: Config; rutina: Rutina }> = {
 
 // Rutina que llega con un deploy: si el perfil no la tiene, se añade y pasa a
 // ser la activa desde el primer día de la rueda. Las rutinas viejas y las
-// sesiones se quedan, así que el historial sigue ahí. Solo para quien se lista:
-// Jose cambia de rutina importando backups.
+// sesiones se quedan, así que el historial sigue ahí. Solo para quien se lista.
 const RUTINA_VIGENTE: Partial<Record<PerfilId, { rutina: Rutina; objetivoSemana: number }>> = {
+  jose: { rutina: RUTINA_JOSE, objetivoSemana: 4 },
   yasmina: { rutina: RUTINA_YASMINA, objetivoSemana: CONFIG_YASMINA.entrenosObjetivoSemana },
   jeik: { rutina: RUTINA_JEIK, objetivoSemana: CONFIG_JEIK.entrenosObjetivoSemana },
 };
@@ -45,6 +45,19 @@ async function migrarLegacy(): Promise<void> {
   }
 }
 
+// La rutina vigente manda desde el código: si cambia (nombres, ejercicios), la
+// guardada se pone al día. Solo se respeta el descanso que se ajusta en Entreno.
+function alDia(guardada: Rutina, codigo: Rutina): Rutina {
+  const descanso = new Map(guardada.dias.flatMap((d) => d.ejercicios.map((e) => [`${d.id}:${e.ranuraId}`, e.restSeg] as const)));
+  return {
+    ...codigo,
+    dias: codigo.dias.map((d) => ({
+      ...d,
+      ejercicios: d.ejercicios.map((e) => ({ ...e, restSeg: descanso.get(`${d.id}:${e.ranuraId}`) ?? e.restSeg })),
+    })),
+  };
+}
+
 async function sembrarPerfil(p: PerfilId): Promise<void> {
   if (!(await get(`${p}:config`))) await set(`${p}:config`, SEED[p].config);
   if (!(await get(`${p}:rutinas`))) await set(`${p}:rutinas`, [SEED[p].rutina]);
@@ -56,7 +69,14 @@ async function sembrarPerfil(p: PerfilId): Promise<void> {
 
   const vigente = RUTINA_VIGENTE[p];
   const rutinas: Rutina[] = (await get(`${p}:rutinas`)) ?? [];
-  if (vigente && !rutinas.some((r) => r.id === vigente.rutina.id)) {
+  const guardada = vigente ? rutinas.findIndex((r) => r.id === vigente.rutina.id) : -1;
+  if (vigente && guardada >= 0) {
+    const nueva = alDia(rutinas[guardada], vigente.rutina);
+    if (JSON.stringify(nueva) !== JSON.stringify(rutinas[guardada])) {
+      rutinas[guardada] = nueva;
+      await set(`${p}:rutinas`, rutinas);
+    }
+  } else if (vigente) {
     await set(`${p}:rutinas`, [...rutinas, vigente.rutina]);
     const config: Config = (await get(`${p}:config`)) ?? SEED[p].config;
     await set(`${p}:config`, {

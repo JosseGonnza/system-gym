@@ -240,9 +240,9 @@ import Ico from '../components/Ico.astro';
         izq.append(iconoEl(iconoDeDia(rutina.dias, d), d.emoji, 16), d.nombre);
         const der = document.createElement('span');
         der.className = `num shrink-0 font-bold ${
-          dias == null || dias >= 10 ? 'text-bad' : dias >= 7 ? 'text-warn' : 'text-ok'
+          dias == null ? 'text-mut' : dias >= 10 ? 'text-bad' : dias >= 7 ? 'text-warn' : 'text-ok'
         }`;
-        der.textContent = dias == null ? 'nunca' : dias === 0 ? 'hoy' : dias === 1 ? 'ayer' : `${dias} días`;
+        der.textContent = dias == null ? 'sin estrenar' : dias === 0 ? 'hoy' : dias === 1 ? 'ayer' : `${dias} días`;
         li.append(izq, der);
         return li;
       }),

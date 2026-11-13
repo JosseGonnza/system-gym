@@ -41,6 +41,7 @@ export const TRABAJA: Record<string, [Musculo, Musculo[]]> = {
   'elevacion-lateral-polea': ['hombro', []],
   'face-pull': ['hombro', ['espalda']],
   'pajaros-crossover': ['hombro', ['espalda']],
+  'pajaros-pec-deck': ['hombro', ['espalda']],
   'curl-z': ['biceps', []],
   'curl-mancuerna': ['biceps', []],
   'curl-polea-cuerda': ['biceps', []],

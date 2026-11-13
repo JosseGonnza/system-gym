@@ -70,6 +70,14 @@ export const TIPS: Record<string, Tip> = {
       'Baja controlando hasta estirar del todo.',
     ],
   },
+  'curl-polea-barra': {
+    donde: 'En el bíceps, con tensión de principio a fin.',
+    claves: [
+      'Codos pegados al costado y quietos.',
+      'Sube hasta el pecho y baja despacio, sin soltar del todo abajo.',
+      'Sin echar el cuerpo atrás para subir.',
+    ],
+  },
   'curl-polea-cuerda': {
     donde: 'En el bíceps, con tensión constante.',
     claves: [
@@ -186,6 +194,15 @@ export const TIPS: Record<string, Tip> = {
       'Sin encoger el cuello: hombros lejos de las orejas.',
       'Ligero y controlado, sin coger impulso.',
     ],
+  },
+  'pajaros-pec-deck': {
+    donde: 'En la parte de atrás del hombro.',
+    claves: [
+      'Sentado de cara al respaldo, agarres a la altura del hombro.',
+      'Codos casi estirados y fijos: abre hacia atrás en arco.',
+      'Para cuando los brazos queden en línea con el cuerpo, sin juntar los omóplatos del todo.',
+    ],
+    error: 'Si lo notas entre los omóplatos y no en el hombro, baja el peso y no juntes la espalda al final.',
   },
   'encogimiento-trapecio': {
     donde: 'En el trapecio, entre el cuello y el hombro.',

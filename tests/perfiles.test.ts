@@ -17,7 +17,7 @@ import { initDB, getConfig, setConfig, getPerfilActivo, setPerfilActivo, resetDB
 import { horarioDe } from '../src/lib/horarios';
 import { dietaDe } from '../src/lib/dietas';
 import { PERFILES, perfil as perfilDe } from '../src/lib/perfiles';
-import { CATALOGO, CONFIG_INICIAL, CONFIG_YASMINA, RUTINA_YASMINA } from '../src/lib/seed';
+import { CATALOGO, CONFIG_INICIAL, CONFIG_YASMINA, RUTINA_JOSE, RUTINA_YASMINA } from '../src/lib/seed';
 
 describe('jornadas por perfil', () => {
   // Ninguno de los dos las usa ya: entrenan por sensaciones, no por turno.
@@ -128,12 +128,42 @@ describe('multi-perfil', () => {
     expect((await getConfig()).puntero.ultimoDiaCompletadoId).toBe('fa');
   });
 
-  it('a Jose no le cambia la rutina', async () => {
+  it('a Jose le llega la rueda de 4 una sola vez: activa, desde el primer día y con objetivo de 4', async () => {
     store.set('jose:rutinas', [{ id: 'rutina-arnold', nombre: 'Arnold', dias: [] }]);
+    store.set('jose:config', { ...CONFIG_INICIAL, rutinaActivaId: 'rutina-arnold', puntero: { ultimoDiaCompletadoId: 'b' } });
+    await initDB();
+    expect((store.get('jose:rutinas') as { id: string }[]).map((r) => r.id)).toEqual(['rutina-arnold', RUTINA_JOSE.id]);
+    const config = await getConfig();
+    expect([config.rutinaActivaId, config.puntero.ultimoDiaCompletadoId, config.entrenosObjetivoSemana]).toEqual([RUTINA_JOSE.id, null, 4]);
+    await setConfig({ ...config, rutinaActivaId: 'rutina-arnold' });
+    await initDB();
+    expect((await getConfig()).rutinaActivaId).toBe('rutina-arnold');
+  });
+
+  it('la rutina guardada se pone al día con la del código, sin perder el descanso ajustado', async () => {
+    const vieja = structuredClone(RUTINA_JOSE);
+    vieja.dias[0].nombre = 'Coraza · Empuje';
+    vieja.dias[0].ejercicios[0].restSeg = 240;
+    vieja.dias[0].ejercicios.pop();
+    store.set('jose:rutinas', [{ id: 'rutina-arnold', nombre: 'Arnold', dias: [] }, vieja]);
     store.set('jose:config', { ...CONFIG_INICIAL, rutinaActivaId: 'rutina-arnold' });
     await initDB();
-    expect((store.get('jose:rutinas') as { id: string }[]).map((r) => r.id)).toEqual(['rutina-arnold']);
+    const [, guardada] = store.get('jose:rutinas') as typeof RUTINA_JOSE[];
+    expect(guardada.dias[0].nombre).toBe('Empuje');
+    expect(guardada.dias[0].ejercicios).toHaveLength(RUTINA_JOSE.dias[0].ejercicios.length);
+    expect(guardada.dias[0].ejercicios[0].restSeg).toBe(240);
     expect((await getConfig()).rutinaActivaId).toBe('rutina-arnold');
+  });
+
+  it('la rueda nueva de Jose: 4 días en la rueda, cardio aparte, 6-7 ejercicios por día', () => {
+    const rueda = RUTINA_JOSE.dias.filter((d) => !d.fueraDeRueda);
+    expect(rueda.map((d) => d.nombre)).toEqual(['Empuje', 'Tirón', 'Pierna', 'Bombeo']);
+    for (const d of rueda) expect(d.ejercicios.length, d.nombre).toBeGreaterThanOrEqual(6);
+    for (const d of rueda) expect(d.ejercicios.length, d.nombre).toBeLessThanOrEqual(7);
+    // Una ranura repetida comparte historial: solo vale si es el mismo ejercicio.
+    const porRanura = new Map<string, Set<string>>();
+    for (const e of RUTINA_JOSE.dias.flatMap((d) => d.ejercicios)) porRanura.set(e.ranuraId, (porRanura.get(e.ranuraId) ?? new Set()).add(e.ejercicioId!));
+    for (const [id, ejs] of porRanura) expect(ejs.size, id).toBe(1);
   });
 
   it('el catálogo recupera los ejercicios que le falten, sin quitar ni cambiar ninguno', async () => {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { TIPS, hayTip, tipDe } from '../src/lib/tips';
-import { RUTINA_YASMINA } from '../src/lib/seed';
+import { RUTINA_JOSE, RUTINA_YASMINA } from '../src/lib/seed';
 
 describe('tips de ejecución', () => {
   it('todos dicen dónde se nota y dan al menos dos claves', () => {
@@ -25,16 +25,9 @@ describe('tips de ejecución', () => {
   });
 
   it('cubre las dos rutinas activas', () => {
-    // La de Yasmina vive en el seed; la Arnold de Jose solo en su backup.
-    const yasmina = RUTINA_YASMINA.dias.flatMap((d) => d.ejercicios.map((e) => e.ejercicioId!));
-    const jose = [
-      'press-banca-maquina', 'jalon-pecho', 'press-inclinado-maquina', 'remo-maquina',
-      'fondos-paralelas', 'press-militar-mancuerna', 'elevacion-lateral', 'face-pull', 'curl-z',
-      'extension-triceps-polea', 'encogimiento-trapecio', 'prensa-horizontal', 'extension-cuadriceps',
-      'curl-femoral', 'gemelo-prensa', 'hiperextension', 'crunch-polea', 'press-banca', 'remo-polea',
-      'pec-deck', 'remo-maquina-brazo', 'curl-polea-cuerda', 'elevacion-piernas', 'plancha',
-      'crunch-declinado', 'cardio-cinta', 'cardio-eliptica', 'cardio-bici',
-    ];
+    const ids = (r: typeof RUTINA_JOSE) => r.dias.flatMap((d) => d.ejercicios.map((e) => e.ejercicioId!));
+    const yasmina = ids(RUTINA_YASMINA);
+    const jose = ids(RUTINA_JOSE);
     for (const id of [...yasmina, ...jose]) expect(hayTip(id), `falta tip: ${id}`).toBe(true);
   });
 

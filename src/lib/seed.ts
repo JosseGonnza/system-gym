@@ -64,6 +64,7 @@ export const CATALOGO: Ejercicio[] = [
   { id: 'press-hombro-maquina', nombre: 'Press de hombro en máquina', patron: 'empujeV', implemento: 'maquina', entrada: 'directa', ejecucion: 'bilateral', pesoBaseKg: 0 },
   { id: 'abductor-maquina', nombre: 'Abductores en máquina', patron: 'aislamiento', implemento: 'maquina', entrada: 'directa', ejecucion: 'bilateral', pesoBaseKg: 0 },
   { id: 'curl-polea-barra', nombre: 'Curl de bíceps en polea', patron: 'aislamiento', implemento: 'polea', entrada: 'directa', ejecucion: 'bilateral', pesoBaseKg: 0 },
+  { id: 'pajaros-pec-deck', nombre: 'Pájaros en pec deck', patron: 'traccionH', implemento: 'maquina', entrada: 'directa', ejecucion: 'bilateral', pesoBaseKg: 0, nota: 'La máquina de aperturas, sentado de cara al respaldo' },
 ];
 
 // ───────────────────────────────── Rutina ───────────────────────────────────
@@ -149,6 +150,92 @@ export const CONFIG_INICIAL: Config = {
 // que no mueve la rueda. Máquinas, cuidando rodillas (condromalacia) y hombro
 // (sin press por encima de la cabeza). Las ranuras que ya existían conservan su
 // id: así arranca con sus últimos pesos en vez de calibrar de cero.
+// ── Jose desde el 16/11/2026: rueda de 4, un grupo por día. Las ranuras que
+// repiten ejercicio conservan el id de la Arnold para heredar su historial, y
+// el bombeo comparte ranura con el mismo ejercicio de los otros días.
+const INTRO_JOSE = '5 minutos de cinta suave hasta romper a sudar. Luego 1-2 series ligeras del primer ejercicio.';
+const DROPSET = '💧 Dropset en la última serie';
+
+export const RUTINA_JOSE: Rutina = {
+  id: 'rutina-cuerpo',
+  nombre: 'Rueda de 4 · Empuje, Tirón, Pierna y Bombeo',
+  dias: [
+    {
+      id: 'empuje',
+      nombre: 'Empuje',
+      emoji: '🛡️',
+      icono: 'dia-coraza',
+      intro: INTRO_JOSE,
+      ejercicios: [
+        { ranuraId: 'a-banca-maq', ejercicioId: 'press-banca-maquina', nombre: 'Press banca en máquina', tipoProgresion: 'doble', series: 3, repsObjetivo: [6, 10], incrementoKg: 2.5, restSeg: 180, nota: 'El pesado del día. RIR 2-3, nunca al fallo' },
+        { ranuraId: 'a-inclinado-maq', ejercicioId: 'press-inclinado-maquina', nombre: 'Press inclinado en máquina', tipoProgresion: 'doble', series: 3, repsObjetivo: [8, 12], incrementoKg: 2.5, restSeg: 120 },
+        { ranuraId: 'd4-militar', ejercicioId: 'press-militar-mancuerna', nombre: 'Press militar con mancuernas', tipoProgresion: 'doble', series: 3, repsObjetivo: [6, 10], incrementoKg: 2, restSeg: 150, nota: 'RIR 2' },
+        { ranuraId: 'd2-fondos', ejercicioId: 'fondos-paralelas', nombre: 'Fondos en paralelas', tipoProgresion: 'pesoCorporal', series: 3, repsObjetivo: [8, 12], incrementoKg: 2.5, restSeg: 120, nota: 'Codos en frío con cuidado, sin bloquear del todo' },
+        { ranuraId: 'b-laterales-polea', ejercicioId: 'elevacion-lateral-polea', nombre: 'Elevación lateral en polea', tipoProgresion: 'doble', series: 3, repsObjetivo: [12, 15], incrementoKg: 1.25, restSeg: 60 },
+        { ranuraId: 'd2-triceps', ejercicioId: 'extension-triceps-polea', nombre: 'Extensión de tríceps en polea', tipoProgresion: 'doble', series: 3, repsObjetivo: [10, 15], incrementoKg: 2.5, restSeg: 75, nota: DROPSET },
+      ],
+    },
+    {
+      id: 'tiron',
+      nombre: 'Tirón',
+      emoji: '🪽',
+      icono: 'dia-alas',
+      intro: INTRO_JOSE,
+      ejercicios: [
+        { ranuraId: 'd3-jalon', ejercicioId: 'jalon-pecho', nombre: 'Jalón al pecho', tipoProgresion: 'doble', series: 3, repsObjetivo: [6, 10], incrementoKg: 5, restSeg: 150, nota: 'El pesado del día. RIR 2-3' },
+        { ranuraId: 'd3-remo-maquina', ejercicioId: 'remo-maquina', nombre: 'Remo en máquina (apoyo de pecho)', tipoProgresion: 'doble', series: 3, repsObjetivo: [8, 12], incrementoKg: 5, restSeg: 120 },
+        { ranuraId: 'd3-remo', ejercicioId: 'remo-polea', nombre: 'Remo en polea baja', tipoProgresion: 'doble', series: 3, repsObjetivo: [10, 15], incrementoKg: 5, restSeg: 90 },
+        { ranuraId: 'd4-facepulls', ejercicioId: 'face-pull', nombre: 'Face pull en crossover', tipoProgresion: 'doble', series: 3, repsObjetivo: [15, 20], incrementoKg: 2.5, restSeg: 60 },
+        { ranuraId: 'd3-curl', ejercicioId: 'curl-z', nombre: 'Curl de bíceps con barra Z', tipoProgresion: 'doble', series: 3, repsObjetivo: [8, 12], incrementoKg: 1.25, restSeg: 90 },
+        { ranuraId: 'd-curl-cuerda', ejercicioId: 'curl-polea-cuerda', nombre: 'Curl en polea baja con cuerda', tipoProgresion: 'doble', series: 3, repsObjetivo: [12, 15], incrementoKg: 2.5, restSeg: 60, nota: DROPSET },
+      ],
+    },
+    {
+      id: 'pierna',
+      nombre: 'Pierna',
+      emoji: '🌳',
+      icono: 'dia-raices',
+      intro: INTRO_JOSE,
+      ejercicios: [
+        { ranuraId: 'd1-prensa', ejercicioId: 'prensa-horizontal', nombre: 'Prensa horizontal', tipoProgresion: 'doble', series: 4, repsObjetivo: [8, 12], incrementoKg: 2.5, restSeg: 180, nota: 'El pesado del día. RIR 2' },
+        { ranuraId: 'd1-gemelo', ejercicioId: 'gemelo-prensa', nombre: 'Elevación de gemelo en prensa', tipoProgresion: 'doble', series: 3, repsObjetivo: [12, 20], incrementoKg: 5, restSeg: 60, nota: 'Sin bajarte de la prensa' },
+        { ranuraId: 'd1-femoral', ejercicioId: 'curl-femoral', nombre: 'Curl femoral sentado', tipoProgresion: 'doble', series: 4, repsObjetivo: [10, 15], incrementoKg: 5, restSeg: 90 },
+        { ranuraId: 'r-rumano', ejercicioId: 'rumano-mancuerna', nombre: 'Peso muerto rumano con mancuernas', tipoProgresion: 'doble', series: 3, repsObjetivo: [8, 12], incrementoKg: 2, restSeg: 120, nota: 'Cadera atrás y espalda recta. Baja hasta notar el femoral, no hasta el suelo' },
+        { ranuraId: 'd1-extension', ejercicioId: 'extension-cuadriceps', nombre: 'Extensión de cuádriceps', tipoProgresion: 'doble', series: 3, repsObjetivo: [10, 15], incrementoKg: 5, restSeg: 75, nota: DROPSET },
+        { ranuraId: 'a-elev-piernas', ejercicioId: 'elevacion-piernas', nombre: 'Elevación de piernas', tipoProgresion: 'pesoCorporal', series: 2, repsObjetivo: [10, 15], incrementoKg: 2.5, restSeg: 60, nota: 'Sin balanceo: sube la pelvis, no solo las piernas' },
+        { ranuraId: 'd1-plancha', ejercicioId: 'plancha', nombre: 'Plancha', tipoProgresion: 'tiempo', series: 2, repsObjetivo: null, incrementoKg: null, restSeg: 60, segObjetivo: 60 },
+      ],
+    },
+    {
+      id: 'bombeo',
+      nombre: 'Bombeo',
+      emoji: '💣',
+      icono: 'dia-bomba',
+      intro: INTRO_JOSE,
+      ejercicios: [
+        { ranuraId: 'd2-pecdeck', ejercicioId: 'pec-deck', nombre: 'Aperturas en pec deck', tipoProgresion: 'doble', series: 3, repsObjetivo: [12, 15], incrementoKg: 2.5, restSeg: 60, nota: DROPSET },
+        { ranuraId: 'bo-pajaros', ejercicioId: 'pajaros-pec-deck', nombre: 'Pájaros en pec deck', tipoProgresion: 'doble', series: 3, repsObjetivo: [12, 15], incrementoKg: 2.5, restSeg: 60, nota: 'En la misma máquina, girado' },
+        { ranuraId: 'b-laterales-polea', ejercicioId: 'elevacion-lateral-polea', nombre: 'Elevación lateral en polea', tipoProgresion: 'doble', series: 3, repsObjetivo: [12, 15], incrementoKg: 1.25, restSeg: 45 },
+        { ranuraId: 'd-remo-brazo', ejercicioId: 'remo-maquina-brazo', nombre: 'Remo en máquina por brazo', tipoProgresion: 'doble', series: 3, repsObjetivo: [10, 15], incrementoKg: 5, restSeg: 60 },
+        { ranuraId: 'd-curl-cuerda', ejercicioId: 'curl-polea-cuerda', nombre: 'Curl en polea baja con cuerda', tipoProgresion: 'doble', series: 3, repsObjetivo: [12, 15], incrementoKg: 2.5, restSeg: 60, nota: DROPSET },
+        { ranuraId: 'd2-triceps', ejercicioId: 'extension-triceps-polea', nombre: 'Extensión de tríceps en polea', tipoProgresion: 'doble', series: 3, repsObjetivo: [10, 15], incrementoKg: 2.5, restSeg: 60, nota: DROPSET },
+      ],
+    },
+    {
+      id: 'cardio',
+      nombre: 'Cardio',
+      emoji: '🏃',
+      icono: 'dia-cardio',
+      fueraDeRueda: true,
+      ejercicios: [
+        { ranuraId: 'cardio-cinta', ejercicioId: 'cardio-cinta', nombre: 'Cinta inclinada', tipoProgresion: 'tiempo', series: 1, repsObjetivo: null, incrementoKg: null, restSeg: 0, nota: 'Sin agarrarte. Esfuerzo 5-6 de 10, respirando por la nariz' },
+        { ranuraId: 'cardio-eliptica', ejercicioId: 'cardio-eliptica', nombre: 'Elíptica', tipoProgresion: 'tiempo', series: 1, repsObjetivo: null, incrementoKg: null, restSeg: 0 },
+        { ranuraId: 'cardio-bici', ejercicioId: 'cardio-bici', nombre: 'Bicicleta estática', tipoProgresion: 'tiempo', series: 1, repsObjetivo: null, incrementoKg: null, restSeg: 0 },
+      ],
+    },
+  ],
+};
+
 const INTRO_FUERZA = 'Calienta 5 minutos en la cinta o la elíptica, suave. Luego, ejercicio a ejercicio: aquí tienes todo.';
 
 export const RUTINA_YASMINA: Rutina = {

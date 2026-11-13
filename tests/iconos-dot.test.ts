@@ -54,6 +54,7 @@ describe('iconos de matriz de puntos', () => {
     for (const id of [
       'nav-hoy', 'nav-entreno', 'nav-dieta', 'nav-progreso',
       'dia-empuje', 'dia-hombro', 'dia-pierna', 'dia-bombeo',
+      'dia-coraza', 'dia-alas', 'dia-raices', 'dia-bomba',
       'ajustes', 'cambiar', 'descanso', 'manana', 'aviso', 'hecho', 'backup', 'record',
     ]) {
       expect(hayPatron(id), id).toBe(true);
