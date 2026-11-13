@@ -48,6 +48,8 @@ export interface PersonaDef {
   comidas: Record<Comida, [number, number]>;
   escala: boolean;
   nota: string;
+  // kg por semana que se dan por buenos: [más rápido, más lento].
+  ritmo: [number, number];
   evita?: string[];
 }
 

@@ -20,6 +20,8 @@ import Ico from '../components/Ico.astro';
     </div>
   </section>
 
+  <section id="card-peso-dieta" class="card mt-4 hidden"></section>
+
   <section class="card mt-4">
     <div class="flex items-baseline justify-between">
       <h2 class="flex items-center gap-2 text-base font-bold"><Ico id="medidas" emoji="⚖️" /> Peso corporal</h2>
@@ -92,6 +94,7 @@ import Ico from '../components/Ico.astro';
     getMediciones,
     setMediciones,
     getDiario,
+    getComidas,
     hoyISO,
     getPerfilActivo,
   } from '../lib/db';
@@ -102,6 +105,7 @@ import Ico from '../components/Ico.astro';
   import { cerrarBorradoresCaducados } from '../lib/sesion';
   import { esCardio } from '../lib/cardio';
   import { tarjetaAnual } from '../lib/vista-anual';
+  import { tarjetaPesoDieta } from '../lib/vista-peso-dieta';
   import type { EjercicioDef, SerieReg } from '../lib/types';
 
   const $ = (id: string) => document.getElementById(id)!;
@@ -119,6 +123,12 @@ import Ico from '../components/Ico.astro';
   const mediciones = await getMediciones();
   const diario = await getDiario();
   if (perfil(getPerfilActivo()).anual) tarjetaAnual($('card-anual'), sesiones, hoyISO(), config.entrenosObjetivoSemana);
+  const yo = getPerfilActivo();
+  const casa = perfil(yo).casa && (yo === 'jose' || yo === 'yasmina') ? yo : null;
+  const comidas = casa ? await getComidas() : {};
+  const pintarPesoDieta = () => {
+    if (casa) tarjetaPesoDieta($('card-peso-dieta'), casa, mediciones, comidas, hoyISO());
+  };
 
   function grafico(valores: { fecha: string; v: number }[], unidad: string): HTMLElement {
     const wrap = document.createElement('div');
@@ -279,9 +289,9 @@ import Ico from '../components/Ico.astro';
     $('peso-actual').textContent = ultima ? `${fmtNum(ultima.kg)} kg` : '—';
     const ahora = mediaSemana(entradas, 0);
     const previa = mediaSemana(entradas, 1);
-    // El objetivo de +0,2-0,3 kg/semana es el de Jose (superávit). En modo
-    // sencillo se enseña la media sin juzgarla.
-    if (sencillo) {
+    // En modo sencillo se enseña la media sin juzgarla; con la dieta de casa
+    // la juzga su tarjeta.
+    if (sencillo || casa) {
       $('peso-media').textContent =
         ahora != null ? `Media de esta semana: ${fmtNum(ahora)} kg` : 'Si te pesas, mejor en ayunas y mirando la media de la semana.';
     } else if (ahora != null && previa != null) {
@@ -296,6 +306,7 @@ import Ico from '../components/Ico.astro';
       $('peso-media').textContent = 'Pésate en ayunas 2-3 veces por semana y mira la media, no el día suelto.';
     }
     $('peso-grafico').replaceChildren(grafico(entradas.slice(-60).map((e) => ({ fecha: e.fecha, v: e.kg })), 'kg'));
+    pintarPesoDieta();
     listaMediciones($('peso-lista'), entradas, 'kg', 'kg', async (fecha) => {
       mediciones.peso = mediciones.peso.filter((e) => e.fecha !== fecha);
       await setMediciones(mediciones);
@@ -308,6 +319,7 @@ import Ico from '../components/Ico.astro';
     const ultima = entradas[entradas.length - 1];
     $('cintura-actual').textContent = ultima ? `${fmtNum(ultima.cm)} cm` : '—';
     $('cintura-grafico').replaceChildren(grafico(entradas.slice(-60).map((e) => ({ fecha: e.fecha, v: e.cm })), 'cm'));
+    pintarPesoDieta();
     listaMediciones($('cintura-lista'), entradas, 'cm', 'cm', async (fecha) => {
       mediciones.cintura = mediciones.cintura.filter((e) => e.fecha !== fecha);
       await setMediciones(mediciones);

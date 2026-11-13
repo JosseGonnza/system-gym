@@ -40,7 +40,11 @@
     ]
    },
    "escala": false,
-   "nota": "recomposición"
+   "nota": "recomposición",
+   "ritmo": [
+    -0.25,
+    0.1
+   ]
   },
   "yasmina": {
    "nombre": "Yasmina",
@@ -66,6 +70,10 @@
    },
    "escala": true,
    "nota": "perder grasa",
+   "ritmo": [
+    -0.8,
+    -0.4
+   ],
    "evita": [
     "manzana",
     "pimiento"
