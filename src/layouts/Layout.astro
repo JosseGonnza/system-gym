@@ -10,7 +10,12 @@ import '@fontsource-variable/inter';
 import '@fontsource/silkscreen/400.css';
 import '@fontsource/silkscreen/700.css';
 import '@fontsource-variable/jetbrains-mono';
-// Yasmina "Chai Rutine": Fraunces (títulos de cuento) + Baloo 2 (cuerpo redondeado)
+// Yasmina "Grimorio": Cormorant Garamond (títulos, recta y cursiva) + Nunito.
+import '@fontsource-variable/cormorant-garamond/wght.css';
+import '@fontsource-variable/cormorant-garamond/wght-italic.css';
+import '@fontsource-variable/nunito';
+// Fraunces y Baloo 2 eran de "Chai Rutine"; se quitan en la limpieza del
+// Grimorio (paso 8), cuando nada las use.
 import '@fontsource-variable/fraunces';
 import '@fontsource/baloo-2/400.css';
 import '@fontsource/baloo-2/500.css';
@@ -61,7 +66,7 @@ const motas = Array.from({ length: 9 }, (_, i) => ({
         var p = esSelector ? 'selector' : stored === 'jose' || stored === 'yasmina' || stored === 'jeik' ? stored : 'jose';
         document.documentElement.dataset.perfil = p;
         document.documentElement.style.setProperty('color-scheme', 'dark');
-        var tc = { jose: '#000000', yasmina: '#1d130d', jeik: '#0d1118', selector: '#000000' }[p];
+        var tc = { jose: '#000000', yasmina: '#0a110d', jeik: '#0d1118', selector: '#000000' }[p];
         document.addEventListener('DOMContentLoaded', function () {
           var m = document.querySelector('meta[name="theme-color"]');
           if (m) m.setAttribute('content', tc);
@@ -89,7 +94,15 @@ const motas = Array.from({ length: 9 }, (_, i) => ({
     <script src="../pwa.ts"></script>
   </head>
   <body class="min-h-dvh" data-pantalla={pantalla}>
-    <div class="fondo-yasmina" aria-hidden="true"></div>
+    <div class="fondo-yasmina" aria-hidden="true">
+      <svg class="fy-bosque" viewBox="0 0 360 170" preserveAspectRatio="none">
+        <path
+          fill="currentColor"
+          d="M0 170V118l10-18 8 16 6-30 8 22 10-40 10 34 6-14 9 20 8-26 10 30 9-12 8 18 12-44 10 40 8-16 9 22 7-10 10 16 12-36 10 34 7-14 10 20 9-28 10 30 8-10 9 14 11-40 10 38 8-18 9 22 10-12 8 14 10-30 9 26 8-8 9 12 12-34 10 30 8-14 9 20 9-10V170z"
+        ></path>
+        <path fill="#0b140f" d="M0 170v-28c30-8 60 6 90-2s60-14 90-4 60 10 90 2 60-8 90-2v34z"></path>
+      </svg>
+    </div>
     <div class="fondo-jose" aria-hidden="true">
       <div class="fj-haz"></div>
       {

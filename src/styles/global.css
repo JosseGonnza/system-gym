@@ -284,28 +284,40 @@ html[data-perfil='jose'] .appbar-n {
   50% { opacity: 0.9; }
 }
 
-/* Yasmina — "Chai Rutine", otoño: café, calabaza y teja. Tema oscuro. */
+/* Yasmina — "Grimorio de musgo": noche de bosque, oro viejo para la magia y la
+   estructura, cobre de otoño para la acción y lo de hoy. Spec completa en la
+   bóveda: 02_LIB/MUSCULO/Yasmina/APP_GRIMORIO/00_GRIMORIO.md */
 html[data-perfil='yasmina'] {
   color-scheme: dark;
-  --color-bg: #1d130d;
-  --color-surface: #2a1c13;
-  --color-surface2: #38261a;
-  --color-line: #6e4529;
-  --color-vio: #e07a3f;
-  --color-vio-hi: #f3a35f;
-  --color-vio-soft: #f2c79c;
-  --color-ink: #f6e8d6;
-  --color-mut: #c2a184;
-  --color-ok: #a3a94f;
+  --color-bg: #0a110d;
+  --color-surface: #131e18;
+  --color-surface2: #1c2a22;
+  --color-line: rgb(207 174 102 / 0.18);
+  --color-vio: #d9733b;
+  --color-vio-hi: #ecd398;
+  --color-vio-soft: #ee9a5f;
+  --color-ink: #f1e7cf;
+  --color-mut: #9aa596;
+  --color-ok: #a9c48f;
   --color-warn: #e0ae45;
-  --color-bad: #c4553b;
+  --color-bad: #d9604a;
 
-  --font-display: 'Fraunces Variable', Georgia, serif;
-  --font-body: 'Baloo 2', system-ui, sans-serif;
-  --font-num: 'Baloo 2', system-ui, sans-serif;
-  --font-dot: 'Baloo 2', system-ui, sans-serif;
-  --radius-card: 1.25rem;
-  --radius-btn: 0.9rem;
+  --font-display: 'Cormorant Garamond Variable', Georgia, serif;
+  --font-body: 'Nunito Variable', system-ui, sans-serif;
+  --font-num: 'Nunito Variable', system-ui, sans-serif;
+  --font-dot: 'Nunito Variable', system-ui, sans-serif;
+  --radius-card: 20px;
+  --radius-btn: 999px;
+
+  --oro: #cfae66;
+  --oro-hi: #ecd398;
+  --cobre: #d9733b;
+  --cobre-hi: #ee9a5f;
+  --salvia: #9fb79a;
+  --ln: rgb(207 174 102 / 0.16);
+  --ln2: rgb(207 174 102 / 0.38);
+  --glass: rgb(19 30 24 / 0.62);
+  --glass2: rgb(28 42 34 / 0.7);
 }
 
 /* Jeik — "Pizarra": gris azulado y ámbar, los colores del prototipo que vio y
@@ -363,8 +375,9 @@ html[data-perfil='jeik'] {
 .rueda { scrollbar-width: none; }
 .rueda::-webkit-scrollbar { display: none; }
 
-/* Fondo cozy de Yasmina (la mascota con hojas de otoño): panel fijo que acaba
-   justo encima del nav inferior, para que la barra no tape la escena. Robusto en iOS. */
+/* Fondo de Yasmina: noche de musgo con la luna arriba a la derecha y una brasa
+   de otoño abajo a la izquierda. Panel fijo detrás de todo; la silueta del
+   bosque se apoya justo encima de la barra de pestañas. */
 .fondo-yasmina {
   display: none;
 }
@@ -373,16 +386,26 @@ html[data-perfil='yasmina'] .fondo-yasmina {
   display: block;
   position: fixed;
   inset: 0;
-  bottom: calc(env(safe-area-inset-bottom) + 64px);
-  background:
-    linear-gradient(rgba(29, 19, 13, 0.6), rgba(29, 19, 13, 0.84)),
-    url('/iconos/fondo-otono.webp') center bottom / cover no-repeat;
   z-index: -1;
   pointer-events: none;
+  background:
+    radial-gradient(70% 38% at 88% 0%, rgb(236 211 152 / 0.13) 0%, transparent 70%),
+    radial-gradient(90% 40% at 0% 100%, rgb(217 115 59 / 0.14) 0%, transparent 70%),
+    linear-gradient(180deg, #0d1712 0%, #0a110d 55%, #0c120d 100%);
+}
+
+.fy-bosque {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(env(safe-area-inset-bottom) + 58px);
+  width: 100%;
+  height: 170px;
+  color: #0e1a13;
 }
 
 /* El fondo sólido del body taparía el panel (z-index negativo): lo hacemos
-   transparente para que asome la imagen. El respaldo queda en <html>. */
+   transparente para que asome. El respaldo queda en <html>. */
 html[data-perfil='yasmina'] body {
   background-color: transparent;
 }
@@ -449,9 +472,12 @@ html[data-perfil='selector'] main {
   clip-path: polygon(0 0, 100% 0, 100% 44%, 0 56%);
 }
 
-/* Abajo: Chai Rutine, degradado de brasa a café (sin imagen) */
+/* Abajo: Grimorio, noche de musgo con brasa de otoño */
 .sel-abajo {
-  background: radial-gradient(120% 80% at 50% 100%, #8a3f1c 0%, #4a2614 45%, #1d130d 85%);
+  background:
+    radial-gradient(90% 55% at 0% 100%, rgb(217 115 59 / 0.22) 0%, transparent 70%),
+    radial-gradient(70% 40% at 90% 60%, rgb(236 211 152 / 0.1) 0%, transparent 70%),
+    linear-gradient(180deg, #0d1712 0%, #0a110d 100%);
   clip-path: polygon(0 56%, 100% 44%, 100% 100%, 0 100%);
 }
 
@@ -521,14 +547,16 @@ html[data-perfil='selector'] main {
 }
 
 .sel-yasmina {
-  background: #2a1c13;
-  border: 2px solid #6e4529;
-  color: #f6e8d6;
-  box-shadow: 0 0 24px color-mix(in srgb, #e07a3f 30%, transparent);
-  font-family: 'Fraunces Variable', Georgia, serif;
+  background: linear-gradient(180deg, rgb(30 46 36 / 0.85), rgb(17 27 21 / 0.85));
+  border: 1px solid rgb(207 174 102 / 0.38);
+  color: #f1e7cf;
+  box-shadow: 0 0 0 4px rgb(10 17 13 / 0.5), 0 0 0 5px rgb(207 174 102 / 0.1), 0 18px 40px -18px rgb(207 174 102 / 0.35);
+  font-family: 'Cormorant Garamond Variable', Georgia, serif;
 }
 
 .sel-yasmina .sel-nombre {
+  font-size: 1.7rem;
+  font-style: italic;
   font-weight: 700;
 }
 
@@ -593,11 +621,38 @@ html[data-perfil='jose'] .appbar h1 {
   color: var(--color-vio-hi);
 }
 
+/* Yasmina: la etiqueta es una "ceja" de grimorio, cursiva en oro */
 html[data-perfil='yasmina'] .eyebrow {
-  letter-spacing: 0.02em;
-  text-transform: none;
+  font-family: var(--font-display);
+  font-size: 1.03rem;
+  font-style: italic;
   font-weight: 700;
-  color: var(--color-vio);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--oro);
+}
+
+html[data-perfil='yasmina'] .appbar {
+  background: rgb(10 17 13 / 0.7);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--ln);
+}
+
+html[data-perfil='yasmina'] .appbar h1 {
+  font-size: 2.1rem;
+  font-style: italic;
+  font-weight: 700;
+  letter-spacing: 0.005em;
+  line-height: 1;
+}
+
+/* Cormorant llega a 700: sin esto, los font-extrabold piden 800 y el
+   navegador se inventa una negrita. */
+html[data-perfil='yasmina'] h1,
+html[data-perfil='yasmina'] h2,
+html[data-perfil='yasmina'] h3 {
+  font-weight: 700;
 }
 
 /* Números como datos: tabulares; en Jose, monospace de telemetría */
@@ -615,9 +670,19 @@ html[data-perfil='yasmina'] .eyebrow {
   padding: 1rem;
 }
 
+/* Yasmina: tarjeta de cristal sobre el bosque. Sin backdrop-filter (móviles
+   viejos) queda opaca y vale igual. */
 html[data-perfil='yasmina'] .card {
-  border: 2px solid var(--color-line);
-  box-shadow: 0 4px 0 rgb(0 0 0 / 0.35), 0 10px 20px rgb(0 0 0 / 0.3);
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(12px) saturate(1.15);
+  backdrop-filter: blur(12px) saturate(1.15);
+  border: 1px solid var(--ln);
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  html[data-perfil='yasmina'] .card {
+    background: var(--color-surface);
+  }
 }
 
 /* Nothing no brilla: el panel destacado se marca con la línea roja, no con neón */
@@ -639,37 +704,59 @@ html[data-perfil='yasmina'] .card {
 }
 
 html[data-perfil='yasmina'] .simbolo-dia {
-  border-radius: var(--radius-card);
+  border-color: var(--ln2);
+  background: radial-gradient(circle at 36% 30%, rgb(236 211 152 / 0.22), rgb(30 52 40 / 0.55) 50%, rgb(6 12 9 / 0.9) 80%);
+  color: var(--oro-hi);
+  box-shadow: 0 0 22px rgb(207 174 102 / 0.3);
 }
 
+/* La tarjeta destacada: borde de oro, doble anillo y halo */
 html[data-perfil='yasmina'] .glow {
-  box-shadow: 0 0 24px color-mix(in srgb, var(--color-vio) 30%, transparent);
+  box-shadow: 0 0 22px -6px rgb(207 174 102 / 0.4);
 }
 
-/* Botones estilo cozy game: calabaza + borde inferior chunky. Texto oscuro,
-   que el crema sobre naranja no llega al contraste. */
+html[data-perfil='yasmina'] .card.glow {
+  border-color: var(--ln2);
+  background: linear-gradient(180deg, rgb(30 46 36 / 0.78), rgb(17 27 21 / 0.72));
+  box-shadow: 0 0 0 4px rgb(10 17 13 / 0.5), 0 0 0 5px rgb(207 174 102 / 0.1), 0 18px 40px -18px rgb(207 174 102 / 0.35);
+}
+
+/* Botón principal: píldora de cobre. Secundario: píldora de cristal. */
+html[data-perfil='yasmina'] .btn,
+html[data-perfil='yasmina'] .btn-2 {
+  font-family: var(--font-body);
+}
+
 html[data-perfil='yasmina'] .btn {
-  background: #e8935a;
-  color: #3a1d0c;
-  border: 2px solid #b5612e;
-  box-shadow: 0 3px 0 #8f4720;
+  border: 0;
+  font-weight: 800;
+  color: #2a1206;
+  background: linear-gradient(180deg, #f0a46a, #d36c33);
+  box-shadow: 0 0 0 1px #8f4520, 0 8px 22px -8px rgb(217 115 59 / 0.8), inset 0 1px 0 rgb(255 255 255 / 0.3);
 }
 
 html[data-perfil='yasmina'] .btn-2 {
-  background: var(--color-surface);
+  background: rgb(10 17 13 / 0.45);
   color: var(--color-ink);
-  border: 2px solid var(--color-line);
-  box-shadow: 0 3px 0 rgb(0 0 0 / 0.4);
+  border: 1px solid var(--ln);
+  font-weight: 700;
 }
 
-/* Resplandor cálido detrás de iconos y emojis (destacan sobre el café) */
+html[data-perfil='yasmina'] dialog {
+  background: var(--glass2);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  border-color: var(--ln2);
+}
+
+/* Resplandor de oro detrás de iconos y emojis */
 html[data-perfil='yasmina'] .ico-img,
 html[data-perfil='yasmina'] .tab-img {
-  filter: drop-shadow(0 0 7px color-mix(in srgb, var(--color-vio-hi) 60%, transparent));
+  filter: drop-shadow(0 0 6px rgb(236 211 152 / 0.45));
 }
 
 html[data-perfil='yasmina'] .ico-emoji {
-  text-shadow: 0 0 9px color-mix(in srgb, var(--color-vio-hi) 55%, transparent);
+  text-shadow: 0 0 9px rgb(236 211 152 / 0.45);
 }
 
 .btn {
@@ -934,21 +1021,30 @@ html[data-perfil='jose'] #cuenta-bar {
 }
 
 
-/* Yasmina (cozy): barra de madera + pastilla suave bajo el icono, sin glow */
+/* Yasmina: barra de noche; la pestaña activa con aura de oro y un punto de
+   cobre encima (en vez de la barrita). */
 html[data-perfil='yasmina'] .tabbar {
-  border-top-width: 3px;
-  border-top-color: var(--color-line);
+  background: linear-gradient(180deg, rgb(8 13 10 / 0.7), rgb(6 10 8 / 0.96));
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid var(--ln);
 }
 
-html[data-perfil='yasmina'] .tab-on::before {
-  display: none;
+html[data-perfil='yasmina'] .tab-on {
+  color: var(--oro-hi);
 }
 
 html[data-perfil='yasmina'] .tab-on .tab-ico {
-  filter: none;
-  background: color-mix(in srgb, var(--color-vio) 16%, transparent);
-  border-radius: 999px;
-  padding: 3px 9px;
+  filter: drop-shadow(0 0 7px rgb(236 211 152 / 0.75));
+}
+
+html[data-perfil='yasmina'] .tab-on::before {
+  top: 2px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--cobre-hi);
+  box-shadow: 0 0 8px var(--cobre);
 }
 
 /* Jeik: Hoy · Entreno · Comida · Domingo · Plan. Progreso se abre desde el Domingo. */
