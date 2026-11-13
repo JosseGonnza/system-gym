@@ -27,6 +27,8 @@ import Ico from '../components/Ico.astro';
 
   <p id="aviso-abandono" class="card mt-4 hidden border-warn/40 text-sm font-semibold text-warn"></p>
 
+  <p id="aviso-descansos" class="card mt-4 hidden text-sm font-semibold"></p>
+
   <section id="aviso-descarga" class="card mt-4 hidden"></section>
 
   <a id="aviso-medidas" href="/progreso" class="card mt-4 hidden border-vio/40 text-sm font-semibold"></a>
@@ -174,7 +176,7 @@ import Ico from '../components/Ico.astro';
   import { domingoACerrar } from '../lib/seguimiento';
   import { perfil } from '../lib/perfiles';
   import { horarioDe } from '../lib/horarios';
-  import { ventanaDias, diasDesdeUltimaVez, mesHistorial } from '../lib/historial';
+  import { ventanaDias, diasDesdeUltimaVez, mesHistorial, margenSemana } from '../lib/historial';
   import { historialDeRanura, sugerir } from '../lib/motor';
   import { iconoEl, iconoDeDia } from '../lib/iconos';
   import { cerrarBorradoresCaducados } from '../lib/sesion';
@@ -205,6 +207,28 @@ import Ico from '../components/Ico.astro';
   const hechosHoy = diasHechosEn(sesiones, hoy);
   const entrenadoHoy = hechosHoy.length > 0;
   if (!sencillo) avisoDescarga($('aviso-descarga'), descarga(sesiones, hoy), getPerfilActivo(), hoy);
+  if (!sencillo) avisarDescansos();
+
+  // Con 4 de fuerza quedan 3 días libres: al gastar el penúltimo, el que queda
+  // mejor para cardio; sin margen, no toca descansar.
+  function avisarDescansos() {
+    const esFuerza = (s: (typeof sesiones)[number]) =>
+      !rutinas.find((r) => r.id === s.rutinaId)?.dias.find((d) => d.id === s.diaId)?.fueraDeRueda;
+    const m = margenSemana(sesiones, esFuerza, config.entrenosObjetivoSemana);
+    if (!m.faltan || m.libres > 1) return;
+    const obj = config.entrenosObjetivoSemana;
+    const texto =
+      m.libres === 1
+        ? 'Te queda 1 día libre esta semana: mejor que sea de cardio.'
+        : m.libres === 0
+          ? `Sin margen: te ${m.faltan === 1 ? 'falta 1 entreno' : `faltan ${m.faltan} entrenos`} y quedan ${m.quedan} días. No toca descansar.`
+          : `Esta semana ya no llegas a ${obj}: quedan ${m.quedan} ${m.quedan === 1 ? 'día' : 'días'} para ${m.faltan}. Haz los que puedas, sin juntar dos en un día.`;
+    const el = $('aviso-descansos');
+    el.textContent = texto;
+    el.classList.toggle('text-warn', m.libres <= 0);
+    el.style.borderColor = `color-mix(in srgb, var(--color-${m.libres <= 0 ? 'warn' : 'line'}) 60%, transparent)`;
+    el.classList.remove('hidden');
+  }
 
   $('fecha').textContent = new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
   if (usaJornadas) {
@@ -388,7 +412,7 @@ import Ico from '../components/Ico.astro';
   // Ventana rodante: 5 días atrás + hoy + mañana. Entrenando por sensaciones, el
   // lunes no significa nada; lo que importa es de dónde vengo y qué viene.
   function pintarSemana() {
-    const dias = ventanaDias(sesiones, diario, 5, 1);
+    const dias = ventanaDias(sesiones, diario, 5, 1, new Date(), sencillo ? undefined : config.fechaInicioPlan);
     const hechos = dias.filter((c) => !c.futuro && c.diaIds.length > 0).length;
     $('semana-cuenta').textContent = `${hechos} entrenos`;
     $('semana-tira').replaceChildren(

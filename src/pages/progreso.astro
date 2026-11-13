@@ -180,7 +180,7 @@ import Ico from '../components/Ico.astro';
   }
 
   function renderHistorial() {
-    const mes = mesHistorial(sesiones, diario, cursor.getFullYear(), cursor.getMonth());
+    const mes = mesHistorial(sesiones, diario, cursor.getFullYear(), cursor.getMonth(), new Date(), sencillo ? undefined : config.fechaInicioPlan);
     $('mes-titulo').textContent = cursor.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
     $('hist-resumen').textContent = mes.entrenos === 1 ? '1 entreno' : `${mes.entrenos} entrenos`;
 

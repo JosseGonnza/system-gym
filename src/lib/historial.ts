@@ -60,16 +60,21 @@ export function semanasHistorial(
   return semanas;
 }
 
+// Con `autoDesde`, un día ya pasado sin entreno cuenta como descanso aunque no
+// se marcara: es lo mismo que hace contarDescansos.
 function celda(
   fecha: string,
   hoyStr: string,
   porFecha: Map<string, string[]>,
   diario: Record<string, DiaRegistro>,
+  autoDesde?: string,
 ): CeldaDia {
+  const diaIds = porFecha.get(fecha) ?? [];
+  const auto = autoDesde != null && fecha >= autoDesde && fecha < hoyStr && !diaIds.length;
   return {
     fecha,
-    diaIds: porFecha.get(fecha) ?? [],
-    descanso: diario[fecha]?.descanso === true,
+    diaIds,
+    descanso: diario[fecha]?.descanso === true || auto,
     futuro: fecha > hoyStr,
   };
 }
@@ -82,6 +87,7 @@ export function ventanaDias(
   atras: number,
   adelante: number,
   hoy: Date = new Date(),
+  autoDesde?: string,
 ): CeldaDia[] {
   const hoyStr = hoyISO(hoy);
   const porFecha = sesionesPorFecha(sesiones);
@@ -89,7 +95,7 @@ export function ventanaDias(
   for (let i = -atras; i <= adelante; i++) {
     const d = new Date(hoy);
     d.setDate(hoy.getDate() + i);
-    dias.push(celda(hoyISO(d), hoyStr, porFecha, diario));
+    dias.push(celda(hoyISO(d), hoyStr, porFecha, diario, autoDesde));
   }
   return dias;
 }
@@ -108,6 +114,7 @@ export function mesHistorial(
   anio: number,
   mes: number,
   hoy: Date = new Date(),
+  autoDesde?: string,
 ): MesHistorial {
   const hoyStr = hoyISO(hoy);
   const porFecha = sesionesPorFecha(sesiones);
@@ -116,7 +123,7 @@ export function mesHistorial(
   const hueco = (primero.getDay() + 6) % 7; // lunes = 0
   const celdas: (CeldaDia | null)[] = Array.from({ length: hueco }, () => null);
   for (let d = 1; d <= dias; d++) {
-    celdas.push(celda(hoyISO(new Date(anio, mes, d)), hoyStr, porFecha, diario));
+    celdas.push(celda(hoyISO(new Date(anio, mes, d)), hoyStr, porFecha, diario, autoDesde));
   }
   while (celdas.length % 7 !== 0) celdas.push(null);
   return {
@@ -137,4 +144,25 @@ export function diasDesdeUltimaVez(sesiones: Sesion[], diaId: string, hoy: Date 
   if (!ultima) return null;
   const ms = Date.parse(`${hoyISO(hoy)}T12:00:00`) - Date.parse(`${ultima}T12:00:00`);
   return Math.max(0, Math.round(ms / 86_400_000));
+}
+
+export interface MargenSemana {
+  hechos: number;
+  faltan: number;
+  quedan: number;
+  libres: number;
+}
+
+// Días libres que le quedan a la semana (lunes a domingo) para llegar al
+// objetivo de entrenos de fuerza. Hoy cuenta como disponible si aún no ha
+// entrenado. Libres < 0: ya no llega.
+export function margenSemana(sesiones: Sesion[], esFuerza: (s: Sesion) => boolean, objetivo: number, hoy: Date = new Date()): MargenSemana {
+  const hoyStr = hoyISO(hoy);
+  const lunes = hoyISO(lunesDe(hoy));
+  const fechas = new Set(sesiones.filter((s) => s.estado === 'finalizada' && s.fecha >= lunes && s.fecha <= hoyStr && esFuerza(s)).map((s) => s.fecha));
+  const hechos = fechas.size;
+  const faltan = Math.max(0, objetivo - hechos);
+  const finde = 7 - ((hoy.getDay() + 6) % 7);
+  const quedan = fechas.has(hoyStr) ? finde - 1 : finde;
+  return { hechos, faltan, quedan, libres: quedan - faltan };
 }
