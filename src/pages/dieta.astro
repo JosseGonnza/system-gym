@@ -34,7 +34,7 @@ import Layout from '../layouts/Layout.astro';
   if (perfil(yo).casa && (yo === 'jose' || yo === 'yasmina')) {
     $('estatica').remove();
     $('casa').classList.remove('hidden');
-    await dietaCasa($('casa'), yo);
+    await dietaCasa($('casa'), yo, perfil(yo).tema === 'grimorio');
   } else if (perfil(yo).seguimiento) {
     $('estatica').remove();
     $('diario').classList.remove('hidden');

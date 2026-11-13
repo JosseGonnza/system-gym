@@ -59,12 +59,27 @@ function barra(valor: number, obj: number, cls: string, tope = true): HTMLElemen
   return b;
 }
 
+// Grimorio (Yasmina): energía y proteína en anillos en vez de barras.
+const VUELTA = 263.9;
+function anillo(valor: number, obj: number, color: string, cifra: string, sub: string): HTMLElement {
+  const frac = Math.min(1, obj ? valor / obj : 0);
+  const a = el('div', 'gm-anillo');
+  a.innerHTML = `<svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="42" fill="none" stroke="rgb(255 255 255 / .07)" stroke-width="7"/><circle cx="50" cy="50" r="42" fill="none" stroke="${color}" stroke-opacity="${frac ? 1 : 0}" stroke-width="7" stroke-linecap="round" stroke-dasharray="${VUELTA}" stroke-dashoffset="${(VUELTA * (1 - frac)).toFixed(1)}"/></svg>`;
+  a.append(el('div', 'gm-anillo-c', el('b', '', cifra), el('small', '', sub)));
+  a.setAttribute('role', 'img');
+  a.setAttribute('aria-label', `${cifra} ${sub}`);
+  return a;
+}
+const CHECK = '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+
 function ingNombre(id: string): HTMLElement {
   const p = PRODUCTOS[id];
   return el('span', 'min-w-0', p.nombre, p.estado ? el('span', 'ml-1 text-xs text-mut', p.estado) : null);
 }
 
-export async function dietaCasa(root: HTMLElement, yo: Persona): Promise<void> {
+// `gm`: la piel Grimorio de Yasmina (anillos, monedas, sin el cambio de persona
+// arriba en Hoy). Jose la llama sin él y no cambia nada.
+export async function dietaCasa(root: HTMLElement, yo: Persona, gm = false): Promise<void> {
   const hoy = hoyISO();
   const est = {
     tab: 'hoy' as Pestana,
@@ -93,6 +108,7 @@ export async function dietaCasa(root: HTMLElement, yo: Persona): Promise<void> {
         void pintar().then(() => window.scrollTo(0, 0));
       },
     );
+    if (gm) tabs.classList.add('gm-seg');
     const vista = { hoy: vHoy, semana: vSemana, compra: vCompra, carta: vCarta }[est.tab](comidas);
     root.replaceChildren(tabs, el('div', 'mt-4 grid gap-4', ...vista));
   };
@@ -109,6 +125,9 @@ export async function dietaCasa(root: HTMLElement, yo: Persona): Promise<void> {
 
   // ---------- Hoy ----------
   function vHoy(comidas: Record<string, DiaComidas>): HTMLElement[] {
+    // Sin el cambio de persona arriba, Hoy siempre es lo suyo (si miró lo del
+    // otro en Semana, al volver aquí no se queda atrapada en su plan).
+    if (gm) est.ver = yo;
     const idx = diaCiclo(est.fecha);
     const sem = semanaDe(idx);
     const propio = est.ver === yo;
@@ -142,9 +161,29 @@ export async function dietaCasa(root: HTMLElement, yo: Persona): Promise<void> {
     );
     nav.firstElementChild!.setAttribute('aria-label', 'Día anterior');
     nav.lastElementChild!.setAttribute('aria-label', 'Día siguiente');
+    if (gm) {
+      nav.classList.add('gm-nav');
+      const fruta = PRODUCTOS[CARTA.fruta[sem].producto].nombre.toLowerCase();
+      nav.children[1].lastElementChild!.replaceWith(
+        el('span', 'gm-nav-sub', el('em', '', `Semana ${sem}`), ` · día ${idx + 1} de ${DIAS_CICLO} · fruta: ${fruta}`),
+      );
+    }
 
     const nExtras = extras.length;
-    const totales = el(
+    const resumen = `Llevas ${hechas.length} de ${plan.length} comidas${nExtras ? ` y ${nExtras === 1 ? '1 extra' : `${nExtras} extras`}` : ''}. El plan del día suma ${miles(t.kcal)} kcal y ${Math.round(t.prot)} g.`;
+    const totales = gm
+      ? el(
+          'section',
+          'card',
+          el(
+            'div',
+            'gm-anillos',
+            anillo(kcal, obj.kcal, '#cfae66', miles(kcal), `de ${miles(obj.kcal)} kcal`),
+            anillo(prot, obj.prot, '#ee9a5f', `${Math.round(prot)} g`, `de ${obj.prot} g prot.`),
+          ),
+          el('p', 'gm-anillos-p', resumen),
+        )
+      : el(
       'section',
       'card',
       el(
@@ -153,17 +192,11 @@ export async function dietaCasa(root: HTMLElement, yo: Persona): Promise<void> {
         el('div', '', el('p', 'eyebrow', propio ? 'Energía' : 'Plan · energía'), el('p', 'num mt-1 text-lg font-extrabold', `${miles(kcal)} `, el('span', 'text-xs font-semibold text-mut', `/ ${miles(obj.kcal)} kcal`)), barra(kcal, obj.kcal, 'bg-vio')),
         el('div', '', el('p', 'eyebrow', propio ? 'Proteína' : 'Plan · proteína'), el('p', 'num mt-1 text-lg font-extrabold', `${Math.round(prot)} `, el('span', 'text-xs font-semibold text-mut', `/ ${obj.prot} g`)), barra(prot, obj.prot, 'bg-ok', false)),
       ),
-      propio
-        ? el(
-            'p',
-            'num mt-3 text-xs text-mut',
-            `Llevas ${hechas.length} de ${plan.length} comidas${nExtras ? ` y ${nExtras === 1 ? '1 extra' : `${nExtras} extras`}` : ''}. El plan del día suma ${miles(t.kcal)} kcal y ${Math.round(t.prot)} g.`,
-          )
-        : null,
+      propio ? el('p', 'num mt-3 text-xs text-mut', resumen) : null,
     );
 
     const tarjetas = plan.map((r, i) => tarjeta(r, suyo[i], propio, !!dia?.hecho?.[r.comida]));
-    const out = [quien(), nav, totales, ...tarjetas];
+    const out = gm ? [nav, totales, ...tarjetas] : [quien(), nav, totales, ...tarjetas];
     if (propio) out.push(fueraDeLista(extras));
     else out.push(el('p', 'px-1 text-xs text-mut', `Lo que apunta ${nombre(est.ver)} se queda en su móvil. Aquí ves su plan y sus cantidades.`));
     if (est.ver === 'jose' && plan.some((r) => r.plato.curro)) out.push(el('p', 'px-1 text-xs text-mut', 'Lo del curro cuenta para las kcal del día y no entra en la compra.'));
@@ -194,11 +227,17 @@ export async function dietaCasa(root: HTMLElement, yo: Persona): Promise<void> {
           }).then(pintar),
       );
       tick.setAttribute('aria-label', `${hecho ? 'Desmarcar' : 'Marcar'} ${CARTA.comidas[c].toLowerCase()} como hecha`);
+      if (gm) {
+        tick.className = `gm-check${hecho ? ' gm-on' : ''}`;
+        tick.innerHTML = hecho ? CHECK : '';
+      }
       cabeza.append(tick);
     }
     const info = boton(
       'min-w-0 flex-1 text-left',
-      el('span', 'eyebrow block text-mut', `${CARTA.comidas[c]} · ${Math.round(hueco[0])}/${hueco[1]}`),
+      gm
+        ? el('span', 'gm-toma', CARTA.comidas[c])
+        : el('span', 'eyebrow block text-mut', `${CARTA.comidas[c]} · ${Math.round(hueco[0])}/${hueco[1]}`),
       () => {
         if (abierta) est.abiertas.delete(c);
         else est.abiertas.add(c);
@@ -212,7 +251,7 @@ export async function dietaCasa(root: HTMLElement, yo: Persona): Promise<void> {
     );
     cabeza.append(info);
     if (pl.curro) cabeza.append(el('span', 'shrink-0 rounded-full border border-line px-2 py-0.5 text-[10px] font-bold uppercase text-mut', 'Curro'));
-    else if (mismo) cabeza.append(el('span', 'shrink-0 rounded-full border border-vio px-2 py-0.5 text-[10px] font-bold uppercase text-vio-hi', 'Los dos'));
+    else if (mismo) cabeza.append(el('span', gm ? 'gm-chip' : 'shrink-0 rounded-full border border-vio px-2 py-0.5 text-[10px] font-bold uppercase text-vio-hi', 'Los dos'));
     cabeza.append(el('span', `shrink-0 text-mut transition ${abierta ? 'rotate-90' : ''}`, '›'));
 
     const card = el('section', 'card', cabeza);

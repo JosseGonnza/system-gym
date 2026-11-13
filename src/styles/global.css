@@ -1166,6 +1166,129 @@ html[data-perfil='yasmina'] body.gm-en-sesion #cuenta-bar {
   bottom: calc(env(safe-area-inset-bottom) + 8.5rem);
 }
 
+/* ── Dieta del Grimorio: el caldero (lib/vista-casa.ts con gm) ── */
+.gm-seg {
+  border-radius: 999px;
+  border: 1px solid var(--ln);
+  background: rgb(10 17 13 / 0.5);
+  padding: 4px;
+}
+
+.gm-seg button {
+  border-radius: 999px;
+  padding: 8px 0;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--color-mut);
+  background: transparent;
+}
+
+.gm-seg button[aria-pressed='true'] {
+  background: var(--glass2);
+  color: var(--oro-hi);
+  box-shadow: inset 0 0 0 1px var(--ln2);
+}
+
+.gm-nav {
+  border-radius: 16px;
+  border-color: var(--ln);
+  background: var(--glass);
+}
+
+.gm-nav-sub {
+  display: block;
+  font-size: 12.5px;
+  color: var(--color-mut);
+}
+
+.gm-nav-sub em {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--salvia);
+}
+
+.gm-anillos {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.gm-anillo {
+  position: relative;
+  width: 108px;
+  height: 108px;
+}
+
+.gm-anillo svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.gm-anillo-c {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  text-align: center;
+}
+
+.gm-anillo-c b {
+  font: 700 26px/1 var(--font-display);
+  font-variant-numeric: lining-nums;
+}
+
+.gm-anillo-c small {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--color-mut);
+}
+
+.gm-anillos-p {
+  margin: 12px 0 0;
+  font-size: 12px;
+  color: var(--color-mut);
+  text-align: center;
+}
+
+.gm-check {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: transparent;
+  color: #1c1507;
+  /* El círculo visible mide 28 px; el resto es zona de toque */
+  background-image: radial-gradient(circle, transparent 13.5px, var(--ln2) 14px, transparent 14.5px);
+}
+
+.gm-check.gm-on {
+  background-image: radial-gradient(circle at 40% 35%, #f3dca6, #c9a45a 13px, var(--oro) 14px, transparent 14.5px);
+  filter: drop-shadow(0 0 6px rgb(207 174 102 / 0.45));
+}
+
+.gm-toma {
+  display: block;
+  margin-bottom: 2px;
+  font: italic 700 13px var(--font-display);
+  color: var(--oro);
+}
+
+.gm-chip {
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--salvia);
+  border: 1px solid rgb(159 183 154 / 0.35);
+  padding: 3px 7px;
+  border-radius: 999px;
+}
+
 @keyframes gm-late { 50% { opacity: 0.45; } }
 @keyframes gm-brilla { 50% { opacity: 0.55; } }
 
