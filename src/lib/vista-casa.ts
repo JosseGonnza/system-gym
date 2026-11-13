@@ -51,9 +51,9 @@ function seg<T extends string>(ops: [T, string][], actual: T, alElegir: (v: T) =
   return g;
 }
 
-function barra(valor: number, obj: number, cls: string): HTMLElement {
+function barra(valor: number, obj: number, cls: string, tope = true): HTMLElement {
   const b = el('div', 'mt-1.5 h-2 overflow-hidden rounded-full bg-surface2');
-  const r = el('div', `h-full rounded-full ${valor > obj * 1.05 ? 'bg-bad' : cls}`);
+  const r = el('div', `h-full rounded-full ${tope && valor > obj * 1.05 ? 'bg-bad' : cls}`);
   r.style.width = `${Math.min(100, (valor / obj) * 100)}%`;
   b.append(r);
   return b;
@@ -117,8 +117,11 @@ export async function dietaCasa(root: HTMLElement, yo: Persona): Promise<void> {
     const dia = propio ? comidas[est.fecha] : undefined;
     const extras = dia?.snack ?? [];
     const t = sumar(plan);
-    const kcal = t.kcal + extras.reduce((a, x) => a + (x.kcal ?? 0), 0);
-    const prot = t.prot + extras.reduce((a, x) => a + (x.p ?? 0), 0);
+    // Lo propio suma lo marcado; del otro no hay marcas en este móvil y se ve su plan.
+    const hechas = propio ? plan.filter((r) => dia?.hecho?.[r.comida]) : plan;
+    const h = sumar(hechas);
+    const kcal = h.kcal + extras.reduce((a, x) => a + (x.kcal ?? 0), 0);
+    const prot = h.prot + extras.reduce((a, x) => a + (x.p ?? 0), 0);
     const obj = CARTA.personas[est.ver];
 
     const ir = (n: number) => {
@@ -147,10 +150,16 @@ export async function dietaCasa(root: HTMLElement, yo: Persona): Promise<void> {
       el(
         'div',
         'grid grid-cols-2 gap-4',
-        el('div', '', el('p', 'eyebrow', 'Energía'), el('p', 'num mt-1 text-lg font-extrabold', `${miles(kcal)} `, el('span', 'text-xs font-semibold text-mut', `/ ${miles(obj.kcal)} kcal`)), barra(kcal, obj.kcal, 'bg-vio')),
-        el('div', '', el('p', 'eyebrow', 'Proteína'), el('p', 'num mt-1 text-lg font-extrabold', `${Math.round(prot)} `, el('span', 'text-xs font-semibold text-mut', `/ ${obj.prot} g`)), barra(prot, obj.prot * 1.4, 'bg-ok')),
+        el('div', '', el('p', 'eyebrow', propio ? 'Energía' : 'Plan · energía'), el('p', 'num mt-1 text-lg font-extrabold', `${miles(kcal)} `, el('span', 'text-xs font-semibold text-mut', `/ ${miles(obj.kcal)} kcal`)), barra(kcal, obj.kcal, 'bg-vio')),
+        el('div', '', el('p', 'eyebrow', propio ? 'Proteína' : 'Plan · proteína'), el('p', 'num mt-1 text-lg font-extrabold', `${Math.round(prot)} `, el('span', 'text-xs font-semibold text-mut', `/ ${obj.prot} g`)), barra(prot, obj.prot, 'bg-ok', false)),
       ),
-      nExtras ? el('p', 'num mt-3 text-xs text-mut', `Incluye ${nExtras === 1 ? '1 extra' : `${nExtras} extras`} fuera de lista.`) : null,
+      propio
+        ? el(
+            'p',
+            'num mt-3 text-xs text-mut',
+            `Llevas ${hechas.length} de ${plan.length} comidas${nExtras ? ` y ${nExtras === 1 ? '1 extra' : `${nExtras} extras`}` : ''}. El plan del día suma ${miles(t.kcal)} kcal y ${Math.round(t.prot)} g.`,
+          )
+        : null,
     );
 
     const tarjetas = plan.map((r, i) => tarjeta(r, suyo[i], propio, !!dia?.hecho?.[r.comida]));
