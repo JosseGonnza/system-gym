@@ -1289,6 +1289,329 @@ html[data-perfil='yasmina'] body.gm-en-sesion #cuenta-bar {
   border-radius: 999px;
 }
 
+/* ── Progreso del Grimorio: el diario (lib/vista-progreso-grimorio.ts) ── */
+.gm-racha {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.gm-racha .gm-gato {
+  position: absolute;
+  right: 12px;
+  top: -46px;
+}
+
+.gm-big {
+  font: 700 64px/0.9 var(--font-display);
+  color: var(--oro-hi);
+  text-shadow: 0 0 22px rgb(207 174 102 / 0.45);
+  font-variant-numeric: lining-nums;
+}
+
+.gm-racha p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--color-mut);
+}
+
+.gm-racha p b {
+  display: block;
+  font: italic 700 19px var(--font-display);
+  color: var(--color-ink);
+}
+
+.gm-cielo {
+  margin-top: 10px;
+  display: grid;
+  gap: 2px;
+}
+
+.gm-mesfila {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  align-items: center;
+  gap: 6px;
+  min-height: 22px;
+  padding: 2px 0;
+  text-align: left;
+  border-radius: 6px;
+}
+
+.gm-mesfila span {
+  font: italic 700 12.5px var(--font-display);
+  color: var(--color-mut);
+}
+
+.gm-mesfila.gm-actual span {
+  color: var(--cobre-hi);
+}
+
+.gm-mesfila.gm-abierta {
+  background: rgb(207 174 102 / 0.08);
+}
+
+.gm-mesfila svg {
+  width: 100%;
+  height: 8px;
+  display: block;
+}
+
+.gm-mesfila svg path {
+  filter: drop-shadow(0 0 2px #cfae66);
+}
+
+.gm-mg {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+  margin: 6px 0 10px;
+  padding: 10px;
+  border-radius: 14px;
+  border: 1px solid var(--ln);
+  background: rgb(10 17 13 / 0.45);
+  text-align: center;
+}
+
+.gm-mg-l {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--color-mut);
+}
+
+.gm-mg-d {
+  display: grid;
+  justify-items: center;
+  gap: 1px;
+  min-height: 34px;
+  padding-top: 4px;
+  border-radius: 8px;
+}
+
+.gm-mg-d small {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-mut);
+}
+
+.gm-mg-d svg {
+  width: 16px;
+  height: 16px;
+  color: var(--oro-hi);
+  filter: drop-shadow(0 0 4px rgb(236 211 152 / 0.7));
+}
+
+.gm-mg-entreno small {
+  color: var(--color-ink);
+}
+
+.gm-mg-suave {
+  background: radial-gradient(circle at 50% 38%, #ee9a5f 3.5px, transparent 4px);
+}
+
+.gm-mg-futuro {
+  opacity: 0.35;
+}
+
+.gm-leyenda {
+  margin-top: 10px;
+  display: flex;
+  gap: 14px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-mut);
+}
+
+.gm-leyenda i {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  margin-right: 5px;
+  vertical-align: 1px;
+}
+
+.gm-tabs-mini {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.gm-tabs-mini button {
+  min-height: 32px;
+  font-size: 11.5px;
+  font-weight: 800;
+  padding: 4px 11px;
+  border-radius: 999px;
+  color: var(--color-mut);
+}
+
+.gm-tabs-mini .gm-on {
+  color: var(--oro-hi);
+  background: rgb(207 174 102 / 0.12);
+}
+
+.gm-graf svg {
+  width: 100%;
+  height: 130px;
+  display: block;
+  margin-top: 8px;
+  overflow: visible;
+}
+
+.gm-graf text {
+  font: 700 10px var(--font-body);
+  fill: var(--color-mut);
+}
+
+.gm-graf .gm-graf-v {
+  fill: var(--color-ink);
+}
+
+.gm-graf .gm-graf-t {
+  fill: var(--color-ok);
+}
+
+.gm-graf-vacia {
+  margin: 10px 0 0;
+  padding: 14px;
+  border-radius: 12px;
+  background: rgb(10 17 13 / 0.4);
+  text-align: center;
+  font-size: 12.5px;
+  color: var(--color-mut);
+}
+
+.btn-2.gm-anotar {
+  margin-top: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+.gm-sel {
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--ln);
+  background: rgb(10 17 13 / 0.5);
+  color: var(--color-ink);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.gm-marca {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.gm-marca b {
+  font: 700 34px/1 var(--font-display);
+  font-variant-numeric: lining-nums;
+}
+
+.gm-marca small {
+  display: block;
+  margin-top: 4px;
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+.gm-marca-linea {
+  width: 130px;
+  height: 44px;
+  flex-shrink: 0;
+}
+
+.gm-hoja {
+  width: min(92vw, 24rem);
+  margin: auto;
+  padding: 20px;
+  border-radius: 22px;
+  border: 1px solid var(--ln2);
+  color: var(--color-ink);
+  display: grid;
+  gap: 10px;
+}
+
+.gm-hoja:not([open]) {
+  display: none;
+}
+
+.gm-hoja::backdrop {
+  background: rgb(4 8 6 / 0.7);
+}
+
+.gm-hoja-t {
+  margin: 0;
+  font: italic 700 26px var(--font-display);
+}
+
+.gm-campos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.gm-campo {
+  display: grid;
+  gap: 4px;
+}
+
+.gm-campo span {
+  font: italic 700 15px var(--font-display);
+  color: var(--oro);
+}
+
+.gm-campo input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--ln2);
+  background: rgb(10 17 13 / 0.6);
+  color: var(--color-ink);
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.gm-campo small {
+  font-size: 10.5px;
+  color: var(--color-mut);
+}
+
+.gm-hoja-ceja {
+  margin-top: 6px;
+}
+
+.gm-ultimas {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  font-size: 13px;
+  color: var(--color-mut);
+}
+
+.gm-ultimas li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--ln);
+}
+
+.gm-borrar {
+  width: 44px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  color: var(--color-mut);
+}
+
 @keyframes gm-late { 50% { opacity: 0.45; } }
 @keyframes gm-brilla { 50% { opacity: 0.55; } }
 

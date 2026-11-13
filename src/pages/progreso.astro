@@ -4,6 +4,8 @@ import Ico from '../components/Ico.astro';
 ---
 
 <Layout title="Progreso">
+  <div id="progreso-grimorio" hidden></div>
+  <div id="progreso-clasico">
   <section id="card-anual" class="card mb-4 hidden"></section>
 
   <section class="card">
@@ -85,6 +87,7 @@ import Ico from '../components/Ico.astro';
       <div id="marca-dist-grafico" class="mt-3"></div>
     </div>
   </section>
+  </div>
 </Layout>
 
 <script>
@@ -126,7 +129,9 @@ import Ico from '../components/Ico.astro';
   const sesiones = await getSesiones();
   const mediciones = await getMediciones();
   const diario = await getDiario();
-  if (perfil(getPerfilActivo()).anual) tarjetaAnual($('card-anual'), sesiones, hoyISO(), config.entrenosObjetivoSemana);
+  // Yasmina tiene su diario (lib/vista-progreso-grimorio.ts) en vez de esta página.
+  const grimorio = perfil(getPerfilActivo()).tema === 'grimorio';
+  if (perfil(getPerfilActivo()).anual && !grimorio) tarjetaAnual($('card-anual'), sesiones, hoyISO(), config.entrenosObjetivoSemana);
   if (!sencillo) tarjetaVolumen($('card-volumen'), sesiones, rutinas, hoyISO());
   const yo = getPerfilActivo();
   const casa = perfil(yo).casa && (yo === 'jose' || yo === 'yasmina') ? yo : null;
@@ -494,8 +499,26 @@ import Ico from '../components/Ico.astro';
       'Cinta a la altura del ombligo, una vez por semana. Si baja, vas genial aunque el peso no se mueva.';
   }
 
-  renderHistorial();
-  renderPeso();
-  renderCintura();
-  renderMarca();
+  if (grimorio) {
+    $('progreso-clasico').hidden = true;
+    $('progreso-grimorio').hidden = false;
+    const titulo = document.querySelector('.appbar h1');
+    if (titulo) titulo.textContent = 'Diario';
+    const { pintarDiario } = await import('../lib/vista-progreso-grimorio');
+    pintarDiario($('progreso-grimorio'), {
+      hoy: hoyISO(),
+      rutina,
+      rutinas,
+      sesiones,
+      objetivoSemana: config.entrenosObjetivoSemana,
+      mediciones,
+      guardarMediciones: setMediciones,
+      pesoDieta: (root, m) => tarjetaPesoDieta(root, 'yasmina', m, comidas, hoyISO()),
+    });
+  } else {
+    renderHistorial();
+    renderPeso();
+    renderCintura();
+    renderMarca();
+  }
 </script>
