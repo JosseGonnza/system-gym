@@ -27,6 +27,8 @@ import Ico from '../components/Ico.astro';
 
   <p id="aviso-abandono" class="card mt-4 hidden border-warn/40 text-sm font-semibold text-warn"></p>
 
+  <section id="aviso-descarga" class="card mt-4 hidden"></section>
+
   <a id="aviso-medidas" href="/progreso" class="card mt-4 hidden border-vio/40 text-sm font-semibold"></a>
 
   <section id="card-entreno" class="card glow mt-4 border-vio/40">
@@ -176,6 +178,8 @@ import Ico from '../components/Ico.astro';
   import { historialDeRanura, sugerir } from '../lib/motor';
   import { iconoEl, iconoDeDia } from '../lib/iconos';
   import { cerrarBorradoresCaducados } from '../lib/sesion';
+  import { descarga } from '../lib/descarga';
+  import { avisoDescarga } from '../lib/vista-descarga';
   import type { DiaDef, EjercicioDef } from '../lib/types';
 
   const $ = (id: string) => document.getElementById(id)!;
@@ -200,6 +204,7 @@ import Ico from '../components/Ico.astro';
   const manana = hoyISO(mananaDate);
   const hechosHoy = diasHechosEn(sesiones, hoy);
   const entrenadoHoy = hechosHoy.length > 0;
+  if (!sencillo) avisoDescarga($('aviso-descarga'), descarga(sesiones, hoy), getPerfilActivo(), hoy);
 
   $('fecha').textContent = new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
   if (usaJornadas) {
