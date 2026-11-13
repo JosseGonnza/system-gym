@@ -1,0 +1,1038 @@
+{
+ "inicio": "2026-11-16",
+ "comidas": {
+  "desayuno": "Desayuno",
+  "comida": "Comida",
+  "merienda": "Merienda / pre-gym",
+  "cena": "Cena"
+ },
+ "fruta": {
+  "A": {
+   "producto": "banana",
+   "u": 1
+  },
+  "B": {
+   "producto": "kiwi",
+   "u": 1
+  }
+ },
+ "personas": {
+  "jose": {
+   "nombre": "Jose",
+   "kcal": 2500,
+   "prot": 150,
+   "comidas": {
+    "desayuno": [
+     550,
+     35
+    ],
+    "comida": [
+     800,
+     45
+    ],
+    "merienda": [
+     400,
+     30
+    ],
+    "cena": [
+     700,
+     40
+    ]
+   },
+   "escala": false,
+   "nota": "recomposición"
+  },
+  "yasmina": {
+   "nombre": "Yasmina",
+   "kcal": 1700,
+   "prot": 125,
+   "comidas": {
+    "desayuno": [
+     325,
+     25
+    ],
+    "comida": [
+     550,
+     35
+    ],
+    "merienda": [
+     275,
+     20
+    ],
+    "cena": [
+     550,
+     45
+    ]
+   },
+   "escala": true,
+   "nota": "perder grasa",
+   "evita": [
+    "manzana",
+    "pimiento"
+   ]
+  }
+ },
+ "atajos": [
+  {
+   "t": "Barrita de proteína",
+   "kcal": 200,
+   "p": 20
+  },
+  {
+   "t": "Yogur Alpro limón con semillas",
+   "kcal": 330,
+   "p": 13
+  }
+ ],
+ "platos": [
+  {
+   "id": "d1",
+   "comida": "desayuno",
+   "nombre": "Huevos fritos con tostadas y aguacate",
+   "corto": "Huevos fritos",
+   "ing": [
+    [
+     "huevo",
+     {
+      "u": 3
+     }
+    ],
+    [
+     "aceite",
+     {
+      "g": 5
+     }
+    ],
+    [
+     "pan-molde",
+     {
+      "u": 3
+     }
+    ],
+    [
+     "aguacate",
+     {
+      "g": 75
+     }
+    ],
+    [
+     "cherry",
+     {
+      "g": 50
+     }
+    ]
+   ]
+  },
+  {
+   "id": "d2",
+   "comida": "desayuno",
+   "nombre": "Bol de muesli con soja, natilla, crema de cacahuete y fruta",
+   "corto": "Bol de muesli",
+   "ing": [
+    [
+     "muesli",
+     {
+      "g": 50
+     }
+    ],
+    [
+     "soja",
+     {
+      "g": 300
+     }
+    ],
+    [
+     "natillas-prot",
+     {
+      "u": 1
+     }
+    ],
+    [
+     "crema-cacahuete",
+     {
+      "u": 1
+     }
+    ],
+    [
+     "fruta",
+     {
+      "u": 1
+     }
+    ]
+   ]
+  },
+  {
+   "id": "d3",
+   "comida": "desayuno",
+   "nombre": "Huevos cocidos, tostadas con gouda y fruta",
+   "corto": "Huevos cocidos",
+   "ing": [
+    [
+     "huevo",
+     {
+      "u": 3
+     }
+    ],
+    [
+     "pan-molde",
+     {
+      "u": 3
+     }
+    ],
+    [
+     "gouda",
+     {
+      "g": 20
+     }
+    ],
+    [
+     "fruta",
+     {
+      "u": 1
+     }
+    ]
+   ]
+  },
+  {
+   "id": "d4",
+   "comida": "desayuno",
+   "nombre": "Tostadas con crema de cacahuete y fruta + natilla y vaso de soja",
+   "corto": "Tostadas cacahuete",
+   "ing": [
+    [
+     "pan-molde",
+     {
+      "u": 2
+     }
+    ],
+    [
+     "crema-cacahuete",
+     {
+      "u": 1
+     }
+    ],
+    [
+     "fruta",
+     {
+      "u": 1
+     }
+    ],
+    [
+     "natillas-prot",
+     {
+      "u": 1
+     }
+    ],
+    [
+     "soja",
+     {
+      "g": 250
+     }
+    ]
+   ]
+  },
+  {
+   "id": "dcurro",
+   "comida": "desayuno",
+   "nombre": "Curro: 2 huevos, 3 lonchas de bacon y ½ aguacate",
+   "corto": "Curro",
+   "ing": [
+    [
+     "huevo",
+     {
+      "u": 2
+     }
+    ],
+    [
+     "bacon",
+     {
+      "u": 3
+     }
+    ],
+    [
+     "aguacate",
+     {
+      "g": 75
+     }
+    ],
+    [
+     "aceite",
+     {
+      "g": 5
+     }
+    ]
+   ],
+   "curro": true
+  },
+  {
+   "id": "c1",
+   "comida": "comida",
+   "nombre": "Pollo con arroz y calabacín salteado",
+   "corto": "Pollo con arroz",
+   "ing": [
+    [
+     "pollo",
+     {
+      "g": 200
+     }
+    ],
+    [
+     "arroz",
+     {
+      "g": 100
+     }
+    ],
+    [
+     "calabacin",
+     {
+      "g": 150
+     }
+    ],
+    [
+     "aceite",
+     {
+      "g": 10
+     }
+    ],
+    [
+     "fruta",
+     {
+      "u": 1
+     }
+    ]
+   ],
+   "reparto": true
+  },
+  {
+   "id": "c3",
+   "comida": "comida",
+   "nombre": "Macarrones boloñesa",
+   "corto": "Boloñesa",
+   "ing": [
+    [
+     "carne-picada",
+     {
+      "g": 150
+     }
+    ],
+    [
+     "macarron",
+     {
+      "g": 100
+     }
+    ],
+    [
+     "tomate-frito",
+     {
+      "g": 100
+     }
+    ],
+    [
+     "cebolla",
+     {
+      "g": 60
+     }
+    ],
+    [
+     "zanahoria",
+     {
+      "g": 60
+     }
+    ],
+    [
+     "ajo",
+     {
+      "g": 5
+     }
+    ],
+    [
+     "aceite",
+     {
+      "g": 5
+     }
+    ]
+   ],
+   "reparto": true,
+   "partes": [
+    {
+     "nombre": "Pasta cocida",
+     "ids": [
+      "macarron"
+     ]
+    },
+    {
+     "nombre": "Salsa boloñesa",
+     "ids": [
+      "carne-picada",
+      "tomate-frito",
+      "cebolla",
+      "zanahoria",
+      "ajo",
+      "aceite"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "c4",
+   "comida": "comida",
+   "nombre": "Legumbre de la casa",
+   "corto": "Legumbre",
+   "ing": [
+    [
+     "lenteja",
+     {
+      "g": 400
+     }
+    ],
+    [
+     "chorizo",
+     {
+      "g": 30
+     }
+    ],
+    [
+     "cebolla",
+     {
+      "g": 50
+     }
+    ],
+    [
+     "zanahoria",
+     {
+      "g": 50
+     }
+    ],
+    [
+     "ajo",
+     {
+      "g": 5
+     }
+    ],
+    [
+     "tomate-frito",
+     {
+      "g": 50
+     }
+    ],
+    [
+     "aceite",
+     {
+      "g": 5
+     }
+    ],
+    [
+     "pan-molde",
+     {
+      "u": 2
+     }
+    ]
+   ],
+   "reparto": true,
+   "una": true
+  },
+  {
+   "id": "ccurro",
+   "comida": "comida",
+   "nombre": "Curro: carne con arroz y salsa (a ojo)",
+   "corto": "Curro",
+   "ing": [
+    [
+     "lomo-adobado",
+     {
+      "g": 220
+     }
+    ],
+    [
+     "arroz",
+     {
+      "g": 90
+     }
+    ],
+    [
+     "cebolla",
+     {
+      "g": 100
+     }
+    ],
+    [
+     "tomate-frito",
+     {
+      "g": 50
+     }
+    ],
+    [
+     "aceite",
+     {
+      "g": 10
+     }
+    ]
+   ],
+   "curro": true
+  },
+  {
+   "id": "m1",
+   "comida": "merienda",
+   "nombre": "Natilla con muesli y fruta + vaso de soja",
+   "corto": "Natilla y muesli",
+   "ing": [
+    [
+     "natillas-prot",
+     {
+      "u": 1
+     }
+    ],
+    [
+     "muesli",
+     {
+      "g": 30
+     }
+    ],
+    [
+     "fruta",
+     {
+      "u": 1
+     }
+    ],
+    [
+     "soja",
+     {
+      "g": 200
+     }
+    ]
+   ]
+  },
+  {
+   "id": "m2",
+   "comida": "merienda",
+   "nombre": "Tortitas con 2 huevos cocidos + vaso de soja",
+   "corto": "Tortitas y huevo",
+   "ing": [
+    [
+     "tortitas",
+     {
+      "u": 1
+     }
+    ],
+    [
+     "huevo",
+     {
+      "u": 2
+     }
+    ],
+    [
+     "soja",
+     {
+      "g": 300
+     }
+    ]
+   ]
+  },
+  {
+   "id": "m3",
+   "comida": "merienda",
+   "nombre": "Sándwich de fuet y gouda + vaso de soja",
+   "corto": "Sándwich fuet",
+   "ing": [
+    [
+     "pan-molde",
+     {
+      "u": 2
+     }
+    ],
+    [
+     "fuet",
+     {
+      "g": 25
+     }
+    ],
+    [
+     "gouda",
+     {
+      "g": 20
+     }
+    ],
+    [
+     "soja",
+     {
+      "g": 250
+     }
+    ]
+   ]
+  },
+  {
+   "id": "m4",
+   "comida": "merienda",
+   "nombre": "Tostadas de atún + fruta",
+   "corto": "Tostadas atún",
+   "ing": [
+    [
+     "atun",
+     {
+      "u": 2
+     }
+    ],
+    [
+     "pan-molde",
+     {
+      "u": 2
+     }
+    ],
+    [
+     "aceite",
+     {
+      "g": 5
+     }
+    ],
+    [
+     "fruta",
+     {
+      "u": 1
+     }
+    ]
+   ]
+  },
+  {
+   "id": "n1",
+   "comida": "cena",
+   "nombre": "Merluza con puré y cherrys",
+   "corto": "Merluza y puré",
+   "ing": [
+    [
+     "merluza",
+     {
+      "g": 300
+     }
+    ],
+    [
+     "pure-copos",
+     {
+      "g": 80
+     }
+    ],
+    [
+     "soja",
+     {
+      "g": 200
+     }
+    ],
+    [
+     "aceite",
+     {
+      "g": 10
+     }
+    ],
+    [
+     "cherry",
+     {
+      "g": 50
+     }
+    ]
+   ],
+   "reparto": true
+  },
+  {
+   "id": "n2",
+   "comida": "cena",
+   "nombre": "Burger casera de picada con huevo",
+   "corto": "Burger casera",
+   "ing": [
+    [
+     "carne-picada",
+     {
+      "g": 175
+     }
+    ],
+    [
+     "pan-burger",
+     {
+      "u": 1
+     }
+    ],
+    [
+     "gouda",
+     {
+      "g": 20
+     }
+    ],
+    [
+     "huevo",
+     {
+      "u": 1
+     }
+    ],
+    [
+     "cherry",
+     {
+      "g": 25
+     }
+    ],
+    [
+     "cebolla",
+     {
+      "g": 30
+     }
+    ],
+    [
+     "aceite",
+     {
+      "g": 3
+     }
+    ]
+   ]
+  },
+  {
+   "id": "n3",
+   "comida": "cena",
+   "nombre": "Pollo con ensalada de espinaca, cherry y aguacate + pan",
+   "corto": "Pollo ensalada",
+   "ing": [
+    [
+     "pollo",
+     {
+      "g": 200
+     }
+    ],
+    [
+     "espinaca",
+     {
+      "g": 75
+     }
+    ],
+    [
+     "cherry",
+     {
+      "g": 75
+     }
+    ],
+    [
+     "aguacate",
+     {
+      "g": 75
+     }
+    ],
+    [
+     "aceite",
+     {
+      "g": 5
+     }
+    ],
+    [
+     "pan-molde",
+     {
+      "u": 4
+     }
+    ]
+   ]
+  },
+  {
+   "id": "n4",
+   "comida": "cena",
+   "nombre": "Tortilla francesa con puré y tomate + pan",
+   "corto": "Tortilla",
+   "ing": [
+    [
+     "huevo",
+     {
+      "u": 3
+     }
+    ],
+    [
+     "pure-copos",
+     {
+      "g": 50
+     }
+    ],
+    [
+     "soja",
+     {
+      "g": 150
+     }
+    ],
+    [
+     "aceite",
+     {
+      "g": 8
+     }
+    ],
+    [
+     "cherry",
+     {
+      "g": 50
+     }
+    ],
+    [
+     "pan-molde",
+     {
+      "u": 2
+     }
+    ]
+   ]
+  },
+  {
+   "id": "n4e",
+   "comida": "cena",
+   "nombre": "Tortilla de espinacas con puré + pan",
+   "corto": "Tortilla espinacas",
+   "ing": [
+    [
+     "huevo",
+     {
+      "u": 3
+     }
+    ],
+    [
+     "espinaca",
+     {
+      "g": 100
+     }
+    ],
+    [
+     "pure-copos",
+     {
+      "g": 50
+     }
+    ],
+    [
+     "soja",
+     {
+      "g": 150
+     }
+    ],
+    [
+     "aceite",
+     {
+      "g": 8
+     }
+    ],
+    [
+     "pan-molde",
+     {
+      "u": 2
+     }
+    ]
+   ],
+   "reparto": true
+  },
+  {
+   "id": "n5",
+   "comida": "cena",
+   "nombre": "Lomo adobado con calabacín y puré",
+   "corto": "Lomo y calabacín",
+   "ing": [
+    [
+     "lomo-adobado",
+     {
+      "g": 260
+     }
+    ],
+    [
+     "calabacin",
+     {
+      "g": 150
+     }
+    ],
+    [
+     "pure-copos",
+     {
+      "g": 50
+     }
+    ],
+    [
+     "soja",
+     {
+      "g": 150
+     }
+    ],
+    [
+     "aceite",
+     {
+      "g": 8
+     }
+    ],
+    [
+     "pan-molde",
+     {
+      "u": 1
+     }
+    ]
+   ],
+   "reparto": true
+  },
+  {
+   "id": "n6",
+   "comida": "cena",
+   "nombre": "Ensalada de garbanzos con atún y aguacate",
+   "corto": "Garbanzos y atún",
+   "ing": [
+    [
+     "garbanzo",
+     {
+      "g": 220
+     }
+    ],
+    [
+     "atun",
+     {
+      "u": 2
+     }
+    ],
+    [
+     "aguacate",
+     {
+      "g": 75
+     }
+    ],
+    [
+     "zanahoria",
+     {
+      "g": 60
+     }
+    ],
+    [
+     "cebolla",
+     {
+      "g": 30
+     }
+    ],
+    [
+     "aceite",
+     {
+      "g": 10
+     }
+    ],
+    [
+     "pan-molde",
+     {
+      "u": 2
+     }
+    ]
+   ],
+   "reparto": true
+  }
+ ],
+ "ciclo": [
+  {
+   "dia": "L1",
+   "desayuno": "d1",
+   "comida": "c1",
+   "merienda": "m1",
+   "cena": "n3"
+  },
+  {
+   "dia": "M1",
+   "desayuno": "d2",
+   "comida": "c3",
+   "merienda": "m2",
+   "cena": "n4e"
+  },
+  {
+   "dia": "X1",
+   "desayuno": "d1",
+   "comida": "c1",
+   "merienda": "m1",
+   "cena": "n6"
+  },
+  {
+   "dia": "J1",
+   "desayuno": "d4",
+   "comida": "c4",
+   "merienda": "m4",
+   "cena": "n1"
+  },
+  {
+   "dia": "V1",
+   "desayuno": "d2",
+   "comida": "c4",
+   "merienda": "m2",
+   "cena": "n5"
+  },
+  {
+   "dia": "S1",
+   "desayuno": "dcurro",
+   "comida": "ccurro",
+   "merienda": "m3",
+   "cena": "n2"
+  },
+  {
+   "dia": "D1",
+   "desayuno": "dcurro",
+   "comida": "ccurro",
+   "merienda": "m1",
+   "cena": "n2"
+  },
+  {
+   "dia": "L2",
+   "desayuno": "d3",
+   "comida": "c1",
+   "merienda": "m1",
+   "cena": "n5"
+  },
+  {
+   "dia": "M2",
+   "desayuno": "d2",
+   "comida": "c3",
+   "merienda": "m2",
+   "cena": "n4e"
+  },
+  {
+   "dia": "X2",
+   "desayuno": "d3",
+   "comida": "c1",
+   "merienda": "m1",
+   "cena": "n3"
+  },
+  {
+   "dia": "J2",
+   "desayuno": "d4",
+   "comida": "c4",
+   "merienda": "m4",
+   "cena": "n1"
+  },
+  {
+   "dia": "V2",
+   "desayuno": "d2",
+   "comida": "c4",
+   "merienda": "m2",
+   "cena": "n6"
+  },
+  {
+   "dia": "S2",
+   "desayuno": "dcurro",
+   "comida": "ccurro",
+   "merienda": "m1",
+   "cena": "n2"
+  },
+  {
+   "dia": "D2",
+   "desayuno": "dcurro",
+   "comida": "ccurro",
+   "merienda": "m3",
+   "cena": "n2"
+  }
+ ],
+ "ciclo_yasmina": {
+  "L1": {
+   "desayuno": "d3"
+  },
+  "X1": {
+   "desayuno": "d3"
+  },
+  "S1": {
+   "desayuno": "d2",
+   "comida": "c1"
+  },
+  "D1": {
+   "desayuno": "d3",
+   "comida": "c4"
+  },
+  "S2": {
+   "desayuno": "d3",
+   "comida": "c1"
+  },
+  "D2": {
+   "desayuno": "d4",
+   "comida": "c4"
+  }
+ }
+}

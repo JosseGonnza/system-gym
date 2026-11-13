@@ -1,0 +1,587 @@
+[
+ {
+  "id": "carne-picada",
+  "nombre": "Carne picada",
+  "precio": 8.0,
+  "envase": "bandeja 1 kg",
+  "util_g": 1000,
+  "por100": {
+   "kcal": 195,
+   "prot": 17,
+   "hc": 2,
+   "grasa": 12
+  },
+  "prot": true,
+  "fresco": true,
+  "cocido": 0.75,
+  "estado": "en crudo"
+ },
+ {
+  "id": "pollo",
+  "nombre": "Pechuga de pollo",
+  "precio": 7.44,
+  "envase": "bandeja 1,2 kg",
+  "util_g": 1200,
+  "por100": {
+   "kcal": 106,
+   "prot": 22,
+   "hc": 0,
+   "grasa": 1.8
+  },
+  "prot": true,
+  "fresco": true,
+  "cocido": 0.75,
+  "estado": "en crudo"
+ },
+ {
+  "id": "lomo-adobado",
+  "nombre": "Lomo adobado",
+  "precio": 3.61,
+  "envase": "bandeja 520 g",
+  "util_g": 520,
+  "por100": {
+   "kcal": 117,
+   "prot": 20,
+   "hc": 0.8,
+   "grasa": 3.6
+  },
+  "prot": true,
+  "fresco": true,
+  "cocido": 0.75,
+  "estado": "en crudo"
+ },
+ {
+  "id": "merluza",
+  "nombre": "Merluza",
+  "precio": 5.3,
+  "envase": "bolsa 600 g",
+  "util_g": 600,
+  "por100": {
+   "kcal": 82,
+   "prot": 18,
+   "hc": 0.5,
+   "grasa": 1.2
+  },
+  "prot": true,
+  "cocido": 0.8,
+  "estado": "en crudo"
+ },
+ {
+  "id": "atun",
+  "nombre": "Atún al natural",
+  "precio": 4.2,
+  "envase": "pack 6 latas",
+  "util_g": 360,
+  "por100": {
+   "kcal": 100,
+   "prot": 23,
+   "hc": 0.7,
+   "grasa": 0.6
+  },
+  "unidad": {
+   "g": 60,
+   "uds": [
+    "lata",
+    "latas"
+   ]
+  },
+  "prot": true
+ },
+ {
+  "id": "huevo",
+  "nombre": "Huevos",
+  "precio": 5.25,
+  "envase": "docena",
+  "util_g": 1230,
+  "por100": {
+   "kcal": 150,
+   "prot": 12.5,
+   "hc": 0.5,
+   "grasa": 11.1
+  },
+  "unidad": {
+   "g": 51,
+   "uds": [
+    "huevo",
+    "huevos"
+   ]
+  },
+  "prot": true,
+  "cocido": 0.9
+ },
+ {
+  "id": "natillas-prot",
+  "nombre": "Natillas +proteínas",
+  "precio": 1.75,
+  "envase": "pack de 4",
+  "util_g": 480,
+  "por100": {
+   "kcal": 81,
+   "prot": 8.4,
+   "hc": 8.7,
+   "grasa": 1.1
+  },
+  "unidad": {
+   "g": 120,
+   "uds": [
+    "natilla",
+    "natillas"
+   ]
+  },
+  "prot": true,
+  "fresco": true,
+  "aparte": true
+ },
+ {
+  "id": "gouda",
+  "nombre": "Gouda en lonchas",
+  "precio": 1.95,
+  "envase": "paquete",
+  "util_g": 300,
+  "por100": {
+   "kcal": 345,
+   "prot": 23.4,
+   "hc": 0,
+   "grasa": 27.9
+  },
+  "prot": true
+ },
+ {
+  "id": "fuet",
+  "nombre": "Fuet",
+  "precio": 2.5,
+  "envase": "pieza",
+  "util_g": 240,
+  "por100": {
+   "kcal": 421,
+   "prot": 27.5,
+   "hc": 1.4,
+   "grasa": 34
+  },
+  "prot": true
+ },
+ {
+  "id": "chorizo",
+  "nombre": "Chorizo",
+  "precio": 2.49,
+  "envase": "pieza",
+  "util_g": 280,
+  "por100": {
+   "kcal": 443,
+   "prot": 25,
+   "hc": 0.2,
+   "grasa": 38
+  },
+  "cocido": 0.85
+ },
+ {
+  "id": "lenteja",
+  "nombre": "Lenteja cocida",
+  "precio": 0.9,
+  "envase": "tarro 400 g",
+  "util_g": 400,
+  "por100": {
+   "kcal": 89,
+   "prot": 8.2,
+   "hc": 10.7,
+   "grasa": 0.4
+  },
+  "estado": "escurrida"
+ },
+ {
+  "id": "garbanzo",
+  "nombre": "Garbanzo cocido",
+  "precio": 0.8,
+  "envase": "tarro",
+  "util_g": 400,
+  "por100": {
+   "kcal": 90,
+   "prot": 5.5,
+   "hc": 9.5,
+   "grasa": 2.2
+  },
+  "estado": "escurrido"
+ },
+ {
+  "id": "arroz",
+  "nombre": "Arroz",
+  "precio": 1.2,
+  "envase": "paquete 1 kg",
+  "util_g": 1000,
+  "por100": {
+   "kcal": 347,
+   "prot": 6.5,
+   "hc": 78,
+   "grasa": 0.8
+  },
+  "cocido": 2.7,
+  "estado": "en seco"
+ },
+ {
+  "id": "macarron",
+  "nombre": "Macarrón",
+  "precio": 1.2,
+  "envase": "paquete 1 kg",
+  "util_g": 1000,
+  "por100": {
+   "kcal": 361,
+   "prot": 13,
+   "hc": 72,
+   "grasa": 1.5
+  },
+  "cocido": 2.3,
+  "estado": "en seco"
+ },
+ {
+  "id": "cebolla",
+  "nombre": "Cebolla",
+  "precio": 1.5,
+  "envase": "malla",
+  "util_g": 900,
+  "por100": {
+   "kcal": 40,
+   "prot": 1.2,
+   "hc": 8,
+   "grasa": 0.1
+  },
+  "cocido": 0.6
+ },
+ {
+  "id": "ajo",
+  "nombre": "Ajo",
+  "precio": 1.85,
+  "envase": "malla",
+  "util_g": 200,
+  "por100": {
+   "kcal": 130,
+   "prot": 6,
+   "hc": 28,
+   "grasa": 0.5
+  }
+ },
+ {
+  "id": "zanahoria",
+  "nombre": "Zanahoria",
+  "precio": 1.2,
+  "envase": "bolsa",
+  "util_g": 900,
+  "por100": {
+   "kcal": 38,
+   "prot": 0.9,
+   "hc": 7,
+   "grasa": 0.2
+  },
+  "cocido": 0.8
+ },
+ {
+  "id": "cherry",
+  "nombre": "Tomate cherry",
+  "precio": 2.2,
+  "envase": "tarrina 250 g",
+  "util_g": 500,
+  "por100": {
+   "kcal": 20,
+   "prot": 2,
+   "hc": 2,
+   "grasa": 0.5
+  },
+  "fresco": true,
+  "aparte": true
+ },
+ {
+  "id": "aguacate",
+  "nombre": "Aguacate",
+  "precio": 3.45,
+  "envase": "pack de 3",
+  "util_g": 450,
+  "por100": {
+   "kcal": 160,
+   "prot": 2,
+   "hc": 1.9,
+   "grasa": 15
+  },
+  "unidad": {
+   "g": 150,
+   "uds": [
+    "aguacate",
+    "aguacates"
+   ]
+  },
+  "fresco": true
+ },
+ {
+  "id": "espinaca",
+  "nombre": "Espinacas",
+  "precio": 1.3,
+  "envase": "bolsa 200 g",
+  "util_g": 300,
+  "por100": {
+   "kcal": 22,
+   "prot": 2.7,
+   "hc": 1,
+   "grasa": 0.8
+  },
+  "fresco": true,
+  "cocido": 0.25
+ },
+ {
+  "id": "pan-molde",
+  "nombre": "Pan de molde integral",
+  "precio": 1.15,
+  "envase": "paquete 26 reb.",
+  "util_g": 820,
+  "por100": {
+   "kcal": 248,
+   "prot": 8.7,
+   "hc": 41,
+   "grasa": 3.8
+  },
+  "unidad": {
+   "g": 32,
+   "uds": [
+    "rebanada",
+    "rebanadas"
+   ]
+  },
+  "fresco": true,
+  "aparte": true
+ },
+ {
+  "id": "aceite",
+  "nombre": "Aceite de oliva",
+  "precio": 3.6,
+  "envase": "botella 1 L",
+  "util_g": 920,
+  "por100": {
+   "kcal": 893,
+   "prot": 0,
+   "hc": 0,
+   "grasa": 99.3
+  },
+  "unidad": {
+   "g": 10,
+   "uds": [
+    "cda",
+    "cdas"
+   ]
+  }
+ },
+ {
+  "id": "tomate-frito",
+  "nombre": "Tomate frito",
+  "precio": 1.35,
+  "envase": "brik",
+  "util_g": 1200,
+  "por100": {
+   "kcal": 81,
+   "prot": 1.4,
+   "hc": 11.6,
+   "grasa": 3
+  },
+  "cocido": 0.9
+ },
+ {
+  "id": "muesli",
+  "nombre": "Muesli",
+  "precio": 2.6,
+  "envase": "paquete",
+  "util_g": 1000,
+  "por100": {
+   "kcal": 361,
+   "prot": 9.1,
+   "hc": 59,
+   "grasa": 7.6
+  },
+  "unidad": {
+   "g": 45,
+   "uds": [
+    "ración",
+    "raciones"
+   ]
+  }
+ },
+ {
+  "id": "crema-cacahuete",
+  "nombre": "Crema de cacahuete",
+  "precio": 2.65,
+  "envase": "bote",
+  "util_g": 500,
+  "por100": {
+   "kcal": 608,
+   "prot": 30,
+   "hc": 12,
+   "grasa": 47
+  },
+  "unidad": {
+   "g": 15,
+   "uds": [
+    "cda",
+    "cdas"
+   ]
+  }
+ },
+ {
+  "id": "tortitas",
+  "nombre": "Tortitas de maíz",
+  "precio": 1.1,
+  "envase": "paquete",
+  "util_g": 120,
+  "por100": {
+   "kcal": 368,
+   "prot": 7.5,
+   "hc": 80,
+   "grasa": 1.8
+  },
+  "unidad": {
+   "g": 30,
+   "uds": [
+    "pack de 4",
+    "packs de 4"
+   ]
+  }
+ },
+ {
+  "id": "pan-burger",
+  "nombre": "Pan de burger",
+  "precio": 0.95,
+  "envase": "pack de 4",
+  "util_g": 220,
+  "por100": {
+   "kcal": 260,
+   "prot": 9.3,
+   "hc": 46,
+   "grasa": 3.7
+  },
+  "unidad": {
+   "g": 55,
+   "uds": [
+    "pan",
+    "panes"
+   ]
+  },
+  "fresco": true,
+  "aparte": true
+ },
+ {
+  "id": "bacon",
+  "nombre": "Bacon",
+  "precio": 2.05,
+  "envase": "paquete",
+  "util_g": 225,
+  "por100": {
+   "kcal": 289,
+   "prot": 15,
+   "hc": 1,
+   "grasa": 25
+  },
+  "unidad": {
+   "g": 15,
+   "uds": [
+    "loncha",
+    "lonchas"
+   ]
+  },
+  "prot": true
+ },
+ {
+  "id": "banana",
+  "nombre": "Banana",
+  "precio": 0.29,
+  "envase": "pieza",
+  "util_g": 120,
+  "por100": {
+   "kcal": 90,
+   "prot": 1.1,
+   "hc": 20,
+   "grasa": 0.3
+  },
+  "unidad": {
+   "g": 120,
+   "uds": [
+    "banana",
+    "bananas"
+   ]
+  },
+  "fresco": true,
+  "aparte": true
+ },
+ {
+  "id": "soja",
+  "nombre": "Bebida de soja",
+  "precio": 0.65,
+  "envase": "brik 1 L",
+  "util_g": 1000,
+  "por100": {
+   "kcal": 36,
+   "prot": 3.4,
+   "hc": 1.2,
+   "grasa": 1.9
+  },
+  "prot": true
+ },
+ {
+  "id": "pure-copos",
+  "nombre": "Puré en copos",
+  "precio": 2.0,
+  "envase": "4 sobres",
+  "util_g": 500,
+  "por100": {
+   "kcal": 349,
+   "prot": 8.3,
+   "hc": 74,
+   "grasa": 0.6
+  },
+  "unidad": {
+   "g": 125,
+   "uds": [
+    "sobre",
+    "sobres"
+   ]
+  },
+  "estado": "copos"
+ },
+ {
+  "id": "calabacin",
+  "nombre": "Calabacín",
+  "precio": 0.56,
+  "envase": "pieza ~400 g",
+  "util_g": 390,
+  "por100": {
+   "kcal": 17,
+   "prot": 1.2,
+   "hc": 2.2,
+   "grasa": 0.3
+  },
+  "unidad": {
+   "g": 390,
+   "uds": [
+    "calabacín",
+    "calabacines"
+   ]
+  },
+  "fresco": true,
+  "cocido": 0.7
+ },
+ {
+  "id": "kiwi",
+  "nombre": "Kiwi",
+  "precio": 4.82,
+  "envase": "bandeja ~1 kg",
+  "util_g": 900,
+  "por100": {
+   "kcal": 61,
+   "prot": 1.1,
+   "hc": 12,
+   "grasa": 0.5
+  },
+  "unidad": {
+   "g": 90,
+   "uds": [
+    "kiwi",
+    "kiwis"
+   ]
+  },
+  "fresco": true,
+  "aparte": true
+ }
+]
