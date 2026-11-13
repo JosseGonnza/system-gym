@@ -2,8 +2,10 @@
 import { pwaInfo } from 'virtual:pwa-info';
 import TabBar from '../components/TabBar.astro';
 import Ico from '../components/Ico.astro';
-// Fuentes self-hosted (offline). Jose "Nothing": Inter + Silkscreen (dot-matrix)
-// para etiquetas de sistema + JetBrains Mono en datos.
+// Fuentes self-hosted (offline). Jose "Marfil": Inter Tight (titulares y
+// etiquetas) + Inter (texto) + JetBrains Mono (datos). Silkscreen se queda
+// para el selector de perfil.
+import '@fontsource-variable/inter-tight';
 import '@fontsource-variable/inter';
 import '@fontsource/silkscreen/400.css';
 import '@fontsource/silkscreen/700.css';
@@ -25,6 +27,23 @@ const {
   description = 'Tu "Sistema" de entrenamiento: qué toca hoy, progresión automática de cargas y registro de progreso. PWA local-first: sin backend, sin cuentas.',
 } = Astro.props;
 const base = Astro.site ?? Astro.url;
+const ruta = Astro.url.pathname.replace(/\/+$/, '') || '/';
+const PANTALLAS: Record<string, [string, string]> = {
+  '/': ['hoy', '01'],
+  '/entreno': ['entreno', '02'],
+  '/dieta': ['dieta', '03'],
+  '/progreso': ['progreso', '04'],
+};
+const [pantalla, numero] = PANTALLAS[ruta] ?? ['otra', ''];
+// Motas de polvo del fondo de Jose: fijas en el HTML (no aleatorias) para que
+// no salten de sitio en cada recarga. Dos de ellas en oro.
+const motas = Array.from({ length: 9 }, (_, i) => ({
+  x: (i * 37 + 8) % 96,
+  s: 1.5 + (i % 3),
+  d: 18 + (i % 4) * 4,
+  r: -(i * 3.3),
+  oro: i === 2 || i === 6,
+}));
 ---
 
 <!doctype html>
@@ -69,10 +88,31 @@ const base = Astro.site ?? Astro.url;
     {pwaInfo && <Fragment set:html={pwaInfo.webManifest.linkTag} />}
     <script src="../pwa.ts"></script>
   </head>
-  <body class="min-h-dvh">
+  <body class="min-h-dvh" data-pantalla={pantalla}>
     <div class="fondo-yasmina" aria-hidden="true"></div>
+    <div class="fondo-jose" aria-hidden="true">
+      <div class="fj-haz"></div>
+      {
+        motas.map((m) => (
+          <span
+            class:list={['fj-mota', { 'fj-mota-oro': m.oro }]}
+            style={`--x:${m.x}%;--s:${m.s}px;--d:${m.d}s;--r:${m.r}s`}
+          />
+        ))
+      }
+    </div>
+    <div class="fondo-jose-pagina" aria-hidden="true">
+      <svg class="fj-halo" viewBox="0 0 300 300">
+        <circle class="fj-aro" cx="150" cy="150" r="120"></circle>
+        <circle class="fj-aro2" cx="150" cy="150" r="134"></circle>
+      </svg>
+      <div class="fj-esquirla"><i></i><i></i><i></i><i></i></div>
+    </div>
     <header class="appbar sticky top-0 z-10 flex items-center justify-between bg-bg/90 px-5 pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-3 backdrop-blur">
-      <h1 class="text-2xl font-extrabold tracking-tight">{title}</h1>
+      <h1 class="text-2xl font-extrabold tracking-tight">
+        {numero && <span class="appbar-n" aria-hidden="true">{numero}</span>}
+        {title}
+      </h1>
       <a href="/ajustes" class="-m-2 p-2 text-2xl leading-none" aria-label="Ajustes">
         <Ico id="ajustes" emoji="⚙️" px={22} />
       </a>
