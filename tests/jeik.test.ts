@@ -56,8 +56,8 @@ describe('perfil de Jeik', () => {
 
   it('no usa jornadas y tiene su dieta de 3 bloques y snack', () => {
     expect(horarioDe('jeik').jornadas).toEqual([]);
-    expect(dietaDe('jeik').macros[0].valor).toBe('2.300');
-    expect(dietaDe('jeik').platos).toHaveLength(4);
+    expect(dietaDe('jeik')!.macros[0].valor).toBe('2.300');
+    expect(dietaDe('jeik')!.platos).toHaveLength(4);
   });
 });
 

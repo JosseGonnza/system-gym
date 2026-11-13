@@ -153,6 +153,7 @@ import Layout from '../layouts/Layout.astro';
 
   function estatica() {
     const dieta = dietaDe(getPerfilActivo());
+    if (!dieta) return;
 
     $('macros').replaceChildren(
       ...dieta.macros.map((m) => {

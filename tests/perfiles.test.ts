@@ -94,14 +94,12 @@ describe('multi-perfil', () => {
     }
   });
 
-  it('cada perfil tiene su dieta con 4 macros y platos', () => {
-    for (const p of ['jose', 'yasmina'] as const) {
-      const d = dietaDe(p);
-      expect(d.macros).toHaveLength(4);
-      expect(d.platos.length).toBeGreaterThan(0);
-      expect(d.resumen.length).toBeGreaterThan(0);
-    }
-    expect(dietaDe('yasmina').macros[0].valor).toBe('1.825');
+  it('Jose y Yasmina llevan la dieta de casa; Jeik, su diario', () => {
+    expect(perfilDe('jose').casa).toBe(true);
+    expect(perfilDe('yasmina').casa).toBe(true);
+    expect(perfilDe('jeik').casa).toBeFalsy();
+    expect(dietaDe('jose')).toBeUndefined();
+    expect(dietaDe('yasmina')).toBeUndefined();
   });
 
   it('la rutina vigente de Yasmina llega sola, activa y sin tocar sus sesiones', async () => {
