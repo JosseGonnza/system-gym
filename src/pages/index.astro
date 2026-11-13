@@ -101,15 +101,6 @@ import Ico from '../components/Ico.astro';
     </section>
   </section>
 
-  <section id="card-otono" class="card mt-4 hidden">
-    <div class="flex items-baseline justify-between">
-      <p id="otono-mes" class="eyebrow"></p>
-      <p id="otono-cuenta" class="text-xs font-semibold text-mut"></p>
-    </div>
-    <p id="otono-hojas" class="mt-2 text-2xl leading-none tracking-[4px]"></p>
-    <p id="otono-frase" class="mt-2 text-sm text-mut"></p>
-  </section>
-
   <section id="card-manana" class="card mt-4">
     <button id="manana-toggle" class="flex w-full items-center justify-between text-left">
       <h2 class="flex items-center gap-2 text-base font-bold"><Ico id="manana" emoji="🌙" px={18} /> Mañana</h2>
@@ -192,7 +183,6 @@ import Ico from '../components/Ico.astro';
   await initDB();
   const yo = perfil(getPerfilActivo());
   const { usaJornadas, modoSencillo: sencillo } = yo;
-  const otono = yo.tema === 'grimorio';
   // Yasmina tiene su propio Hoy (lib/vista-hoy-grimorio.ts): el resto de la
   // página se queda oculto para ella y sin tocar para los demás.
   const grimorio = yo.tema === 'grimorio';
@@ -587,20 +577,6 @@ import Ico from '../components/Ico.astro';
           return b;
         }),
     );
-
-    const ahora = new Date();
-    const n = mesHistorial(sesiones, diario, ahora.getFullYear(), ahora.getMonth()).entrenos;
-    $('otono-mes').textContent = `Tu ${ahora.toLocaleDateString('es-ES', { month: 'long' })}`;
-    $('otono-cuenta').textContent = n === 1 ? '1 día' : `${n} días`;
-    $('otono-hojas').textContent = yo.emoji.repeat(Math.min(n, 20));
-    $('otono-hojas').classList.toggle('hidden', n === 0);
-    $('otono-frase').textContent = otono
-      ? n === 0
-        ? 'Cada día que vengas caerá aquí una hoja. La primera puede ser hoy.'
-        : 'Cada hoja es un día que has venido.'
-      : n === 0
-        ? 'Cada día que vengas sumará aquí. El primero puede ser hoy.'
-        : 'Cada marca es un día que has venido.';
   }
 
   // Seguimiento: la semana del plan, el peso de la mañana y las comidas a un
@@ -722,8 +698,6 @@ import Ico from '../components/Ico.astro';
     if (yo.seguimiento) {
       $('seguimiento').classList.remove('hidden');
       $('plan-linea').classList.remove('hidden');
-    } else {
-      $('card-otono').classList.remove('hidden');
     }
   }
 

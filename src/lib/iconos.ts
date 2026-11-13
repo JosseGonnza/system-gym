@@ -1,22 +1,6 @@
 import { hayPatron, svgDot } from './iconos-dot';
 import { hayTrazo, svgTrazo } from './iconos-trazo';
 
-// Iconos ilustrados disponibles (perfil Yasmina). El resto de perfiles usan el emoji.
-const DISPONIBLES = new Set([
-  'ajustes', 'alarma', 'backup', 'borrar',
-  'comida-cena', 'comida-desayuno', 'comida-pregym', 'comida-principal', 'comida-snack',
-  'deco-matcha', 'descanso',
-  'dia-brazo', 'dia-cardio', 'dia-empuje', 'dia-espalda', 'dia-gluteo', 'dia-hombro', 'dia-pierna',
-  'energia', 'fallo', 'import-export',
-  'jor-ett', 'jor-laboratorio', 'jor-libre', 'jor-manana', 'jor-tarde',
-  'medidas', 'nav-dieta', 'nav-entreno', 'nav-hoy', 'nav-progreso',
-  'nota', 'perfil', 'record', 'rest-timer', 'sueno', 'superserie',
-]);
-
-export function hayIcono(id?: string): boolean {
-  return !!id && DISPONIBLES.has(id);
-}
-
 // Símbolo del día. Si la rutina guardada no trae `icono` (rutinas anteriores al
 // 05/08), se deduce por su posición en la rueda: así nunca cae al emoji.
 const SIMBOLOS_DIA = ['dia-empuje', 'dia-hombro', 'dia-pierna', 'dia-bombeo', 'dia-espalda'];
@@ -28,8 +12,7 @@ export function iconoDeDia(dias: { id: string }[], dia: { id: string; icono?: st
 }
 
 // Devuelve un <span> con las variantes que puede haber: matriz de puntos (Jose),
-// trazo (Yasmina, Grimorio), imagen ilustrada (reserva de Yasmina) y emoji. El
-// CSS decide cuál se ve.
+// trazo (Yasmina, Grimorio) y emoji de reserva. El CSS decide cuál se ve.
 export function iconoEl(id: string | undefined, emoji: string, px = 22): HTMLElement {
   const span = document.createElement('span');
   span.className = 'ico';
@@ -46,16 +29,6 @@ export function iconoEl(id: string | undefined, emoji: string, px = 22): HTMLEle
     dot.className = 'ico-dot-wrap';
     dot.innerHTML = svgDot(id!, px);
     span.appendChild(dot);
-  }
-  if (id && DISPONIBLES.has(id)) {
-    span.classList.add('has-ico');
-    const img = document.createElement('img');
-    img.className = 'ico-img';
-    img.src = `/iconos/${id}.png`;
-    img.alt = '';
-    img.width = px;
-    img.height = px;
-    span.appendChild(img);
   }
   const em = document.createElement('span');
   em.className = 'ico-emoji';

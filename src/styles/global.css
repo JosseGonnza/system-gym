@@ -2012,12 +2012,7 @@ html[data-perfil='yasmina'] dialog {
   border-color: var(--ln2);
 }
 
-/* Resplandor de oro detrás de iconos y emojis */
-html[data-perfil='yasmina'] .ico-img,
-html[data-perfil='yasmina'] .tab-img {
-  filter: drop-shadow(0 0 6px rgb(236 211 152 / 0.45));
-}
-
+/* Resplandor de oro detrás de los emojis que no tienen trazo */
 html[data-perfil='yasmina'] .ico-emoji {
   text-shadow: 0 0 9px rgb(236 211 152 / 0.45);
 }
@@ -2328,14 +2323,7 @@ html[data-perfil='jeik'] .tabbar > div {
   grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 
-/* Iconos de pestaña: puntos en Jose, ilustración en Yasmina, emoji de reserva */
-.tab-img {
-  display: none;
-  width: 1.75rem;
-  height: 1.75rem;
-  object-fit: contain;
-}
-
+/* Iconos de pestaña: línea en Jose, trazo en Yasmina, emoji de reserva */
 .tab-line {
   display: none;
   line-height: 0;
@@ -2422,22 +2410,21 @@ html[data-perfil='jose'] .tab-on .tab-label {
   to { max-width: 120px; opacity: 1; }
 }
 
-html[data-perfil='yasmina'] .has-img .tab-emoji {
+html[data-perfil='yasmina'] .has-tab-line .tab-emoji {
   display: none;
 }
 
-/* Yasmina: iconos de trazo en el nav (luna, libro, caldero, constelación).
-   Los PNG pixel-art quedan sin uso; se borran en la limpieza del Grimorio. */
+/* Yasmina: iconos de trazo en el nav (luna, libro, caldero, constelación) */
 .tab-trazo {
   display: none;
   line-height: 0;
 }
 
-html[data-perfil='yasmina'] .has-img .tab-trazo {
+html[data-perfil='yasmina'] .has-tab-line .tab-trazo {
   display: inline-block;
 }
 
-/* Icono genérico por perfil: matriz de puntos en Jose, imagen en Yasmina,
+/* Icono genérico por perfil: matriz de puntos en Jose, trazo en Yasmina,
    emoji de reserva cuando no hay ninguna de las dos. */
 .ico {
   display: inline-flex;
@@ -2445,13 +2432,8 @@ html[data-perfil='yasmina'] .has-img .tab-trazo {
   vertical-align: middle;
 }
 
-.ico-img,
 .ico-dot-wrap {
   display: none;
-  object-fit: contain;
-}
-
-.ico-dot-wrap {
   line-height: 0;
 }
 
@@ -2470,22 +2452,12 @@ html[data-perfil='jose'] .has-dot .ico-dot-wrap {
   align-items: center;
 }
 
-html[data-perfil='yasmina'] .has-ico .ico-emoji {
-  display: none;
-}
-
-html[data-perfil='yasmina'] .has-ico .ico-img {
-  display: inline-block;
-}
-
-/* Trazo (Grimorio): va después de las reglas del PNG para ganarle a igual
-   especificidad. Oro con un halo suave; dentro de un botón, el color del texto. */
+/* Trazo (Grimorio): oro con un halo suave; dentro de un botón, el color del texto. */
 .ico-trazo-wrap {
   display: none;
   line-height: 0;
 }
 
-html[data-perfil='yasmina'] .has-trazo .ico-img,
 html[data-perfil='yasmina'] .has-trazo .ico-emoji {
   display: none;
 }
@@ -2500,15 +2472,6 @@ html[data-perfil='yasmina'] .has-trazo .ico-trazo-wrap {
 html[data-perfil='yasmina'] :is(.btn, .btn-2) .has-trazo .ico-trazo-wrap {
   color: currentColor;
   filter: none;
-}
-
-/* Adorno decorativo solo en Yasmina (no tiene emoji de reserva) */
-.deco-matcha {
-  display: none;
-}
-
-html[data-perfil='yasmina'] .deco-matcha {
-  display: flex;
 }
 
 /* Dibujo de técnica (Jeik): figura en tinta, máquina en línea, final en ámbar tenue */

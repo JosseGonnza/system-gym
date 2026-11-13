@@ -6,8 +6,8 @@ const path = Astro.url.pathname;
 const trazo = (d: string) =>
   `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
 
-// Tres variantes por pestaña: línea fina (Jose), ilustración (Yasmina) y
-// emoji de reserva. El CSS decide cuál se ve según el perfil.
+// Variantes por pestaña: línea fina (Jose), trazo de grimorio (Yasmina) y
+// emoji de reserva (Jeik). El CSS decide cuál se ve según el perfil.
 const LINEA: Record<string, string> = {
   'nav-hoy': trazo('<circle cx="12" cy="12" r="8" stroke-dasharray="38 12"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/>'),
   'nav-entreno': trazo('<path d="M6 7v10M18 7v10M3 10v4M21 10v4M6 12h12"/>'),
@@ -38,12 +38,11 @@ const activo = (href: string) => (href === '/' ? path === '/' : path.startsWith(
             href={t.href}
             aria-current={on ? 'page' : undefined}
             aria-label={t.label}
-            class={`tab ${t.id === 'nav-dieta' ? 'tab-dieta' : ''} ${t.id === 'nav-progreso' ? 'tab-progreso' : ''} ${t.jeik ? 'tab-jeik' : 'has-img has-tab-line'} flex flex-col items-center gap-0.5 py-2.5 text-xs font-semibold ${on ? 'tab-on text-vio-hi' : 'text-mut'}`}
+            class={`tab ${t.id === 'nav-dieta' ? 'tab-dieta' : ''} ${t.id === 'nav-progreso' ? 'tab-progreso' : ''} ${t.jeik ? 'tab-jeik' : 'has-tab-line'} flex flex-col items-center gap-0.5 py-2.5 text-xs font-semibold ${on ? 'tab-on text-vio-hi' : 'text-mut'}`}
           >
             <span class="tab-ico text-2xl leading-none">
               {!t.jeik && <span class="tab-line" set:html={LINEA[t.id]} />}
               {!t.jeik && <span class="tab-trazo" set:html={svgTrazo(t.id, 25)} />}
-              {!t.jeik && <img src={`/iconos/${t.id}.png`} alt="" class="tab-img" width="28" height="28" />}
               <span class="tab-emoji">{t.icon}</span>
             </span>
             <span class="tab-label">{t.label}</span>
