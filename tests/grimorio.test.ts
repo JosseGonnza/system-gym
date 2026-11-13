@@ -1,6 +1,76 @@
 import { describe, expect, it } from 'vitest';
-import { estrellasMes, faseLunar, fraseMes, lunasSemana, nombreBonito, nombreCorto, sumarDias } from '../src/lib/grimorio';
-import type { Rutina, Sesion } from '../src/lib/types';
+import {
+  capitulos,
+  estrellasMes,
+  etiquetaMarcador,
+  faseLunar,
+  fraseMes,
+  lunasSemana,
+  nombreBonito,
+  nombreCorto,
+  romano,
+  sumarDias,
+  tendenciaRanura,
+  ultimaVez,
+} from '../src/lib/grimorio';
+import type { DiaDef, EstadoSerie, Rutina, Sesion } from '../src/lib/types';
+
+const sesion = (fecha: string, diaId: string, ejercicios: Sesion['ejercicios'] = [], estado = 'finalizada') =>
+  ({ fecha, diaId, rutinaId: 'r', estado, ejercicios }) as unknown as Sesion;
+const ej = (ranuraId: string, pesos: (number | null)[], sensacion?: 'facil' | 'bien' | 'duro', estado: EstadoSerie = 'completada') => ({
+  ranuraId,
+  nombre: ranuraId,
+  sensacion,
+  series: pesos.map((peso) => ({ peso, reps: 10, estado })),
+});
+
+describe('el Grimorio', () => {
+  it('páginas en romano y capítulos en número normal', () => {
+    expect([1, 2, 3, 4].map(romano)).toEqual(['I', 'II', 'III', 'IV']);
+    expect(capitulos([sesion('2026-11-01', 'a'), sesion('2026-11-02', 'a', [], 'borrador'), sesion('2026-11-03', 'b')])).toBe(2);
+  });
+
+  it('tendencia: el máximo de cada sesión, las 6 últimas en orden, sin borradores ni series pendientes', () => {
+    const s = [
+      sesion('2026-10-01', 'a', [ej('hip', [20, 22.5])]),
+      sesion('2026-09-01', 'a', [ej('hip', [17.5])]),
+      sesion('2026-10-05', 'a', [ej('hip', [30], undefined, 'pendiente')]),
+      sesion('2026-10-08', 'a', [ej('hip', [25])], 'borrador'),
+      sesion('2026-10-10', 'a', [ej('otro', [99])]),
+      sesion('2026-10-12', 'a', [ej('hip', [25, null])]),
+    ];
+    expect(tendenciaRanura(s, 'hip', false)).toEqual([17.5, 22.5, 25]);
+    const muchas = Array.from({ length: 9 }, (_, i) => sesion(`2026-10-${String(i + 10).padStart(2, '0')}`, 'a', [ej('hip', [i + 1])]));
+    expect(tendenciaRanura(muchas, 'hip', false)).toEqual([4, 5, 6, 7, 8, 9]);
+  });
+
+  it('tendencia por tiempo usa los segundos', () => {
+    const plancha = { ranuraId: 'pl', nombre: 'pl', series: [{ peso: null, reps: null, segundos: 30, estado: 'completada' }] };
+    expect(tendenciaRanura([sesion('2026-10-01', 'a', [plancha as never])], 'pl', true)).toEqual([30]);
+  });
+
+  it('última vez: la más reciente de ese día y cuántos le fueron fáciles', () => {
+    const s = [
+      sesion('2026-11-02', 'a', [ej('x', [1], 'duro')]),
+      sesion('2026-11-09', 'a', [ej('x', [1], 'facil'), ej('y', [1], 'facil'), ej('z', [1], 'bien'), ej('w', [1])]),
+      sesion('2026-11-10', 'b', [ej('x', [1], 'facil')]),
+    ];
+    expect(ultimaVez(s, 'a')).toEqual({ fecha: '2026-11-09', faciles: 2, valorados: 3 });
+    expect(ultimaVez(s, 'c')).toBeNull();
+  });
+
+  it('marcapáginas: hoy, suave, nueva, día de la semana o fecha', () => {
+    const a = { id: 'a' } as DiaDef;
+    const suave = { id: 's', fueraDeRueda: true } as DiaDef;
+    const s = [sesion('2026-11-09', 'a')];
+    expect(etiquetaMarcador(a, s, '2026-11-13', true)).toBe('HOY');
+    expect(etiquetaMarcador(suave, s, '2026-11-13', false)).toBe('SUAVE');
+    expect(etiquetaMarcador({ id: 'b' } as DiaDef, s, '2026-11-13', false)).toBe('NUEVA');
+    expect(etiquetaMarcador(a, s, '2026-11-13', false)).toBe('LUN');
+    expect(etiquetaMarcador(a, s, '2026-11-09', false)).toBe('HECHA');
+    expect(etiquetaMarcador(a, s, '2026-11-30', false)).toBe('9 NOV');
+  });
+});
 
 describe('fase lunar', () => {
   it('el 13/11/2026 es luna creciente (la que pone la spec)', () => {
