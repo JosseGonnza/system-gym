@@ -105,6 +105,7 @@ import Ico from '../components/Ico.astro';
   import { cerrarBorradoresCaducados } from '../lib/sesion';
   import { esCardio } from '../lib/cardio';
   import { tarjetaAnual } from '../lib/vista-anual';
+  import { REPS_MAX_1RM, mejorSerie } from '../lib/fuerza';
   import { tarjetaPesoDieta } from '../lib/vista-peso-dieta';
   import type { EjercicioDef, SerieReg } from '../lib/types';
 
@@ -393,6 +394,34 @@ import Ico from '../components/Ico.astro';
           : item.def.tipoProgresion === 'libre'
             ? 'reps'
             : 'kg';
+    const conPeso = !['tiempo', 'pesoCorporal', 'libre'].includes(item.def.tipoProgresion);
+    // Si el rango pasa de 12 reps casi ninguna sesión da 1RM y la línea engaña.
+    const tope = Array.isArray(item.def.repsObjetivo) ? item.def.repsObjetivo[1] : item.def.repsObjetivo;
+    const rm = conPeso && tope != null && tope <= REPS_MAX_1RM
+      ? historial.flatMap((p) => {
+          const m = mejorSerie(p.series);
+          return m ? [{ fecha: p.fecha, v: Math.round(m.e1rm * 10) / 10, m }] : [];
+        })
+      : [];
+    if (rm.length) {
+      const top = rm.reduce((a, b) => (b.v > a.v ? b : a));
+      const pesoMax = Math.max(...historial.map((p) => valorSesion(item.def, p, false) ?? 0));
+      $('marca-mejor').textContent = `1RM estimado: ${fmtNum(top.v)} kg (${fmtFecha(top.fecha)}) · mejor peso ${fmtNum(pesoMax)} kg · ${rm.length} sesiones`;
+      $('marca-grafico').replaceChildren(grafico(rm.slice(-30), 'kg'));
+      $('marca-lista').replaceChildren(
+        ...rm
+          .slice(-5)
+          .reverse()
+          .map((p) => {
+            const li = document.createElement('li');
+            li.textContent = `${fmtFecha(p.fecha)} — ${fmtNum(p.m.peso)} kg × ${p.m.reps} · 1RM ${fmtNum(p.v)}`;
+            return li;
+          }),
+      );
+      $('marca-distancia').classList.add('hidden');
+      return;
+    }
+
     const puntos = historial
       .map((p) => ({ fecha: p.fecha, v: valorSesion(item.def, p, usarLastre) }))
       .filter((x): x is { fecha: string; v: number } => x.v != null && (!usarLastre || x.v > 0));
@@ -402,7 +431,7 @@ import Ico from '../components/Ico.astro';
       null,
     );
     $('marca-mejor').textContent = mejor
-      ? `Mejor: ${fmtNum(mejor.v)} ${unidad} (${fmtFecha(mejor.fecha)}) · ${puntos.length} sesiones`
+      ? `Mejor: ${fmtNum(mejor.v)} ${unidad} (${fmtFecha(mejor.fecha)}) · ${puntos.length} sesiones${conPeso ? ` · sin 1RM: rango de más de ${REPS_MAX_1RM} reps` : ''}`
       : 'Sin sesiones finalizadas con este ejercicio todavía.';
     $('marca-grafico').replaceChildren(grafico(puntos.slice(-30), unidad));
     $('marca-lista').replaceChildren(
