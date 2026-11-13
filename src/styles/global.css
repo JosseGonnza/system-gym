@@ -510,6 +510,274 @@ html[data-perfil='yasmina'] .fondo-yasmina {
   animation: gm-zz 3s ease-in-out infinite;
 }
 
+/* ── Hoy del Grimorio (lib/vista-hoy-grimorio.ts) ── */
+.gm-sub {
+  margin: -0.25rem 0.25rem 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--color-mut);
+}
+
+.gm-sub em {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--salvia);
+}
+
+.gm-sub svg {
+  color: var(--oro-hi);
+}
+
+.gm-cont {
+  display: grid;
+  gap: 12px;
+  padding-top: 58px;
+}
+
+.gm-cont > * {
+  min-width: 0;
+}
+
+.gm-fila {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.gm-meta {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--color-mut);
+  font-variant-numeric: tabular-nums;
+}
+
+.gm-hero .gm-gato {
+  position: absolute;
+  top: -50px;
+  right: 16px;
+}
+
+.gm-cab {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.gm-titulo {
+  min-width: 0;
+  display: grid;
+}
+
+.gm-h {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 25px;
+  font-weight: 700;
+  line-height: 1.04;
+  text-wrap: balance;
+}
+
+.gm-lista {
+  display: grid;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.gm-ex {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 13.5px;
+  color: var(--color-mut);
+}
+
+.gm-n {
+  white-space: nowrap;
+}
+
+.gm-gu {
+  flex: 1;
+  min-width: 10px;
+  height: 3px;
+  align-self: center;
+  background-image: radial-gradient(circle, var(--oro) 0.9px, transparent 1px);
+  background-size: 5px 3px;
+  background-repeat: repeat-x;
+  opacity: 0.35;
+}
+
+.gm-v {
+  white-space: nowrap;
+  color: var(--color-ink);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.btn.gm-empezar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.gm-alt {
+  margin-top: 10px;
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.gm-alt::-webkit-scrollbar {
+  display: none;
+}
+
+.gm-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 7px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--ln);
+  background: rgb(10 17 13 / 0.45);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--color-ink);
+  white-space: nowrap;
+}
+
+.gm-pill svg {
+  color: var(--oro);
+}
+
+.gm-semana {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  text-align: center;
+  margin-top: 10px;
+}
+
+.gm-d {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--color-mut);
+}
+
+.gm-d-hoy {
+  color: var(--cobre-hi);
+}
+
+.gm-luna {
+  width: 22px;
+  height: 22px;
+}
+
+.gm-llena {
+  filter: drop-shadow(0 0 5px rgb(207 174 102 / 0.6));
+}
+
+.gm-hoy-llena {
+  filter: drop-shadow(0 0 6px rgb(217 115 59 / 0.7));
+}
+
+.gm-late {
+  animation: gm-late 2.4s ease-in-out infinite;
+}
+
+.gm-comido {
+  display: block;
+}
+
+.gm-comidas {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.gm-comida {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-mut);
+}
+
+.gm-comida i {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px dashed var(--ln2);
+  display: grid;
+  place-items: center;
+  color: #1c1507;
+}
+
+.gm-comida.gm-ok i {
+  border: 1px solid var(--oro);
+  background: radial-gradient(circle at 40% 35%, #f3dca6, #c9a45a);
+  box-shadow: 0 0 12px rgb(207 174 102 / 0.45);
+}
+
+.gm-barra {
+  margin-top: 10px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.06);
+  overflow: hidden;
+}
+
+.gm-barra b {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--oro), var(--cobre-hi));
+}
+
+.gm-estrellas {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  color: var(--oro-hi);
+}
+
+.gm-estrellas .gm-off {
+  color: rgb(207 174 102 / 0.18);
+}
+
+.gm-estrellas .gm-on {
+  filter: drop-shadow(0 0 4px rgb(236 211 152 / 0.7));
+  animation: gm-brilla 3s ease-in-out infinite;
+}
+
+.gm-estrellas .gm-on:nth-child(5n + 2) { animation-delay: 0.5s; }
+.gm-estrellas .gm-on:nth-child(5n + 3) { animation-delay: 1s; }
+.gm-estrellas .gm-on:nth-child(5n + 4) { animation-delay: 1.5s; }
+.gm-estrellas .gm-on:nth-child(5n + 5) { animation-delay: 2s; }
+
+.gm-frase {
+  margin: 8px 0 0;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--salvia);
+}
+
+@keyframes gm-late { 50% { opacity: 0.45; } }
+@keyframes gm-brilla { 50% { opacity: 0.55; } }
+
 @keyframes gm-gira { to { transform: rotate(360deg); } }
 @keyframes gm-flota { 50% { transform: translateY(-4px); } }
 @keyframes gm-cola { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(12deg); } }
@@ -524,7 +792,9 @@ html[data-perfil='yasmina'] .fondo-yasmina {
   .gm-cola,
   .gm-ojos,
   .gm-sombrero,
-  .gm-zz {
+  .gm-zz,
+  .gm-late,
+  .gm-estrellas .gm-on {
     animation: none;
   }
 }

@@ -4,6 +4,8 @@ import Ico from '../components/Ico.astro';
 ---
 
 <Layout title="Hoy">
+  <div id="hoy-grimorio" hidden></div>
+  <div id="hoy-clasico">
   <p id="fecha" class="-mt-1 mb-4 text-sm font-medium capitalize text-mut"></p>
   <p id="plan-linea" class="-mt-3 mb-4 hidden text-sm text-mut"></p>
   <a id="aviso-domingo" href="/domingo" class="card glow mb-4 hidden border-vio/60">
@@ -146,6 +148,7 @@ import Ico from '../components/Ico.astro';
     <div id="dlg-cambiar-lista" class="mt-3 grid gap-2"></div>
     <button id="dlg-cambiar-cerrar" class="btn-2 mt-3 py-2.5 text-sm">Cancelar</button>
   </dialog>
+  </div>
 </Layout>
 
 <script>
@@ -189,7 +192,14 @@ import Ico from '../components/Ico.astro';
   await initDB();
   const yo = perfil(getPerfilActivo());
   const { usaJornadas, modoSencillo: sencillo } = yo;
-  const otono = yo.tema === 'otono';
+  const otono = yo.tema === 'grimorio';
+  // Yasmina tiene su propio Hoy (lib/vista-hoy-grimorio.ts): el resto de la
+  // página se queda oculto para ella y sin tocar para los demás.
+  const grimorio = yo.tema === 'grimorio';
+  if (grimorio) {
+    $('hoy-clasico').hidden = true;
+    $('hoy-grimorio').hidden = false;
+  }
   const { jornadas: JORNADAS, pautas: PAUTAS, alarmas: ALARMAS } = horarioDe(getPerfilActivo());
   await cerrarBorradoresCaducados();
   const config = await getConfig();
@@ -663,7 +673,28 @@ import Ico from '../components/Ico.astro';
     );
   }
 
+  async function pintarGrimorio() {
+    const { pintarHoyGrimorio } = await import('../lib/vista-hoy-grimorio');
+    const ultimoHecho = rutina.dias.find((d) => d.id === hechosHoy[hechosHoy.length - 1]);
+    const dia = diario[hoy]?.diaElegidoId ? diaEfectivoHoy() : (ultimoHecho ?? diaEfectivoHoy());
+    const ahora = new Date();
+    pintarHoyGrimorio($('hoy-grimorio'), {
+      hoy,
+      rutina,
+      rutinas,
+      dia,
+      hecho: hechosHoy.includes(dia.id),
+      sugerido: diaSugerido(config, rutina).id === dia.id,
+      pesoDe: pesoSugerido,
+      sesiones,
+      objetivoSemana: config.entrenosObjetivoSemana,
+      entrenosMes: mesHistorial(sesiones, diario, ahora.getFullYear(), ahora.getMonth()).entrenos,
+      comidas: yo.casa ? ((await getComidas())[hoy] ?? null) : undefined,
+    });
+  }
+
   function render() {
+    if (grimorio) return void pintarGrimorio();
     if (sencillo && yo.seguimiento) void pintarSeguimiento();
     if (sencillo) return pintarSencillo();
     if (usaJornadas) {

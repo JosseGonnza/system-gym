@@ -1208,7 +1208,7 @@ import Ico from '../components/Ico.astro';
       $('fin-titulo').textContent = '¡Hecho!';
       $('fin-hojas').textContent = yo.emoji.repeat(Math.min(diasMes, 20));
       $('fin-mes-texto').textContent =
-        diasMes === 1 ? (yo.tema === 'otono' ? 'La primera hoja del mes' : 'El primer día del mes') : `Ya van ${diasMes} días este mes`;
+        diasMes === 1 ? (yo.tema === 'grimorio' ? 'La primera hoja del mes' : 'El primer día del mes') : `Ya van ${diasMes} días este mes`;
       $('fin-mes').classList.remove('hidden');
       const notas = $('fin-notas') as HTMLTextAreaElement;
       notas.value = sesion!.notas;

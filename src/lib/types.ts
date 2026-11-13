@@ -8,7 +8,7 @@ export type EstadoSesion = 'finalizada' | 'borrador';
 export type Jornada = 'manana' | 'tarde' | 'libre' | 'laboratorio' | 'ett';
 
 export type PerfilId = 'jose' | 'yasmina' | 'jeik';
-export type Tema = 'nothing' | 'otono' | 'pizarra';
+export type Tema = 'nothing' | 'grimorio' | 'pizarra';
 export interface Perfil {
   id: PerfilId;
   nombre: string;
