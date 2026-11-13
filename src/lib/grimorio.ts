@@ -133,6 +133,99 @@ export function ultimaVez(sesiones: Sesion[], diaId: string): { fecha: string; f
   return { fecha: s.fecha, faciles: valorados.filter((e) => e.sensacion === 'facil').length, valorados: valorados.length };
 }
 
+// ── El diario (Progreso) ──
+// Lunes de la semana de una fecha, en ISO.
+export const lunesDe = (f: string): string => sumarDias(f, -((aFecha(f).getDay() + 6) % 7));
+
+// Días con entreno de la rueda (no el día suave), sin repetir fecha.
+function diasDeRueda(sesiones: Sesion[], rutinas: Rutina[]): Set<string> {
+  const fuera = (s: Sesion) => !!rutinas.find((r) => r.id === s.rutinaId)?.dias.find((d) => d.id === s.diaId)?.fueraDeRueda;
+  return new Set(finalizadas(sesiones).filter((s) => !fuera(s)).map((s) => s.fecha));
+}
+
+// Semanas seguidas (de lunes a domingo) llegando a su objetivo de entrenos. La
+// semana en curso suma si ya llegó; si aún no, no rompe la racha: está a medias.
+export function racha(sesiones: Sesion[], rutinas: Rutina[], objetivo: number, hoy: string): { actual: number; mejor: number } {
+  const dias = diasDeRueda(sesiones, rutinas);
+  if (!dias.size) return { actual: 0, mejor: 0 };
+  const porSemana = new Map<string, number>();
+  for (const f of dias) porSemana.set(lunesDe(f), (porSemana.get(lunesDe(f)) ?? 0) + 1);
+  const llega = (l: string) => (porSemana.get(l) ?? 0) >= objetivo;
+
+  const estaSemana = lunesDe(hoy);
+  let mejor = 0;
+  let tramo = 0;
+  for (let l = lunesDe([...dias].sort()[0]); l <= estaSemana; l = sumarDias(l, 7)) {
+    tramo = llega(l) ? tramo + 1 : l === estaSemana ? tramo : 0;
+    mejor = Math.max(mejor, tramo);
+  }
+  let actual = llega(estaSemana) ? 1 : 0;
+  for (let l = sumarDias(estaSemana, -7); llega(l); l = sumarDias(l, -7)) actual++;
+  return { actual, mejor };
+}
+
+// El año en estrellas: un punto por día de cada mes.
+export type TipoDiaCielo = 'entreno' | 'suave' | 'nada';
+export interface DiaCielo {
+  fecha: string;
+  tipo: TipoDiaCielo;
+  futuro: boolean;
+}
+
+export function cielo(sesiones: Sesion[], rutinas: Rutina[], anio: number, hoy: string): DiaCielo[][] {
+  const rueda = diasDeRueda(sesiones, rutinas);
+  const cualquiera = new Set(finalizadas(sesiones).map((s) => s.fecha));
+  return Array.from({ length: 12 }, (_, m) =>
+    Array.from({ length: new Date(anio, m + 1, 0).getDate() }, (_, d) => {
+      const fecha = `${anio}-${String(m + 1).padStart(2, '0')}-${String(d + 1).padStart(2, '0')}`;
+      const tipo: TipoDiaCielo = rueda.has(fecha) ? 'entreno' : cualquiera.has(fecha) ? 'suave' : 'nada';
+      return { fecha, tipo, futuro: fecha > hoy };
+    }),
+  );
+}
+
+// Peso o cintura: la media de cada semana con datos (las últimas `n`) y la
+// tendencia en unidades por semana (recta de mínimos cuadrados).
+export function mediasSemanales(entradas: { fecha: string; v: number }[], n = 8): { lunes: string; media: number }[] {
+  const grupos = new Map<string, number[]>();
+  for (const e of entradas) {
+    const l = lunesDe(e.fecha);
+    grupos.set(l, [...(grupos.get(l) ?? []), e.v]);
+  }
+  return [...grupos.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .slice(-n)
+    .map(([lunes, vs]) => ({ lunes, media: vs.reduce((a, b) => a + b, 0) / vs.length }));
+}
+
+export function tendenciaSemanal(medias: { lunes: string; media: number }[]): number | null {
+  if (medias.length < 2) return null;
+  // Semanas enteras: el cambio de hora haría que una semana mida 7 días y 1 h.
+  const x = medias.map((m) => Math.round((aFecha(m.lunes).getTime() - aFecha(medias[0].lunes).getTime()) / (7 * 86_400_000)));
+  const y = medias.map((m) => m.media);
+  const mx = x.reduce((a, b) => a + b, 0) / x.length;
+  const my = y.reduce((a, b) => a + b, 0) / y.length;
+  const den = x.reduce((a, xi) => a + (xi - mx) ** 2, 0);
+  return den ? x.reduce((a, xi, i) => a + (xi - mx) * (y[i] - my), 0) / den : null;
+}
+
+// Marca de un ejercicio: el valor de ahora, desde cuándo y cuánto ha cambiado.
+export function marca(
+  sesiones: Sesion[],
+  ranuraId: string,
+  porTiempo: boolean,
+): { actual: number; primera: { fecha: string; v: number }; ultimos: number[] } | null {
+  const puntos: { fecha: string; v: number }[] = [];
+  for (const s of finalizadas(sesiones)) {
+    const er = s.ejercicios.find((x) => x.ranuraId === ranuraId);
+    const hechas = er?.series.filter((x) => x.estado !== 'pendiente') ?? [];
+    const v = Math.max(0, ...hechas.map((x) => (porTiempo ? (x.segundos ?? 0) : (x.peso ?? 0))));
+    if (v > 0) puntos.push({ fecha: s.fecha, v });
+  }
+  if (!puntos.length) return null;
+  return { actual: puntos[puntos.length - 1].v, primera: puntos[0], ultimos: puntos.slice(-6).map((p) => p.v) };
+}
+
 // ── Frases ──
 // Rotan por día del año para que no se repita siempre la misma. Estética de
 // grimorio, nada pícaro (decisión de la spec).
