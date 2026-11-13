@@ -404,6 +404,131 @@ html[data-perfil='yasmina'] .fondo-yasmina {
   color: #0e1a13;
 }
 
+/* Luciérnagas y hojas (lib/aire-yasmina.ts), detrás de la silueta del bosque */
+.fy-aire {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* ── Dibujos del Grimorio (lib/dibujos-grimorio.ts) ── */
+.gm-bola {
+  position: relative;
+  width: 86px;
+  flex-shrink: 0;
+  display: grid;
+  justify-items: center;
+}
+
+.gm-esfera {
+  position: relative;
+  width: 78px;
+  height: 78px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: radial-gradient(circle at 36% 30%, rgb(236 211 152 / 0.28), rgb(30 52 40 / 0.55) 46%, rgb(6 12 9 / 0.92) 78%);
+  border: 1px solid rgb(236 211 152 / 0.4);
+  box-shadow: 0 0 26px rgb(207 174 102 / 0.35), inset 0 -12px 18px rgb(0 0 0 / 0.55), inset 0 4px 10px rgb(236 211 152 / 0.12);
+}
+
+.gm-niebla {
+  position: absolute;
+  inset: -35%;
+  filter: blur(9px);
+  mix-blend-mode: screen;
+}
+
+.gm-n1 {
+  background: conic-gradient(from 0deg, transparent 0 15%, rgb(159 183 154 / 0.55) 25%, transparent 38%, rgb(217 115 59 / 0.45) 60%, transparent 72%);
+  animation: gm-gira 9s linear infinite;
+}
+
+.gm-n2 {
+  background: conic-gradient(from 120deg, transparent 0 20%, rgb(236 211 152 / 0.4) 32%, transparent 45%, rgb(120 150 130 / 0.4) 75%, transparent 88%);
+  animation: gm-gira 14s linear infinite reverse;
+}
+
+.gm-glifo {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #ecd398;
+  animation: gm-flota 4.5s ease-in-out infinite;
+}
+
+.gm-glifo svg {
+  filter: drop-shadow(0 0 6px rgb(236 211 152 / 0.9));
+}
+
+.gm-brillo {
+  position: absolute;
+  left: 17%;
+  top: 13%;
+  width: 26%;
+  height: 15%;
+  border-radius: 50%;
+  background: rgb(255 248 230 / 0.55);
+  filter: blur(1.5px);
+  transform: rotate(-30deg);
+}
+
+.gm-peana {
+  width: 64px;
+  height: 18px;
+  margin-top: -6px;
+}
+
+.gm-gato {
+  width: 62px;
+  height: 62px;
+  filter: drop-shadow(0 0 1.2px rgb(236 211 152 / 0.55));
+}
+
+.gm-cola {
+  transform-box: view-box;
+  transform-origin: 44px 52px;
+  animation: gm-cola 3.2s ease-in-out infinite;
+}
+
+.gm-ojos {
+  transform-box: view-box;
+  transform-origin: 32px 30px;
+  animation: gm-parpadeo 5s infinite;
+}
+
+.gm-sombrero {
+  transform-box: view-box;
+  transform-origin: 32px 20px;
+  animation: gm-ladea 6s ease-in-out infinite;
+}
+
+.gm-zz {
+  font: italic 700 13px 'Cormorant Garamond Variable', Georgia, serif;
+  fill: #ecd398;
+  animation: gm-zz 3s ease-in-out infinite;
+}
+
+@keyframes gm-gira { to { transform: rotate(360deg); } }
+@keyframes gm-flota { 50% { transform: translateY(-4px); } }
+@keyframes gm-cola { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(12deg); } }
+@keyframes gm-parpadeo { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
+@keyframes gm-ladea { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+@keyframes gm-zz { 0% { opacity: 0; transform: translate(0, 4px); } 40% { opacity: 1; } 100% { opacity: 0; transform: translate(6px, -8px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .gm-n1,
+  .gm-n2,
+  .gm-glifo,
+  .gm-cola,
+  .gm-ojos,
+  .gm-sombrero,
+  .gm-zz {
+    animation: none;
+  }
+}
+
 /* El fondo sólido del body taparía el panel (z-index negativo): lo hacemos
    transparente para que asome. El respaldo queda en <html>. */
 html[data-perfil='yasmina'] body {

@@ -95,6 +95,7 @@ const motas = Array.from({ length: 9 }, (_, i) => ({
   </head>
   <body class="min-h-dvh" data-pantalla={pantalla}>
     <div class="fondo-yasmina" aria-hidden="true">
+      <canvas class="fy-aire"></canvas>
       <svg class="fy-bosque" viewBox="0 0 360 170" preserveAspectRatio="none">
         <path
           fill="currentColor"
@@ -134,5 +135,13 @@ const motas = Array.from({ length: 9 }, (_, i) => ({
       <slot />
     </main>
     <TabBar />
+    <script>
+      // El aire del bosque solo existe en el perfil de Yasmina: import dinámico
+      // para que los demás perfiles ni descarguen el módulo.
+      if (document.documentElement.dataset.perfil === 'yasmina') {
+        const cv = document.querySelector<HTMLCanvasElement>('.fy-aire');
+        if (cv) import('../lib/aire-yasmina').then(({ arrancarAire }) => arrancarAire(cv));
+      }
+    </script>
   </body>
 </html>
