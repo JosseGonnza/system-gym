@@ -554,6 +554,11 @@ html[data-perfil='selector'] main {
   font-family: 'Cormorant Garamond Variable', Georgia, serif;
 }
 
+.sel-yasmina .sel-glifo {
+  color: #ecd398;
+  filter: drop-shadow(0 0 7px rgb(236 211 152 / 0.6));
+}
+
 .sel-yasmina .sel-nombre {
   font-size: 1.7rem;
   font-style: italic;
@@ -1163,7 +1168,14 @@ html[data-perfil='yasmina'] .has-img .tab-emoji {
   display: none;
 }
 
-html[data-perfil='yasmina'] .has-img .tab-img {
+/* Yasmina: iconos de trazo en el nav (luna, libro, caldero, constelación).
+   Los PNG pixel-art quedan sin uso; se borran en la limpieza del Grimorio. */
+.tab-trazo {
+  display: none;
+  line-height: 0;
+}
+
+html[data-perfil='yasmina'] .has-img .tab-trazo {
   display: inline-block;
 }
 
@@ -1206,6 +1218,30 @@ html[data-perfil='yasmina'] .has-ico .ico-emoji {
 
 html[data-perfil='yasmina'] .has-ico .ico-img {
   display: inline-block;
+}
+
+/* Trazo (Grimorio): va después de las reglas del PNG para ganarle a igual
+   especificidad. Oro con un halo suave; dentro de un botón, el color del texto. */
+.ico-trazo-wrap {
+  display: none;
+  line-height: 0;
+}
+
+html[data-perfil='yasmina'] .has-trazo .ico-img,
+html[data-perfil='yasmina'] .has-trazo .ico-emoji {
+  display: none;
+}
+
+html[data-perfil='yasmina'] .has-trazo .ico-trazo-wrap {
+  display: flex;
+  align-items: center;
+  color: var(--oro-hi);
+  filter: drop-shadow(0 0 5px rgb(236 211 152 / 0.4));
+}
+
+html[data-perfil='yasmina'] :is(.btn, .btn-2) .has-trazo .ico-trazo-wrap {
+  color: currentColor;
+  filter: none;
 }
 
 /* Adorno decorativo solo en Yasmina (no tiene emoji de reserva) */

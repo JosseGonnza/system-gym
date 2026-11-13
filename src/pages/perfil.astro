@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { svgDot } from '../lib/iconos-dot';
+import { svgTrazo } from '../lib/iconos-trazo';
 ---
 
 <Layout title="Elige perfil">
@@ -18,7 +19,7 @@ import { svgDot } from '../lib/iconos-dot';
     </button>
 
     <button id="perfil-yasmina" class="sel-card sel-yasmina">
-      <span class="sel-emoji">🍂</span>
+      <span class="sel-glifo" set:html={svgTrazo('nav-hoy', 42)} />
       <span class="sel-nombre">Grimorio</span>
     </button>
 

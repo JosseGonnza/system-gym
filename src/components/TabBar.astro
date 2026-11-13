@@ -1,4 +1,6 @@
 ---
+import { svgTrazo } from '../lib/iconos-trazo';
+
 const path = Astro.url.pathname;
 
 const trazo = (d: string) =>
@@ -40,6 +42,7 @@ const activo = (href: string) => (href === '/' ? path === '/' : path.startsWith(
           >
             <span class="tab-ico text-2xl leading-none">
               {!t.jeik && <span class="tab-line" set:html={LINEA[t.id]} />}
+              {!t.jeik && <span class="tab-trazo" set:html={svgTrazo(t.id, 25)} />}
               {!t.jeik && <img src={`/iconos/${t.id}.png`} alt="" class="tab-img" width="28" height="28" />}
               <span class="tab-emoji">{t.icon}</span>
             </span>

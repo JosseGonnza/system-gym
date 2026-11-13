@@ -1,4 +1,5 @@
 import { hayPatron, svgDot } from './iconos-dot';
+import { hayTrazo, svgTrazo } from './iconos-trazo';
 
 // Iconos ilustrados disponibles (perfil Yasmina). El resto de perfiles usan el emoji.
 const DISPONIBLES = new Set([
@@ -26,11 +27,19 @@ export function iconoDeDia(dias: { id: string }[], dia: { id: string; icono?: st
   return SIMBOLOS_DIA[(i < 0 ? 0 : i) % SIMBOLOS_DIA.length];
 }
 
-// Devuelve un <span> con las tres variantes que puede haber: matriz de puntos
-// (Jose), imagen ilustrada (Yasmina) y emoji de reserva. El CSS decide cuál se ve.
+// Devuelve un <span> con las variantes que puede haber: matriz de puntos (Jose),
+// trazo (Yasmina, Grimorio), imagen ilustrada (reserva de Yasmina) y emoji. El
+// CSS decide cuál se ve.
 export function iconoEl(id: string | undefined, emoji: string, px = 22): HTMLElement {
   const span = document.createElement('span');
   span.className = 'ico';
+  if (hayTrazo(id)) {
+    span.classList.add('has-trazo');
+    const t = document.createElement('span');
+    t.className = 'ico-trazo-wrap';
+    t.innerHTML = svgTrazo(id!, px);
+    span.appendChild(t);
+  }
   if (hayPatron(id)) {
     span.classList.add('has-dot');
     const dot = document.createElement('span');
