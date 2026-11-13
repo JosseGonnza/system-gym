@@ -1,7 +1,7 @@
 // Lógica pura del Grimorio de Yasmina: lo que pintan sus pantallas sin tocar el
 // DOM, para poder probarlo. Spec en la bóveda: 02_LIB/MUSCULO/Yasmina/APP_GRIMORIO.
 
-import type { Rutina, Sesion } from './types';
+import type { DiaDef, Rutina, Sesion } from './types';
 
 // ── Fase de la luna ──
 // Una luna nueva conocida (6/1/2000, 18:14 UTC) y el mes sinódico medio. Error
@@ -84,6 +84,53 @@ export function estrellasMes(entrenos: number, objetivoSemana: number, anio: num
   const objetivo = Math.max(1, Math.round((objetivoSemana * diasMes) / 7));
   const total = Math.min(16, Math.max(objetivo, entrenos));
   return { on: Math.min(entrenos, total), total };
+}
+
+// ── El Grimorio: su rutina como un libro ──
+const ROMANOS = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
+export const romano = (n: number): string => ROMANOS[n - 1] ?? String(n);
+
+const finalizadas = (sesiones: Sesion[]) =>
+  sesiones.filter((s) => s.estado === 'finalizada').sort((a, b) => a.fecha.localeCompare(b.fecha));
+
+// "Capítulo": todas las sesiones desde que empezó, en número normal (decisión
+// del 13/11: los romanos largos quedan feos).
+export const capitulos = (sesiones: Sesion[]): number => finalizadas(sesiones).length;
+
+// Lo que pone bajo cada marcapáginas: HOY para el que toca, el día de la
+// semana si lo hizo hace menos de una semana, la fecha si fue antes.
+export function etiquetaMarcador(dia: DiaDef, sesiones: Sesion[], hoy: string, toca: boolean): string {
+  if (toca) return 'HOY';
+  if (dia.fueraDeRueda) return 'SUAVE';
+  const ultima = finalizadas(sesiones).filter((s) => s.diaId === dia.id).pop();
+  if (!ultima) return 'NUEVA';
+  const f = aFecha(ultima.fecha);
+  const dias = Math.round((aFecha(hoy).getTime() - f.getTime()) / 86_400_000);
+  if (dias === 0) return 'HECHA';
+  if (dias < 7) return f.toLocaleDateString('es-ES', { weekday: 'short' }).replace('.', '').toUpperCase();
+  return f.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }).replace('.', '').toUpperCase();
+}
+
+// Peso (o segundos) de cada sesión para una ranura: el máximo de las series
+// que hizo. Las últimas `n`, de la más vieja a la más nueva.
+export function tendenciaRanura(sesiones: Sesion[], ranuraId: string, porTiempo: boolean, n = 6): number[] {
+  const valores: number[] = [];
+  for (const s of finalizadas(sesiones)) {
+    const er = s.ejercicios.find((x) => x.ranuraId === ranuraId);
+    if (!er) continue;
+    const hechas = er.series.filter((x) => x.estado !== 'pendiente');
+    const v = Math.max(...hechas.map((x) => (porTiempo ? (x.segundos ?? 0) : (x.peso ?? 0))), 0);
+    if (v > 0) valores.push(v);
+  }
+  return valores.slice(-n);
+}
+
+// "Última vez el lunes 9 · te fue fácil en 4 de 6"
+export function ultimaVez(sesiones: Sesion[], diaId: string): { fecha: string; faciles: number; valorados: number } | null {
+  const s = finalizadas(sesiones).filter((x) => x.diaId === diaId).pop();
+  if (!s) return null;
+  const valorados = s.ejercicios.filter((e) => e.sensacion);
+  return { fecha: s.fecha, faciles: valorados.filter((e) => e.sensacion === 'facil').length, valorados: valorados.length };
 }
 
 // ── Frases ──
