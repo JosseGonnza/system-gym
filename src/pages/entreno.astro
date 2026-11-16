@@ -63,7 +63,7 @@ import Ico from '../components/Ico.astro';
 
   <section id="vista-fin" class="hidden">
     <div class="card glow border-vio/40 text-center">
-      <p class="flex justify-center text-4xl"><Ico id="record" emoji="🏆" px={44} /></p>
+      <p id="fin-icono" class="flex justify-center text-4xl"><Ico id="record" emoji="🏆" px={44} /></p>
       <h2 id="fin-titulo" class="mt-2 text-xl font-extrabold">Sesión finalizada</h2>
       <p id="fin-resumen" class="mt-2 text-sm text-mut"></p>
       <div id="fin-mes" class="mt-4 hidden">
@@ -1284,12 +1284,16 @@ import Ico from '../components/Ico.astro';
       // Ejercicios, no series; y lo que lleva de mes, en hojas.
       const gs = grupos(dia).filter((g) => !esGrupoCardio(g));
       const hechos = gs.filter((g) => g.some((e) => regDe(e).series.some((s) => s.estado !== 'pendiente'))).length;
-      const resumen = dia.fueraDeRueda ? `${dia.nombre}${dur}` : `${dia.nombre} · ${hechos} de ${gs.length} ejercicios${dur}`;
+      // El día suave dice los minutos de cardio apuntados, no lo que estuvo abierta la sesión
+      const minCardio = Math.round(dia.ejercicios.filter((e) => esCardio(e.ejercicioId)).reduce((n, e) => n + (regDe(e).series[0]?.segundos ?? 0), 0) / 60);
+      const durDia = gm && minCardio ? ` · ${minCardio} min` : dur;
+      const resumen = dia.fueraDeRueda ? `${dia.nombre}${durDia}` : `${dia.nombre} · ${hechos} de ${gs.length} ejercicios${dur}`;
       elF.replaceChildren(iconoEl(iconoDeDia(rutina.dias, dia), dia.emoji, 16), resumen);
       $('fin-titulo').textContent = '¡Hecho!';
       $('fin-hojas').textContent = yo.emoji.repeat(Math.min(diasMes, 20));
       $('fin-mes-texto').textContent =
-        diasMes === 1 ? (yo.tema === 'grimorio' ? 'La primera hoja del mes' : 'El primer día del mes') : `Ya van ${diasMes} días este mes`;
+        diasMes === 1 ? 'El primer día del mes' : `Ya van ${diasMes} días este mes`;
+      if (gm) gm.vestirFin($('fin-icono'), $('fin-mes'), diasMes, config.entrenosObjetivoSemana, hoyISO());
       $('fin-mes').classList.remove('hidden');
       const notas = $('fin-notas') as HTMLTextAreaElement;
       notas.value = sesion!.notas;

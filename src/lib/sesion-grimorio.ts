@@ -2,6 +2,8 @@
 // del modo sencillo de entreno.astro (misma lógica, mismo guardado) y solo le
 // cambia la ropa. entreno.astro carga este módulo con import dinámico.
 
+import { ESTRELLA, GATO } from './dibujos-grimorio';
+import { estrellasMes, fraseMes } from './grimorio';
 import type { Sensacion } from './types';
 
 export { capitulos } from './grimorio';
@@ -93,3 +95,22 @@ export function vestirReloj(reloj: HTMLElement): void {
 // Los botones llevan ▶ ⏸ ⏹ 🗑 delante; en Android salen como emoji de color.
 export const sinGlifo = (txt: string): string => txt.replace(/^[^\p{L}\p{N}]+/u, '');
 
+// Fin de la sesión: el gato en lugar del trofeo y el mes en estrellas (la de
+// hoy, recién encendida) en lugar de las hojas.
+export function vestirFin(icono: HTMLElement, mes: HTMLElement, entrenos: number, objetivoSemana: number, hoy: string): void {
+  icono.innerHTML = GATO;
+  const f = new Date(`${hoy}T12:00:00`);
+  const { on, total } = estrellasMes(entrenos, objetivoSemana, f.getFullYear(), f.getMonth());
+  const estrellas = document.createElement('div');
+  estrellas.className = 'gm-estrellas gm-fin-estrellas';
+  estrellas.setAttribute('role', 'img');
+  estrellas.setAttribute('aria-label', `${on} de ${total} estrellas este mes`);
+  for (let i = 0; i < total; i++) {
+    const clase = i < on ? `gm-on${i === on - 1 ? ' gm-nueva' : ''}` : 'gm-off';
+    estrellas.insertAdjacentHTML('beforeend', ESTRELLA.replace('<svg', `<svg class="${clase}"`));
+  }
+  const frase = document.createElement('p');
+  frase.className = 'gm-frase';
+  frase.textContent = fraseMes(entrenos, hoy);
+  mes.replaceChildren(estrellas, frase);
+}
