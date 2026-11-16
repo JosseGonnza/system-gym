@@ -66,7 +66,12 @@ import Ico from '../components/Ico.astro';
   await initDB();
 
   const actual = perfil(getPerfilActivo());
-  document.getElementById('perfil-actual')!.textContent = `Estás en el perfil de ${actual.nombre} ${actual.emoji}`;
+  // El Grimorio va sin emojis
+  const grimorio = actual.tema === 'grimorio';
+  const quien = grimorio ? actual.nombre : `${actual.nombre} ${actual.emoji}`;
+  if (grimorio)
+    for (const b of document.querySelectorAll('#sec-perfil a, #btn-export, #btn-import')) b.textContent = b.textContent!.replace(/^[^\p{L}]+/u, '');
+  document.getElementById('perfil-actual')!.textContent = `Estás en el perfil de ${quien}`;
   // En modo sencillo el peso lo ajustan las caritas: el incremento no se toca
   if (actual.modoSencillo) document.getElementById('sec-motor')!.classList.add('hidden');
 
@@ -131,7 +136,7 @@ import Ico from '../components/Ico.astro';
       const fecha = datos?.exportadoISO
         ? new Date(datos.exportadoISO).toLocaleDateString('es-ES', { dateStyle: 'medium' })
         : 'fecha desconocida';
-      let aviso = `Esto SUSTITUYE los datos del perfil de ${actual.nombre} ${actual.emoji} por el backup del ${fecha}.`;
+      let aviso = `Esto SUSTITUYE los datos del perfil de ${quien} por el backup del ${fecha}.`;
       if (datos?.perfil && datos.perfil !== getPerfilActivo()) {
         aviso += `\n\n⚠️ Ojo: el backup es del perfil "${datos.perfil}", distinto al actual.`;
       }

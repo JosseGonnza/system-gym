@@ -1568,6 +1568,7 @@ import Ico from '../components/Ico.astro';
 
   if (gm) {
     $('gm-top-ses').hidden = false;
+    for (const id of ['dlg-borrador-retomar', 'dlg-borrador-descartar']) $(id).textContent = gm.sinGlifo($(id).textContent!);
     $('gm-cap').textContent = `Capítulo ${gm.capitulos(sesiones) + 1}`;
     // Salir no borra nada: la sesión se queda esperando, como en el modo sencillo.
     $('gm-salir').addEventListener('click', () => {
