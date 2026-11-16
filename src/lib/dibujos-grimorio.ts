@@ -23,6 +23,9 @@ export const GATO_DUERME = `<svg class="gm-gato" viewBox="0 0 64 64" aria-hidden
 <text class="gm-zz" x="28" y="34">z</text><text class="gm-zz" x="35" y="26" style="animation-delay:1s">z</text>
 </svg>`;
 
+export const ESTRELLA =
+  '<svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path fill="currentColor" d="M12 2l1.8 7.2L21 12l-7.2 1.8L12 21l-1.8-7.2L3 12l7.2-1.8z"/></svg>';
+
 // La bola de cristal con el glifo del día flotando dentro, entre dos nieblas.
 export function bolaCristal(glifo: string): string {
   return `<div class="gm-bola" aria-hidden="true">

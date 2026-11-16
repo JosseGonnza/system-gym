@@ -4,7 +4,7 @@
 
 import { CARTA, COMIDAS, diaCiclo, racion } from './casa';
 import type { DiaComidas } from './comidas';
-import { GATO, bolaCristal } from './dibujos-grimorio';
+import { ESTRELLA, GATO, bolaCristal } from './dibujos-grimorio';
 import { estrellasMes, faseLunar, fraseMes, lunasSemana, nombreBonito, nombreCorto, type Luna } from './grimorio';
 import { iconoDeDia } from './iconos';
 import { svgTrazo } from './iconos-trazo';
@@ -50,8 +50,6 @@ function luna(l: Luna): string {
 
 const PLAY = '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M7 4.5v15l12-7.5z"/></svg>';
 const CHECK = '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
-const ESTRELLA = '<svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path fill="currentColor" d="M12 2l1.8 7.2L21 12l-7.2 1.8L12 21l-1.8-7.2L3 12l7.2-1.8z"/></svg>';
-
 export function pintarHoyGrimorio(cont: HTMLElement, d: DatosHoyGrimorio): void {
   const fecha = new Date(`${d.hoy}T12:00:00`);
   const [diaSemana, resto] = fecha.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }).split(', ');
