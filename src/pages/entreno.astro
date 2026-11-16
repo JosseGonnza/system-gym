@@ -971,13 +971,13 @@ import Ico from '../components/Ico.astro';
     }
 
     const h = document.createElement('h3');
-    h.className = 'text-lg font-extrabold';
+    h.className = gm ? 'gm-ses-h' : 'text-lg font-extrabold';
     h.textContent = e.nombre;
     div.append(h);
     if (ultimo && sencillo) {
       if (ultimo.segundos) {
         const p = document.createElement('p');
-        p.className = 'mt-1 text-sm font-semibold text-vio-soft';
+        p.className = gm ? 'gm-ses-obj' : 'mt-1 text-sm font-semibold text-vio-soft';
         p.textContent = `La última vez: ${Math.round(ultimo.segundos / 60)} min`;
         div.append(p);
       }
@@ -1038,6 +1038,7 @@ import Ico from '../components/Ico.astro';
     sub.id = 'crono-cardio-sub';
     sub.className = 'mt-1 text-xs font-semibold text-mut';
     reloj.append(tiempo, sub);
+    gm?.vestirReloj(reloj);
     div.append(reloj);
 
     const mandos = document.createElement('div');
@@ -1046,7 +1047,7 @@ import Ico from '../components/Ico.astro';
     const btn = (txt: string, clase: string, accion: () => void) => {
       const b = document.createElement('button');
       b.className = clase;
-      b.textContent = txt;
+      b.textContent = gm ? gm.sinGlifo(txt) : txt;
       b.addEventListener('click', accion);
       return b;
     };
@@ -1086,6 +1087,7 @@ import Ico from '../components/Ico.astro';
       const manual = document.createElement('p');
       manual.className = 'mt-5 border-t border-line pt-3 text-sm font-bold text-mut';
       manual.textContent = '¿Lo has hecho sin crono? Apúntalo de un toque:';
+      if (gm) manual.className = 'gm-pregunta gm-sin-crono';
       const fila = document.createElement('div');
       fila.className = 'mt-2 grid grid-cols-3 gap-1.5';
       for (const m of OBJETIVOS_MIN) {

@@ -77,3 +77,19 @@ export function vestirSeries(fila: HTMLElement): void {
     b.textContent = String(i + 1);
   });
 }
+
+// El crono del cardio, dentro del mismo círculo rúnico que el peso.
+export function vestirReloj(reloj: HTMLElement): void {
+  const [tiempo, sub] = [...reloj.children] as HTMLElement[];
+  reloj.className = 'gm-circulo gm-reloj';
+  tiempo.className = 'num gm-crono';
+  sub.className = 'gm-kg-sub';
+  const centro = document.createElement('div');
+  centro.append(tiempo, sub);
+  reloj.replaceChildren(centro);
+  reloj.insertAdjacentHTML('afterbegin', RUNA);
+}
+
+// Los botones llevan ▶ ⏸ ⏹ 🗑 delante; en Android salen como emoji de color.
+export const sinGlifo = (txt: string): string => txt.replace(/^[^\p{L}\p{N}]+/u, '');
+

@@ -1122,6 +1122,23 @@ html[data-perfil='yasmina'] body.gm-en-sesion #tarjeta > .card {
   font: italic 700 19px var(--font-display);
 }
 
+/* Cardio del día suave: el crono en el mismo círculo rúnico que el peso */
+.gm-crono {
+  font: 700 52px/1 var(--font-display);
+  font-variant-numeric: lining-nums tabular-nums;
+  color: var(--color-ink);
+}
+
+.gm-reloj .gm-crono.text-ok {
+  color: var(--oro-hi);
+  text-shadow: 0 0 18px rgb(236 211 152 / 0.45);
+}
+
+.gm-sin-crono {
+  margin-top: 26px;
+  font-size: 17px;
+}
+
 .gm-cara {
   display: grid;
   justify-items: center;
