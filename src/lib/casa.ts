@@ -41,6 +41,12 @@ export interface Plato {
   partes?: { nombre: string; ids: string[] }[];
 }
 
+export interface Atajo {
+  t: string;
+  kcal: number;
+  p: number;
+}
+
 export interface PersonaDef {
   nombre: string;
   kcal: number;
@@ -51,6 +57,7 @@ export interface PersonaDef {
   // kg por semana que se dan por buenos: [más rápido, más lento].
   ritmo: [number, number];
   evita?: string[];
+  atajos?: Atajo[];
 }
 
 interface Carta {
@@ -58,7 +65,7 @@ interface Carta {
   comidas: Record<Comida, string>;
   fruta: Record<Semana, { producto: string; u: number }>;
   personas: Record<Persona, PersonaDef>;
-  atajos: { t: string; kcal: number; p: number }[];
+  atajos: Atajo[];
   platos: Plato[];
   ciclo: ({ dia: string } & Record<Comida, string>)[];
   ciclo_yasmina: Record<string, Partial<Record<Comida, string>>>;
@@ -80,6 +87,8 @@ export interface Racion {
 }
 
 export const CARTA = cartaJson as unknown as Carta;
+
+export const atajosDe = (p: Persona): Atajo[] => CARTA.personas[p].atajos ?? CARTA.atajos;
 export const PRODUCTOS: Record<string, Producto> = Object.fromEntries((productosJson as unknown as Producto[]).map((p) => [p.id, p]));
 export const PLATOS: Record<string, Plato> = Object.fromEntries(CARTA.platos.map((p) => [p.id, p]));
 export const COMIDAS: Comida[] = ['desayuno', 'comida', 'merienda', 'cena'];
