@@ -11,6 +11,7 @@ import {
   DIAS_CICLO,
   PRODUCTOS,
   alMes,
+  atajosDe,
   cantidad,
   consumo,
   costeSemana,
@@ -89,6 +90,7 @@ export async function dietaCasa(root: HTMLElement, yo: Persona, gm = false): Pro
     semana: semanaDe(diaCiclo(hoy)),
     pedido: semanaDe(diaCiclo(hoy)),
     abiertas: new Set<Comida>(['comida']),
+    anadir: false,
   };
   const coste = costeSemana();
   const peds = pedidos();
@@ -345,7 +347,7 @@ export async function dietaCasa(root: HTMLElement, yo: Persona, gm = false): Pro
               'li',
               'flex items-center gap-2 py-2 text-sm',
               el('span', 'min-w-0 flex-1', x.t),
-              el('span', 'num text-right text-xs text-mut', x.kcal ? `${miles(x.kcal)} kcal${x.p ? ` · ${x.p} g` : ''}` : 'sin kcal'),
+              el('span', 'num text-right text-xs text-mut', x.kcal != null ? `${miles(x.kcal)} kcal${x.p ? ` · ${x.p} g` : ''}` : 'sin kcal'),
               b,
             );
           }),
@@ -354,19 +356,34 @@ export async function dietaCasa(root: HTMLElement, yo: Persona, gm = false): Pro
     } else {
       card.append(el('p', 'text-xs text-mut', 'Nada apuntado. Aquí va lo que comas fuera de los platos: la barrita al salir del gym, una caña, algo fuera de casa.'));
     }
-    // Pesar (#42) solo en el perfil que lo tiene; el módulo ni se descarga en el resto.
-    if (perfil(yo).alimentos) {
-      const hueco = el('div');
-      card.append(hueco);
-      void import('./vista-alimentos').then(({ pesarAlimentos }) => hueco.replaceWith(pesarAlimentos(poner)));
+    const pesa = perfil(yo).alimentos;
+    // Con Pesar la tarjeta crece mucho: en ese perfil lo de añadir va plegado tras un botón.
+    const panel = pesa ? el('div', 'grid grid-cols-[minmax(0,1fr)] gap-3') : card;
+    if (pesa) {
+      const abrir = boton('rounded-lg border border-line bg-surface2 px-3 py-2 text-sm font-semibold', '', () => {
+        est.anadir = !est.anadir;
+        mostrar();
+      });
+      const mostrar = () => {
+        panel.style.display = est.anadir ? '' : 'none';
+        abrir.textContent = est.anadir ? 'Cerrar' : '+ Añadir';
+        abrir.setAttribute('aria-expanded', String(est.anadir));
+      };
+      mostrar();
+      card.append(abrir, panel);
     }
-    card.append(
+    panel.append(
       el(
         'div',
         'flex flex-wrap gap-2',
-        ...CARTA.atajos.map((a) => boton('rounded-full border border-line bg-surface2 px-3 py-1.5 text-xs font-semibold', `+ ${a.t} · ${a.kcal}`, () => poner({ ...a }))),
+        ...atajosDe(yo).map((a) => boton('rounded-full border border-line bg-surface2 px-3 py-1.5 text-xs font-semibold', `+ ${a.t}${a.kcal ? ` · ${a.kcal}` : ''}`, () => poner({ ...a }))),
       ),
     );
+    if (pesa) {
+      const hueco = el('div');
+      panel.append(hueco);
+      void import('./vista-alimentos').then(({ pesarAlimentos }) => hueco.replaceWith(pesarAlimentos(poner)));
+    }
     const campo = (id: string, ph: string, cls: string, num = false) => {
       const i = el('input', `${cls} min-w-0 rounded-lg border border-line bg-bg px-3 py-2 text-sm text-ink placeholder:text-mut`);
       i.id = id;
@@ -393,7 +410,7 @@ export async function dietaCasa(root: HTMLElement, yo: Persona, gm = false): Pro
       if (p) x.p = p;
       poner(x);
     });
-    card.append(f, el('p', 'text-xs text-mut', 'Las kcal son opcionales: si no las sabes se guarda igual. Lo que lleva kcal suma al día.'));
+    panel.append(f, el('p', 'text-xs text-mut', 'Las kcal son opcionales: si no las sabes se guarda igual. Lo que lleva kcal suma al día.'));
     return card;
   }
 
