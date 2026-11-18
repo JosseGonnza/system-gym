@@ -1,6 +1,7 @@
 export type TipoProgresion = 'lineal' | 'doble' | 'pesoCorporal' | 'tiempo' | 'libre' | 'sensacion';
 import type { DiaComidas } from './comidas';
 import type { Domingo } from './seguimiento';
+import type { Alimento } from './alimentos';
 
 export type EstadoSerie = 'pendiente' | 'completada' | 'fallo' | 'corta';
 export type Sensacion = 'facil' | 'bien' | 'duro';
@@ -29,6 +30,8 @@ export interface Perfil {
   casa?: boolean;
   // Cuadritos del último año en Progreso, como los commits de GitHub.
   anual?: boolean;
+  // Pesar alimentos en Fuera de lista: gramos → kcal y macros (#42).
+  alimentos?: boolean;
 }
 
 export type Implemento = 'barra' | 'barraZ' | 'multipower' | 'mancuerna' | 'maquina' | 'polea' | 'kettlebell' | 'corporal';
@@ -182,4 +185,5 @@ export interface BackupV2 {
   diario: Record<string, DiaRegistro>;
   comidas?: Record<string, DiaComidas>;
   domingos?: Record<string, Domingo>;
+  alimentos?: Alimento[];
 }

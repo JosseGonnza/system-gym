@@ -1,6 +1,7 @@
 import { del, get, set } from 'idb-keyval';
 import type { DiaComidas } from './comidas';
 import type { Domingo } from './seguimiento';
+import type { Alimento } from './alimentos';
 import type { BackupV1, BackupV2, Config, DiaDef, DiaRegistro, Ejercicio, EjercicioDef, Mediciones, PerfilId, Rutina, Sesion } from './types';
 import { CATALOGO, CONFIG_INICIAL, CONFIG_JEIK, CONFIG_YASMINA, RUTINA_1, RUTINA_JEIK, RUTINA_JOSE, RUTINA_YASMINA } from './seed';
 import { esPerfilValido, PERFIL_POR_DEFECTO } from './perfiles';
@@ -9,7 +10,7 @@ import { esCardio } from './cardio';
 // Claves globales (compartidas entre perfiles).
 const G = { perfilActivo: 'perfilActivo', catalogo: 'catalogo' } as const;
 // Nombres de los datos que viven POR perfil → se guardan con prefijo `${perfil}:`.
-const PROPIOS = ['config', 'rutinas', 'sesiones', 'mediciones', 'diario', 'comidas', 'domingos'] as const;
+const PROPIOS = ['config', 'rutinas', 'sesiones', 'mediciones', 'diario', 'comidas', 'domingos', 'alimentos'] as const;
 
 // Datos sembrados por perfil (config + rutina inicial). El catálogo es compartido.
 const SEED: Record<PerfilId, { config: Config; rutina: Rutina }> = {
@@ -166,6 +167,9 @@ export async function anotarMedida(tipo: 'peso' | 'cintura', fecha: string, valo
   return m;
 }
 
+export const getAlimentos = async (): Promise<Alimento[]> => (await get(pk('alimentos'))) ?? [];
+export const setAlimentos = (a: Alimento[]) => set(pk('alimentos'), a);
+
 export const getDomingos = async (): Promise<Record<string, Domingo>> => (await get(pk('domingos'))) ?? {};
 
 export async function patchDomingo(fecha: string, cambio: Partial<Domingo>): Promise<Domingo> {
@@ -248,7 +252,7 @@ export function formatObjetivo(e: EjercicioDef): string {
 // La copia tal cual, sin marcar la fecha de export: el domingo la prepara al
 // pintar para compartirla en el mismo toque.
 export async function leerBackup(): Promise<BackupV2> {
-  const [config, catalogo, rutinas, sesiones, mediciones, diario, comidas, domingos] = await Promise.all([
+  const [config, catalogo, rutinas, sesiones, mediciones, diario, comidas, domingos, alimentos] = await Promise.all([
     getConfig(),
     getCatalogo(),
     getRutinas(),
@@ -257,8 +261,9 @@ export async function leerBackup(): Promise<BackupV2> {
     getDiario(),
     getComidas(),
     getDomingos(),
+    getAlimentos(),
   ]);
-  return { version: 2, app: 'gym', exportadoISO: new Date().toISOString(), perfil: perfilActivo, config, catalogo, rutinas, sesiones, mediciones, diario, comidas, domingos };
+  return { version: 2, app: 'gym', exportadoISO: new Date().toISOString(), perfil: perfilActivo, config, catalogo, rutinas, sesiones, mediciones, diario, comidas, domingos, alimentos };
 }
 
 export async function exportarBackup(): Promise<BackupV2> {
@@ -289,5 +294,7 @@ export async function importarBackup(data: unknown): Promise<void> {
     set(pk('diario'), b.diario ?? {}),
     set(pk('comidas'), ('comidas' in b && b.comidas) || {}),
     set(pk('domingos'), ('domingos' in b && b.domingos) || {}),
+    // Un backup de antes de los alimentos no trae la clave: se quedan los que hay.
+    'alimentos' in b && Array.isArray(b.alimentos) ? setAlimentos(b.alimentos) : null,
   ]);
 }
