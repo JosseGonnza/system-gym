@@ -4,6 +4,7 @@
 import { getComidas, hoyISO, patchComidas } from './db';
 import { boton, el } from './dom';
 import { fmtFecha } from './plan-jeik';
+import { perfil } from './perfiles';
 import {
   CARTA,
   COMIDAS,
@@ -352,6 +353,12 @@ export async function dietaCasa(root: HTMLElement, yo: Persona, gm = false): Pro
       );
     } else {
       card.append(el('p', 'text-xs text-mut', 'Nada apuntado. Aquí va lo que comas fuera de los platos: la barrita al salir del gym, una caña, algo fuera de casa.'));
+    }
+    // Pesar (#42) solo en el perfil que lo tiene; el módulo ni se descarga en el resto.
+    if (perfil(yo).alimentos) {
+      const hueco = el('div');
+      card.append(hueco);
+      void import('./vista-alimentos').then(({ pesarAlimentos }) => hueco.replaceWith(pesarAlimentos(poner)));
     }
     card.append(
       el(
