@@ -6,6 +6,7 @@ import {
   PLATOS,
   PRODUCTOS,
   alMes,
+  atajosDe,
   cantidad,
   consumo,
   costeSemana,
@@ -222,5 +223,18 @@ describe('compra', () => {
     expect(c.jose + c.yasmina).toBeGreaterThan(60);
     expect(c.jose + c.yasmina).toBeLessThan(85);
     expect(alMes(70)).toBeCloseTo(304.17, 1);
+  });
+});
+
+describe('atajos de Fuera de lista', () => {
+  it('Jose tiene los suyos: batido, barrita, creatina, yogur y plátano', () => {
+    const a = atajosDe('jose');
+    expect(a.map((x) => x.t)).toEqual(['Batido Evowhey con leche', 'Barrita de proteína', 'Creatina 5 g', 'Yogur de proteína', 'Plátano']);
+    expect(a[0]).toMatchObject({ kcal: 273, p: 30 });
+    expect(a[2]).toMatchObject({ kcal: 0, p: 0 });
+  });
+
+  it('Yasmina sigue con los de la carta', () => {
+    expect(atajosDe('yasmina')).toEqual(CARTA.atajos);
   });
 });
