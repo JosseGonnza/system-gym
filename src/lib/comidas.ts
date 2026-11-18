@@ -12,10 +12,20 @@ export type RegComida =
   | { tipo: 'otra'; texto: string }
   | { tipo: 'salto' };
 
+// Lo pesado con la lista de alimentos (#42): qué, cuántos gramos y si se pesó hecho.
+export interface Pesada {
+  id: string;
+  g: number;
+  hecho?: true;
+}
+
 export interface Snack {
   t: string;
   kcal?: number;
   p?: number;
+  hc?: number;
+  grasa?: number;
+  items?: Pesada[];
 }
 
 // Dieta de casa (lib/casa): `hecho` marca las comidas del plan, `snack` es lo
@@ -44,7 +54,7 @@ export const BLOQUES: Bloque[] = [
 export const OBJETIVO_DIA = { kcal: 2300, p: 150 };
 export const SNACK_DIA = { kcal: 400, p: 20 };
 
-export const SNACKS: Required<Snack>[] = [
+export const SNACKS: Required<Pick<Snack, 't' | 'kcal' | 'p'>>[] = [
   { t: 'Un plátano o una manzana', kcal: 90, p: 1 },
   { t: 'Dos yogures 0 %', kcal: 100, p: 10 },
   { t: 'Pavo en lonchas y una manzana', kcal: 150, p: 14 },
