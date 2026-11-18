@@ -1,0 +1,327 @@
+---
+// Centro de datos para el PC (#41). NO usa el Layout: el Layout manda al
+// selector de perfil si el navegador no tiene perfil guardado (el del PC no lo
+// tiene) y trae la barra de pestañas y el manifest de la app del móvil.
+import '@fontsource-variable/inter-tight';
+import '@fontsource-variable/inter';
+import '@fontsource-variable/jetbrains-mono';
+import '../styles/datos.css';
+import { COLUMNAS } from '../lib/tabla';
+
+const PISTA = { fecha: 'aaaa-mm', num: '>8', texto: 'contiene…', bool: 'sí / no' } as const;
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <meta name="theme-color" content="#000000" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" href="/favicon-96x96.png" type="image/png" sizes="96x96" />
+    <title>Centro de datos · GYM</title>
+  </head>
+  <body>
+    <div class="fondo" aria-hidden="true">
+      <div class="haz"></div>
+      <svg class="halo" viewBox="0 0 300 300"><circle cx="150" cy="150" r="120"></circle><circle cx="150" cy="150" r="134"></circle></svg>
+    </div>
+
+    <header class="top">
+      <div class="marca">
+        <svg class="marca-aro" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="5.5"></circle></svg>
+        <div>
+          <p class="ceja">System GYM · Jose</p>
+          <h1>Centro de datos</h1>
+        </div>
+      </div>
+      <dl class="meta" id="meta" hidden>
+        <div><dt>Backup</dt><dd id="m-backup"></dd></div>
+        <div><dt>Sesiones</dt><dd id="m-sesiones"></dd></div>
+        <div><dt>Desde</dt><dd id="m-rango"></dd></div>
+      </dl>
+      <div class="acciones">
+        <button type="button" class="btn btn-fantasma" id="cambiar" hidden>Cargar otro backup</button>
+        <button type="button" class="btn btn-marfil" id="csv" hidden>Exportar CSV</button>
+      </div>
+      <input type="file" id="archivo" accept="application/json,.json" hidden />
+    </header>
+
+    <section class="vacio" id="vacio">
+      <div class="drop">
+        <svg class="drop-aro" viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="48"></circle><circle cx="60" cy="60" r="56"></circle></svg>
+        <h2>Arrastra aquí tu backup</h2>
+        <p>El <code>gym-backup-AAAA-MM-DD.json</code> que exportas desde Ajustes. Se queda en este navegador: no se sube a ningún sitio.</p>
+        <button type="button" class="btn btn-marfil" id="elegir">Elegir archivo</button>
+        <p class="error" id="error" role="alert"></p>
+      </div>
+    </section>
+
+    <main class="panel" id="panel" hidden>
+      <div class="kpis" id="kpis">
+        <div class="kpi"><span class="kpi-t">Series</span><b id="k-series"></b></div>
+        <div class="kpi"><span class="kpi-t">Sesiones</span><b id="k-sesiones"></b></div>
+        <div class="kpi"><span class="kpi-t">Reps</span><b id="k-reps"></b></div>
+        <div class="kpi"><span class="kpi-t">Tonelaje</span><b id="k-ton"></b><small>kg</small></div>
+        <div class="kpi"><span class="kpi-t">Mejor 1RM est.</span><b id="k-1rm"></b><small>kg</small></div>
+        <div class="kpi"><span class="kpi-t">Al fallo</span><b id="k-fallo"></b><small>%</small></div>
+      </div>
+
+      <div class="barra">
+        <h2>Series</h2>
+        <span class="cuenta" id="cuenta"></span>
+        <button type="button" class="btn btn-mini" id="limpiar" hidden>Quitar filtros</button>
+        <details class="ayuda">
+          <summary>Cómo filtrar</summary>
+          <div class="ayuda-caja">
+            <p><b>Texto</b>: contiene, sin tildes ni mayúsculas. <code>=pecho</code> exacto · <code>!fallo</code> excluye.</p>
+            <p><b>Números</b>: <code>8</code> · <code>&gt;=60</code> · <code>&lt;10</code> · <code>!0</code> · rango <code>60..80</code>. Coma o punto decimal.</p>
+            <p><b>Fechas</b>: <code>2026-11</code> (el mes) · <code>&gt;=2026-10-01</code> · <code>2026-09-01..2026-09-30</code>.</p>
+            <p><b>Molestia</b>: <code>sí</code> / <code>no</code>. <kbd>Esc</kbd> borra el filtro de la columna.</p>
+            <p><b>Kg real</b> = lo que mueves: barra + discos, o tu peso ± lastre. En mancuernas, por mano. El 1RM estimado (Epley, hasta 12 reps) y el tonelaje salen del kg real.</p>
+            <p>Las series que quedaron sin marcar en la app no aparecen.</p>
+          </div>
+        </details>
+      </div>
+
+      <div class="tabla-caja">
+        <table class="tabla">
+          <thead>
+            <tr class="cab">
+              {
+                COLUMNAS.map((c) => (
+                  <th data-key={c.key} data-tipo={c.tipo} title={c.ayuda}>
+                    <button type="button">
+                      {c.titulo}
+                      <i class="flecha" aria-hidden="true" />
+                    </button>
+                  </th>
+                ))
+              }
+            </tr>
+            <tr class="filtros">
+              {
+                COLUMNAS.map((c) => (
+                  <th data-tipo={c.tipo}>
+                    <input
+                      data-key={c.key}
+                      list={c.tipo === 'texto' ? `dl-${c.key}` : undefined}
+                      placeholder={PISTA[c.tipo]}
+                      aria-label={`Filtrar ${c.titulo}`}
+                      size={4}
+                      autocomplete="off"
+                      spellcheck="false"
+                    />
+                  </th>
+                ))
+              }
+            </tr>
+          </thead>
+          <tbody id="cuerpo"></tbody>
+        </table>
+        <p class="nada" id="nada" hidden>Ninguna serie cumple los filtros.</p>
+      </div>
+      <div id="listas" hidden></div>
+    </main>
+
+    <div class="soltar" id="soltar" aria-hidden="true"><p>Suelta para cargar</p></div>
+
+    <script>
+      import { createStore, get, set } from 'idb-keyval';
+      import { filasSeries, validarBackup, type FilaSerie } from '../lib/datos';
+      import { COLUMNAS, aCSV, filtrar, ordenar, resumen, type Clave, type Columna } from '../lib/tabla';
+      import type { BackupV2 } from '../lib/types';
+
+      const almacen = createStore('gym-datos', 'backup');
+      const $ = <T extends HTMLElement = HTMLElement>(s: string) => document.querySelector<T>(s)!;
+
+      let filas: FilaSerie[] = [];
+      let vista: FilaSerie[] = [];
+      const filtros: Partial<Record<Clave, string>> = {};
+      let orden: { key: Clave; dir: 'asc' | 'desc' } = { key: 'fecha', dir: 'desc' };
+
+      const fmt = (n: number, dec = 2) => n.toLocaleString('es-ES', { maximumFractionDigits: dec });
+      const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
+      const fechaCorta = (iso: string) => new Date(iso + 'T12:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: '2-digit' });
+
+      function celda(f: FilaSerie, c: Columna): string {
+        const v = f[c.key];
+        if (v == null || v === '') return `<td class="v"></td>`;
+        if (c.key === 'estado') return `<td><span class="estado e-${v}">${v}</span></td>`;
+        if (c.tipo === 'bool') return v ? `<td class="si">sí</td>` : `<td class="v"></td>`;
+        if (c.tipo === 'num') return `<td class="num${c.key === 'e1rm' ? ' oro' : ''}">${fmt(v as number, c.dec)}</td>`;
+        if (c.tipo === 'fecha') return `<td class="mono">${v}</td>`;
+        if (c.key === 'rutina') return `<td class="largo" title="${esc(String(v))}">${esc(String(v))}</td>`;
+        return `<td>${esc(String(v))}</td>`;
+      }
+
+      function pintar() {
+        vista = ordenar(filtrar(filas, filtros), orden.key, orden.dir);
+        let previa = '';
+        $('#cuerpo').innerHTML = vista
+          .map((f) => {
+            const corte = f.sesionId !== previa;
+            previa = f.sesionId;
+            return `<tr${corte ? ' class="corte"' : ''}>${COLUMNAS.map((c) => celda(f, c)).join('')}</tr>`;
+          })
+          .join('');
+        $('#nada').hidden = vista.length > 0;
+
+        const r = resumen(vista);
+        $('#k-series').textContent = fmt(r.series, 0);
+        $('#k-sesiones').textContent = fmt(r.sesiones, 0);
+        $('#k-reps').textContent = fmt(r.reps, 0);
+        $('#k-ton').textContent = fmt(r.tonelaje, 0);
+        $('#k-1rm').textContent = r.e1rmMax == null ? '—' : fmt(r.e1rmMax, 1);
+        $('#k-fallo').textContent = fmt(r.pctFallo, 1);
+
+        const activos = Object.values(filtros).some((e) => e?.trim());
+        $('#cuenta').textContent = activos ? `${fmt(vista.length, 0)} de ${fmt(filas.length, 0)}` : `${fmt(filas.length, 0)} en total`;
+        $('#limpiar').hidden = !activos;
+        document.querySelectorAll<HTMLElement>('tr.cab th').forEach((th) => {
+          const k = th.dataset.key;
+          th.setAttribute('aria-sort', k === orden.key ? (orden.dir === 'asc' ? 'ascending' : 'descending') : 'none');
+        });
+      }
+
+      function listas() {
+        const col = new Intl.Collator('es', { numeric: true });
+        $('#listas').innerHTML = COLUMNAS.filter((c) => c.tipo === 'texto')
+          .map((c) => {
+            const vals = [...new Set(filas.map((f) => String(f[c.key] ?? '')).filter(Boolean))].sort(col.compare);
+            return `<datalist id="dl-${c.key}">${vals.map((v) => `<option value="${esc(v)}"></option>`).join('')}</datalist>`;
+          })
+          .join('');
+      }
+
+      function mostrar(b: BackupV2) {
+        filas = filasSeries(b);
+        const exp = new Date(b.exportadoISO);
+        $('#m-backup').textContent = `${exp.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })} · ${exp.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`;
+        $('#m-sesiones').textContent = fmt(new Set(filas.map((f) => f.sesionId)).size, 0);
+        $('#m-rango').textContent = filas.length ? `${fechaCorta(filas[0].fecha)} → ${fechaCorta(filas[filas.length - 1].fecha)}` : '—';
+        for (const id of ['#meta', '#cambiar', '#csv']) $(id).hidden = false;
+        $('#vacio').hidden = true;
+        $('#panel').hidden = false;
+        $('#error').textContent = '';
+        listas();
+        pintar();
+      }
+
+      async function cargar(texto: string, guardar: boolean) {
+        let json: unknown;
+        try {
+          json = JSON.parse(texto);
+        } catch {
+          $('#error').textContent = 'No se puede leer: el archivo no es un JSON válido.';
+          return mostrarVacio();
+        }
+        const r = validarBackup(json);
+        if (!r.ok) {
+          $('#error').textContent = r.error;
+          return mostrarVacio();
+        }
+        if (guardar) {
+          try {
+            await set('ultimo', texto, almacen);
+          } catch {}
+        }
+        mostrar(r.backup);
+      }
+
+      function mostrarVacio() {
+        if (filas.length) {
+          alert($('#error').textContent);
+          return;
+        }
+        $('#vacio').hidden = false;
+        $('#panel').hidden = true;
+      }
+
+      const leerArchivo = async (f: File | undefined) => {
+        if (f) await cargar(await f.text(), true);
+      };
+
+      $('#elegir').addEventListener('click', () => $<HTMLInputElement>('#archivo').click());
+      $('#cambiar').addEventListener('click', () => $<HTMLInputElement>('#archivo').click());
+      $<HTMLInputElement>('#archivo').addEventListener('change', async (e) => {
+        const input = e.currentTarget as HTMLInputElement;
+        await leerArchivo(input.files?.[0]);
+        input.value = '';
+      });
+
+      let arrastres = 0;
+      const soltar = $('#soltar');
+      addEventListener('dragenter', (e) => {
+        if (!e.dataTransfer?.types.includes('Files')) return;
+        arrastres++;
+        soltar.classList.add('on');
+      });
+      addEventListener('dragleave', () => {
+        if (--arrastres <= 0) {
+          arrastres = 0;
+          soltar.classList.remove('on');
+        }
+      });
+      addEventListener('dragover', (e) => e.preventDefault());
+      addEventListener('drop', (e) => {
+        e.preventDefault();
+        arrastres = 0;
+        soltar.classList.remove('on');
+        leerArchivo(e.dataTransfer?.files[0]);
+      });
+
+      document.querySelectorAll<HTMLButtonElement>('tr.cab th button').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const th = btn.parentElement!;
+          const key = th.dataset.key as Clave;
+          orden =
+            orden.key === key
+              ? { key, dir: orden.dir === 'asc' ? 'desc' : 'asc' }
+              : { key, dir: th.dataset.tipo === 'texto' ? 'asc' : 'desc' };
+          pintar();
+        });
+      });
+
+      let espera = 0;
+      document.querySelectorAll<HTMLInputElement>('tr.filtros input').forEach((inp) => {
+        inp.addEventListener('input', () => {
+          filtros[inp.dataset.key as Clave] = inp.value;
+          clearTimeout(espera);
+          espera = window.setTimeout(pintar, 120);
+        });
+        inp.addEventListener('keydown', (e) => {
+          if (e.key !== 'Escape' || !inp.value) return;
+          inp.value = '';
+          filtros[inp.dataset.key as Clave] = '';
+          pintar();
+        });
+      });
+
+      $('#limpiar').addEventListener('click', () => {
+        document.querySelectorAll<HTMLInputElement>('tr.filtros input').forEach((i) => (i.value = ''));
+        for (const k of Object.keys(filtros)) delete filtros[k as Clave];
+        pintar();
+      });
+
+      $('#csv').addEventListener('click', () => {
+        const blob = new Blob(['﻿' + aCSV(vista, COLUMNAS)], { type: 'text/csv;charset=utf-8' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        const hoy = new Date().toISOString().slice(0, 10);
+        a.download = `gym-series-${hoy}${vista.length < filas.length ? '-filtrado' : ''}.csv`;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+      });
+
+      (async () => {
+        let guardado: string | undefined;
+        try {
+          guardado = await get('ultimo', almacen);
+        } catch {}
+        if (guardado) await cargar(guardado, false);
+      })();
+    </script>
+  </body>
+</html>
