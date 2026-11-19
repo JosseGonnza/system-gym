@@ -3045,3 +3045,424 @@ html[data-perfil='yasmina'] :is(.btn, .btn-2) .has-trazo .ico-trazo-wrap {
   background: var(--color-surface2);
   color: var(--color-ink);
 }
+
+
+/* Sesión de Yasmina con ✓ / ✗ por serie: la serie en cursiva y botones redondos. */
+html[data-perfil='yasmina'] .ser-n {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--oro-hi);
+}
+
+html[data-perfil='yasmina'] .ser-fila {
+  padding: 10px 12px;
+  border-radius: 16px;
+  border: 1px solid rgb(207 174 102 / 0.18);
+  background: rgb(10 17 13 / 0.4);
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+html[data-perfil='yasmina'] .ser-fila.ser-completada {
+  border-color: rgb(169 196 143 / 0.45);
+  background: rgb(169 196 143 / 0.1);
+}
+
+html[data-perfil='yasmina'] .ser-fila.ser-corta {
+  border-color: rgb(238 154 95 / 0.45);
+  background: rgb(217 115 59 / 0.1);
+}
+
+html[data-perfil='yasmina'] .ser-fila input {
+  border-color: transparent;
+  background: rgb(10 17 13 / 0.35);
+  font-size: 17px;
+  font-weight: 800;
+}
+
+html[data-perfil='yasmina'] .ser-est {
+  width: 46px;
+  height: 46px;
+  border-radius: 999px;
+  border: 1.5px solid rgb(207 174 102 / 0.3);
+  background: transparent;
+  font-size: 18px;
+}
+
+html[data-perfil='yasmina'] .ser-est.ser-completada {
+  color: #a9c48f;
+}
+
+html[data-perfil='yasmina'] .ser-est.ser-corta {
+  color: var(--cobre-hi);
+}
+
+html[data-perfil='yasmina'] .ser-est.ser-completada.ser-on {
+  border-color: #a9c48f;
+  background: #a9c48f;
+  color: #0a110d;
+}
+
+html[data-perfil='yasmina'] .ser-est.ser-corta.ser-on {
+  border-color: var(--cobre-hi);
+  background: var(--cobre-hi);
+  color: #1b0f08;
+}
+
+/* La tarjeta del ejercicio con ✓ / ✗ vuelve a ser tarjeta, como en la maqueta. */
+html[data-perfil='yasmina'] body.gm-en-sesion #tarjeta > .card.ser-carta {
+  padding: 20px 16px 16px;
+  border-radius: 22px;
+  border: 1px solid rgb(207 174 102 / 0.3);
+  background: linear-gradient(170deg, rgb(28 42 34 / 0.85), rgb(19 30 24 / 0.72));
+  box-shadow: 0 22px 50px -24px #000;
+}
+
+html[data-perfil='yasmina'] .ej-h {
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.05;
+}
+
+html[data-perfil='yasmina'] .ej-chip {
+  display: block;
+  margin-top: 6px;
+  padding: 0;
+  background: none;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-mut);
+}
+
+html[data-perfil='yasmina'] .ej-ultima {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgb(217 115 59 / 0.3);
+  background: rgb(217 115 59 / 0.12);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--cobre-hi);
+}
+
+html[data-perfil='yasmina'] .ser-fila input {
+  width: 3.4em;
+  padding: 4px 2px;
+  border: 0;
+  border-bottom: 1px dashed transparent;
+  border-radius: 0;
+  background: transparent;
+  text-align: right;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--color-ink);
+}
+
+html[data-perfil='yasmina'] .ser-fila input:focus {
+  outline: none;
+  border-bottom-color: var(--cobre-hi);
+}
+
+html[data-perfil='yasmina'] .ser-fila input[data-reps] {
+  text-align: left;
+}
+
+html[data-perfil='yasmina'] .ser-u {
+  margin-left: -2px;
+  font-weight: 700;
+}
+
+html[data-perfil='yasmina'] .ej-pie {
+  border-top-color: var(--ln);
+}
+
+html[data-perfil='yasmina'] .ej-pie > button:first-child {
+  border-width: 1px;
+  border-radius: 999px;
+  padding: 10px 18px;
+}
+
+html[data-perfil='yasmina'] .ej-rest {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* ── Sesión de Yasmina con ✓ / ✗ (la maqueta «Sesión · por serie») ── */
+.gs-avance {
+  display: flex;
+  gap: 4px;
+  width: 100%;
+}
+
+.gs-tramo {
+  flex: 1;
+  height: 14px;
+  padding: 5px 0;
+  background: none;
+  border: 0;
+}
+
+.gs-tramo::before {
+  content: '';
+  display: block;
+  height: 3px;
+  border-radius: 2px;
+  background: rgb(207 174 102 / 0.2);
+}
+
+.gs-tramo-llena::before {
+  background: var(--oro);
+}
+
+.gs-tramo-actual::before {
+  background: var(--cobre-hi);
+}
+
+.gs-h {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.02;
+  text-wrap: balance;
+}
+
+.gs-sub {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--color-mut);
+}
+
+.gs-ultima {
+  margin: 14px 0 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgb(217 115 59 / 0.3);
+  background: rgb(217 115 59 / 0.12);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--cobre-hi);
+}
+
+.gs-aviso,
+.gs-nota {
+  margin: 10px 0 0;
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--color-mut);
+}
+
+.gs-aviso {
+  color: var(--color-warn);
+}
+
+.gs-series {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.gs-fila {
+  padding: 10px 12px;
+  border-radius: 16px;
+  border: 1px solid rgb(207 174 102 / 0.18);
+  background: rgb(10 17 13 / 0.4);
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.gs-fila.gs-completada {
+  border-color: rgb(169 196 143 / 0.45);
+  background: rgb(169 196 143 / 0.1);
+}
+
+.gs-fila.gs-corta {
+  border-color: rgb(238 154 95 / 0.45);
+  background: rgb(217 115 59 / 0.1);
+}
+
+.gs-linea {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.gs-n {
+  width: 26px;
+  flex-shrink: 0;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--oro-hi);
+}
+
+.gs-dato {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+  font-size: 17px;
+}
+
+.gs-dato b {
+  font-weight: 800;
+}
+
+.gs-dato small {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-mut);
+  white-space: pre;
+}
+
+.gs-peso {
+  width: 3.2em;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px dashed transparent;
+  background: transparent;
+  font: inherit;
+  font-weight: 800;
+  color: var(--color-ink);
+  text-align: right;
+}
+
+.gs-peso:focus {
+  outline: none;
+  border-bottom-color: var(--cobre-hi);
+}
+
+.gs-est {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 1.5px solid rgb(207 174 102 / 0.3);
+  background: transparent;
+  transition: transform 0.15s ease, background-color 0.2s ease;
+}
+
+.gs-est:active {
+  transform: scale(0.92);
+}
+
+.gs-si {
+  color: #a9c48f;
+}
+
+.gs-no {
+  color: var(--cobre-hi);
+}
+
+.gs-si.gs-on {
+  border-color: #a9c48f;
+  background: #a9c48f;
+  color: #0a110d;
+}
+
+.gs-no.gs-on {
+  border-color: var(--cobre-hi);
+  background: var(--cobre-hi);
+  color: #1b0f08;
+}
+
+.gs-quedaste {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0 2px 36px;
+}
+
+.gs-quedaste span {
+  flex: 1;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 17px;
+  color: #d9d1bd;
+}
+
+.gs-quedaste b {
+  min-width: 26px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--cobre-hi);
+}
+
+.gs-paso {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid rgb(207 174 102 / 0.35);
+  background: transparent;
+  font-size: 20px;
+  color: var(--color-ink);
+}
+
+.gs-botones {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.gs-botones > button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 0;
+  padding: 12px;
+  border-radius: 999px;
+  border: 1px solid rgb(207 174 102 / 0.3);
+  background: transparent;
+  font-size: 14px;
+  font-weight: 700;
+  color: #d9d1bd;
+}
+
+.gs-botones > button[aria-pressed] {
+  border-color: rgb(217 96 74 / 0.4);
+  color: #e88f7c;
+}
+
+.gs-botones > button[aria-pressed='true'] {
+  background: var(--color-bad);
+  color: #0a110d;
+}
+
+.gs-botones:has(> button:only-child) {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.gs-frase {
+  margin: 16px 0 0;
+  text-align: center;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 18px;
+  color: #d9d1bd;
+}
+
+.gs-saltar {
+  display: block;
+  margin: 8px auto 0;
+  background: none;
+  border: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-mut);
+  text-decoration: underline;
+}
+
+.gs-ultima b {
+  font-weight: 800;
+  color: var(--oro-hi);
+}

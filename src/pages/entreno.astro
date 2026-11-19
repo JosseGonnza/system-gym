@@ -421,8 +421,9 @@ import Ico from '../components/Ico.astro';
     // de "Anterior") y el siguiente con su nombre.
     if (gm) {
       const hecho = (g: EjercicioDef[]) => g.every((e) => regDe(e).sensacion || regDe(e).series.every((s) => s.estado !== 'pendiente'));
+      const avance = yo.porSerie ? gm.barraAvance : gm.lunasAvance;
       elP.replaceChildren(
-        gm.lunasAvance(
+        avance(
           gs.map((g, i) => (i === cardIdx ? 'actual' : hecho(g) ? 'llena' : 'vacia')),
           gs.map((g) => g[0].nombre),
           (i) => {
@@ -431,7 +432,8 @@ import Ico from '../components/Ico.astro';
           },
         ),
       );
-      if (cardIdx < gs.length - 1) $('btn-next').textContent = `Siguiente · ${gs[cardIdx + 1][0].nombre}`;
+      if (cardIdx < gs.length - 1) $('btn-next').textContent = yo.porSerie ? 'Siguiente hechizo ›' : `Siguiente · ${gs[cardIdx + 1][0].nombre}`;
+      if (yo.porSerie) $('gm-cap').textContent = `Capítulo ${gm.capitulos(sesiones) + 1} · hechizo ${cardIdx + 1} de ${gs.length}`;
     }
   }
 
@@ -502,9 +504,24 @@ import Ico from '../components/Ico.astro';
     }
   }
 
+  // Con ✓ / ✗ (porSerie), ✗ es «no llegó»: deja una rep menos del objetivo y
+  // el campo de reps listo para escribir las que fueron.
+  let enfocarReps: string | null = null;
   function marcar(e: EjercicioDef, i: number, estado: EstadoSerie) {
     const s = regDe(e).series[i];
-    registrar(e, i, s.estado === estado ? 'pendiente' : estado);
+    const nuevo = s.estado === estado ? 'pendiente' : estado;
+    if (yo.porSerie && nuevo === 'corta') {
+      const obj = sugerir(e, historialDeRanura(sesiones, e.ranuraId), config.incrementoMinimoKg).reps;
+      if (obj != null && (s.reps ?? obj) >= obj) s.reps = Math.max(0, obj - 1);
+      enfocarReps = `${e.ranuraId}:${i}`;
+    }
+    registrar(e, i, nuevo);
+    if (enfocarReps) {
+      const input = document.querySelector<HTMLInputElement>(`[data-reps="${enfocarReps}"]`);
+      enfocarReps = null;
+      input?.focus();
+      input?.select();
+    }
   }
 
   function registrar(e: EjercicioDef, i: number, estado: EstadoSerie) {
@@ -531,10 +548,10 @@ import Ico from '../components/Ico.astro';
     const head = document.createElement('div');
     head.className = 'flex items-start justify-between gap-2';
     const h = document.createElement('h3');
-    h.className = 'text-lg font-extrabold';
+    h.className = 'ej-h text-lg font-extrabold';
     h.textContent = e.nombre;
     const rest = document.createElement('div');
-    rest.className = 'flex items-center gap-1 text-xs font-bold text-mut';
+    rest.className = 'ej-rest flex items-center gap-1 text-xs font-bold text-mut';
     const menos = document.createElement('button');
     menos.textContent = '−';
     const masB = document.createElement('button');
@@ -557,14 +574,23 @@ import Ico from '../components/Ico.astro';
     div.append(head);
 
     const chip = document.createElement('p');
-    chip.className = 'mt-1 inline-block rounded-lg bg-vio/15 px-2 py-1 text-xs font-bold text-vio-hi';
+    chip.className = 'ej-chip mt-1 inline-block rounded-lg bg-vio/15 px-2 py-1 text-xs font-bold text-vio-hi';
     chip.textContent = `${formatObjetivo(e)} · ${sug.texto}`;
     div.append(chip);
+    if (yo.porSerie) {
+      const ult = ultimaVez(e);
+      if (ult) {
+        const p = document.createElement('p');
+        p.className = 'ej-ultima num mt-1.5 text-xs font-semibold text-vio-soft';
+        p.textContent = `La última vez: ${ult}`;
+        div.append(p);
+      }
+    }
 
     if (sug.aviso) {
       const aviso = document.createElement('p');
       aviso.className = 'mt-1.5 text-xs font-semibold text-warn';
-      aviso.textContent = `⚠️ ${sug.aviso}`;
+      aviso.textContent = gm ? sug.aviso : `⚠️ ${sug.aviso}`;
       div.append(aviso);
     }
     if (e.nota) {
@@ -573,7 +599,7 @@ import Ico from '../components/Ico.astro';
       nota.replaceChildren(iconoEl('nota', '💡', 15), `${e.nota}`);
       div.append(nota);
     }
-    if (ej?.agarre) {
+    if (ej?.agarre && !yo.porSerie) {
       const ag = document.createElement('p');
       ag.className = 'mt-1.5 text-xs text-mut';
       ag.textContent = `🤚 Agarre: ${ej.agarre}`;
@@ -596,7 +622,217 @@ import Ico from '../components/Ico.astro';
       play.addEventListener('click', () => empezarCuenta(e, siguiente));
       div.append(play);
     }
+    if (yo.porSerie) {
+      const pie = document.createElement('div');
+      pie.className = 'ej-pie mt-4 flex items-center justify-between gap-3 border-t border-line pt-3';
+      pie.append(botonMolestia(regDe(e)));
+      const saltar = document.createElement('button');
+      saltar.className = 'ml-auto text-sm font-semibold text-mut underline';
+      saltar.textContent = 'Hoy me lo salto';
+      saltar.addEventListener('click', avanzar);
+      pie.append(saltar);
+      div.append(pie);
+    }
     return div;
+  }
+
+  // Yasmina con ✓ / ✗: la tarjeta de la maqueta del Grimorio. Las series en
+  // texto (el peso se cambia tocándolo), ✓ o ✗ a cada una y, con ✗, «¿En cuántas
+  // te quedaste?» con − y +.
+  function bloqueSerieGm(e: EjercicioDef): HTMLElement {
+    const reg = regDe(e);
+    const ej = e.ejercicioId ? catalogoMap.get(e.ejercicioId) : undefined;
+    const sug = sugerir(e, historialDeRanura(sesiones, e.ranuraId), config.incrementoMinimoKg);
+    const porTiempo = e.tipoProgresion === 'tiempo';
+    const rango = porTiempo
+      ? `${e.segObjetivo ?? '?'} s`
+      : Array.isArray(e.repsObjetivo)
+        ? `${e.repsObjetivo[0]}–${e.repsObjetivo[1]}`
+        : String(e.repsObjetivo ?? '');
+    const div = document.createElement('div');
+    div.className = 'gs';
+    const h = document.createElement('h3');
+    h.className = 'gs-h';
+    h.textContent = e.nombre;
+    const sub = document.createElement('p');
+    sub.className = 'gs-sub';
+    sub.textContent = `${e.series} × ${rango}${e.restSeg ? ` · descanso ${e.restSeg} s` : ''}`;
+    div.append(h, sub);
+
+    const ult = ultimaVez(e);
+    // «Repite: 12,5 kg» → «Hoy: repite 12,5 kg», sin dos puntos seguidos.
+    const hoyTxt = sug.texto ? `Hoy: ${sug.texto.replace(/^(\p{L}+):\s*/u, '$1 ').replace(/^\p{Lu}/u, (c) => c.toLowerCase())}` : '';
+    if (ult || hoyTxt) {
+      const p = document.createElement('p');
+      p.className = 'gs-ultima';
+      if (ult) p.append(`La última vez: ${ult}`);
+      if (ult && hoyTxt) p.append(document.createElement('br'));
+      if (hoyTxt) {
+        const b = document.createElement('b');
+        b.textContent = hoyTxt;
+        p.append(b);
+      }
+      div.append(p);
+    }
+    for (const [clase, texto] of [['gs-aviso', sug.aviso], ['gs-nota', e.nota]] as const) {
+      if (!texto) continue;
+      const p = document.createElement('p');
+      p.className = clase;
+      p.textContent = texto;
+      div.append(p);
+    }
+
+    const lista = document.createElement('div');
+    lista.className = 'gs-series';
+    reg.series.forEach((s, i) => lista.append(serieGm(e, ej, s, i, sug.reps)));
+    div.append(lista);
+
+    const siguiente = reg.series.findIndex((s) => s.estado === 'pendiente');
+    if (porTiempo && e.segObjetivo && siguiente >= 0) {
+      const play = document.createElement('button');
+      play.className = 'btn mt-3 py-3';
+      play.textContent = `Serie ${siguiente + 1} · ${fmtCrono(e.segObjetivo)}`;
+      play.addEventListener('click', () => empezarCuenta(e, siguiente));
+      div.append(play);
+    }
+
+    const [tip, panel] = tipEl(e.ejercicioId);
+    const botones = document.createElement('div');
+    botones.className = 'gs-botones';
+    if (tip) botones.append(tip);
+    botones.append(botonMolestia(reg));
+    div.append(botones);
+    if (panel) div.append(panel);
+
+    const todas = reg.series.every((s) => s.estado !== 'pendiente');
+    const frase = document.createElement('p');
+    frase.className = 'gs-frase';
+    frase.textContent = todas ? 'Página escrita. El grimorio guarda cada serie.' : 'Marca cada serie: ✓ si llegaste, ✗ si te quedaste antes.';
+    const saltar = document.createElement('button');
+    saltar.className = 'gs-saltar';
+    saltar.textContent = 'Hoy me lo salto';
+    saltar.addEventListener('click', avanzar);
+    div.append(frase, saltar);
+    return div;
+  }
+
+  function serieGm(e: EjercicioDef, ej: Ejercicio | undefined, s: SerieReg, i: number, objetivo: number | null): HTMLElement {
+    const porTiempo = e.tipoProgresion === 'tiempo';
+    const fila = document.createElement('div');
+    fila.className = `gs-fila gs-${s.estado}`;
+    const linea = document.createElement('div');
+    linea.className = 'gs-linea';
+    const n = document.createElement('span');
+    n.className = 'gs-n';
+    n.textContent = `S${i + 1}`;
+    const dato = document.createElement('span');
+    dato.className = 'gs-dato';
+    const negrita = (t: string) => {
+      const b = document.createElement('b');
+      b.textContent = t;
+      return b;
+    };
+    const chico = (t: string) => {
+      const c = document.createElement('small');
+      c.textContent = t;
+      return c;
+    };
+    if (porTiempo) dato.append(negrita(String(s.segundos ?? e.segObjetivo ?? '—')), chico(' s'));
+    else {
+      if (e.incrementoKg != null) {
+        const peso = document.createElement('input');
+        peso.type = 'number';
+        peso.inputMode = 'decimal';
+        peso.step = 'any';
+        peso.className = 'gs-peso';
+        peso.value = s.peso != null ? String(s.peso) : '';
+        peso.placeholder = '—';
+        peso.setAttribute('aria-label', `Serie ${i + 1}: peso en ${unidadPeso(ej)}`);
+        peso.addEventListener('change', () => {
+          const v = peso.value === '' ? null : Number(peso.value);
+          s.peso = Number.isFinite(v as number) ? v : null;
+          void guardarSesion(sesion!);
+        });
+        dato.append(peso, chico(` ${unidadPeso(ej)} `), chico('× '));
+      } else dato.append(chico('× '));
+      dato.append(negrita(String(s.reps ?? objetivo ?? '—')));
+    }
+    const estado = (id: EstadoSerie, clase: string, etiqueta: string, svg: string) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = `gs-est ${clase}${s.estado === id ? ' gs-on' : ''}`;
+      b.setAttribute('aria-label', `Serie ${i + 1}: ${etiqueta}`);
+      b.setAttribute('aria-pressed', String(s.estado === id));
+      b.innerHTML = svg;
+      b.addEventListener('click', () => marcar(e, i, id));
+      return b;
+    };
+    linea.append(
+      n,
+      dato,
+      estado('completada', 'gs-si', 'Llegué', '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>'),
+      estado('corta', 'gs-no', 'No llegué', '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>'),
+    );
+    fila.append(linea);
+
+    if (s.estado === 'corta') {
+      const valor = () => (porTiempo ? s.segundos : s.reps) ?? 0;
+      const fijar = (v: number) => {
+        if (porTiempo) s.segundos = v;
+        else s.reps = v;
+        void guardarSesion(sesion!);
+        renderCard();
+      };
+      const paso = porTiempo ? 5 : 1;
+      const boton = (txt: string, etiqueta: string, delta: number) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'gs-paso';
+        b.textContent = txt;
+        b.setAttribute('aria-label', etiqueta);
+        b.addEventListener('click', () => fijar(Math.max(0, valor() + delta)));
+        return b;
+      };
+      const quedaste = document.createElement('div');
+      quedaste.className = 'gs-quedaste';
+      const pregunta = document.createElement('span');
+      pregunta.textContent = porTiempo ? '¿Cuánto aguantaste?' : '¿En cuántas te quedaste?';
+      const v = negrita(String(valor()));
+      quedaste.append(pregunta, boton('−', porTiempo ? '5 segundos menos' : 'Una rep menos', -paso), v, boton('+', porTiempo ? '5 segundos más' : 'Una rep más', paso));
+      fila.append(quedaste);
+    }
+    return fila;
+  }
+
+  // «40 kg × 10 · 10 · 9», o serie a serie si cambió el peso.
+  function ultimaVez(e: EjercicioDef): string | null {
+    const p = historialDeRanura(sesiones, e.ranuraId).find((x) => x.series.some((s) => s.estado !== 'pendiente'));
+    if (!p) return null;
+    const hechas = p.series.filter((s) => s.estado !== 'pendiente');
+    const marca = (s: SerieReg) => (s.estado === 'completada' ? '' : '✗');
+    if (e.tipoProgresion === 'tiempo') return hechas.map((s) => `${s.segundos ?? '?'} s${marca(s)}`).join(' · ');
+    const pesos = new Set(hechas.map((s) => s.peso));
+    const reps = (s: SerieReg) => `${s.reps ?? '?'}${marca(s)}`;
+    if (pesos.size === 1) {
+      const [peso] = pesos;
+      return `${peso != null ? `${fmtKg(peso)} kg × ` : ''}${hechas.map(reps).join(' · ')}`;
+    }
+    return hechas.map((s) => `${s.peso != null ? `${fmtKg(s.peso)}×` : ''}${reps(s)}`).join(' · ');
+  }
+
+  function botonMolestia(reg: EjercicioReg): HTMLButtonElement {
+    const molestia = document.createElement('button');
+    molestia.className = `block rounded-xl border-2 px-4 py-2 text-sm font-bold transition active:scale-95 ${
+      reg.molestia ? 'border-bad bg-bad text-bg' : 'border-bad/70 bg-transparent text-bad'
+    }`;
+    molestia.textContent = 'Molestia';
+    molestia.setAttribute('aria-pressed', String(!!reg.molestia));
+    molestia.addEventListener('click', () => {
+      reg.molestia = !reg.molestia;
+      void guardarSesion(sesion!);
+      renderCard();
+    });
+    return molestia;
   }
 
   function tecnicaEl(ejercicioId: string): HTMLElement[] {
@@ -688,10 +924,11 @@ import Ico from '../components/Ico.astro';
 
   function filaSerie(e: EjercicioDef, ej: Ejercicio | undefined, conReal: boolean, s: SerieReg, i: number): HTMLElement {
     const wrap = document.createElement('div');
+    wrap.className = `ser-fila ser-${s.estado}`;
     const fila = document.createElement('div');
     fila.className = 'flex items-center gap-2';
     const num = document.createElement('span');
-    num.className = 'w-6 shrink-0 text-xs font-bold text-mut';
+    num.className = 'ser-n w-6 shrink-0 text-xs font-bold text-mut';
     num.textContent = `S${i + 1}`;
     fila.append(num);
 
@@ -714,13 +951,28 @@ import Ico from '../components/Ico.astro';
       x.className = 'text-xs text-mut';
       x.textContent = '×';
       fila.append(x, inputNum(s.reps ?? null, 'w-16', 'reps', (v) => (s.reps = v)));
+    } else if (yo.porSerie && e.incrementoKg == null) {
+      const inReps = inputNum(s.reps ?? null, 'w-16', 'reps', (v) => (s.reps = v));
+      inReps.dataset.reps = `${e.ranuraId}:${i}`;
+      const lbl = document.createElement('span');
+      lbl.className = 'text-xs text-mut';
+      lbl.textContent = 'reps';
+      fila.append(inReps, lbl);
     } else {
       const inPeso = inputNum(s.peso ?? null, 'w-20', 'kg', (v) => (s.peso = v));
       fila.append(inPeso);
       const x = document.createElement('span');
       x.className = 'text-xs text-mut';
       x.textContent = '×';
-      fila.append(x, inputNum(s.reps ?? null, 'w-16', 'reps', (v) => (s.reps = v)));
+      const inReps = inputNum(s.reps ?? null, 'w-16', 'reps', (v) => (s.reps = v));
+      inReps.dataset.reps = `${e.ranuraId}:${i}`;
+      if (yo.porSerie) {
+        const u = document.createElement('span');
+        u.className = 'ser-u text-xs text-mut';
+        u.textContent = unidadPeso(ej);
+        fila.append(u);
+      }
+      fila.append(x, inReps);
       if (conReal && ej) {
         real = document.createElement('p');
         real.className = 'num ml-8 mt-0.5 text-xs font-semibold text-vio-soft';
@@ -736,14 +988,16 @@ import Ico from '../components/Ico.astro';
 
     const estados = document.createElement('div');
     estados.className = 'ml-auto flex gap-1';
-    const defs: { id: EstadoSerie; icono: string; on: string }[] = [
-      { id: 'completada', icono: '✓', on: 'border-ok bg-ok/20 text-ok' },
-      { id: 'fallo', icono: '🔥', on: 'border-warn bg-warn/20' },
-      { id: 'corta', icono: '✗', on: 'border-bad bg-bad/20 text-bad' },
+    const todos: { id: EstadoSerie; icono: string; on: string; etiqueta: string }[] = [
+      { id: 'completada', icono: '✓', on: 'border-ok bg-ok/20 text-ok', etiqueta: 'Llegué' },
+      { id: 'fallo', icono: '🔥', on: 'border-warn bg-warn/20', etiqueta: 'Al fallo' },
+      { id: 'corta', icono: '✗', on: 'border-bad bg-bad/20 text-bad', etiqueta: 'No llegué' },
     ];
+    const defs = yo.porSerie ? todos.filter((d) => d.id !== 'fallo') : todos;
     for (const d of defs) {
       const b = document.createElement('button');
-      b.className = `h-10 w-10 rounded-xl border text-base font-bold transition active:scale-90 ${
+      if (yo.porSerie) b.setAttribute('aria-label', `Serie ${i + 1}: ${d.etiqueta}`);
+      b.className = `ser-est ser-${d.id}${s.estado === d.id ? ' ser-on' : ''} h-10 w-10 rounded-xl border text-base font-bold transition active:scale-90 ${
         s.estado === d.id ? d.on : 'border-line bg-surface2 text-mut'
       }`;
       b.textContent = d.icono;
@@ -922,17 +1176,8 @@ import Ico from '../components/Ico.astro';
     saltar.addEventListener('click', avanzar);
     div.append(hr, pregunta, caritas);
     if (yo.proximaVez) {
-      const molestia = document.createElement('button');
-      molestia.className = `mt-3 block rounded-xl border-2 px-4 py-2 text-sm font-bold transition active:scale-95 ${
-        reg.molestia ? 'border-bad bg-bad text-bg' : 'border-bad/70 bg-transparent text-bad'
-      }`;
-      molestia.textContent = 'Molestia';
-      molestia.setAttribute('aria-pressed', String(!!reg.molestia));
-      molestia.addEventListener('click', () => {
-        reg.molestia = !reg.molestia;
-        void guardarSesion(sesion!);
-        renderCard();
-      });
+      const molestia = botonMolestia(reg);
+      molestia.classList.add('mt-3');
       div.append(molestia);
     }
     div.append(saltar);
@@ -1282,7 +1527,7 @@ import Ico from '../components/Ico.astro';
     intro.textContent = dia.intro ?? '';
     intro.classList.toggle('hidden', !dia.intro || cardIdx !== 0);
     const card = document.createElement('div');
-    card.className = 'card glow border-vio/30';
+    card.className = `card glow border-vio/30${yo.porSerie ? ' ser-carta' : ''}`;
     cardioVisible = null;
     if (esGrupoCardio(grupo)) {
       card.append(bloqueCardio(grupo));
@@ -1305,7 +1550,7 @@ import Ico from '../components/Ico.astro';
         hr.className = 'my-4 border-line';
         card.append(hr);
       }
-      card.append(sencillo ? bloqueSencillo(e) : bloqueEjercicio(e));
+      card.append(gm && yo.porSerie ? bloqueSerieGm(e) : sencillo && !yo.porSerie ? bloqueSencillo(e) : bloqueEjercicio(e));
     });
     $('tarjeta').replaceChildren(card);
     renderProgreso();
@@ -1615,13 +1860,16 @@ import Ico from '../components/Ico.astro';
   // Modo sencillo: sin sueño ni energía, las notas al final y sin borradores
   // a la vista (si sale a mitad, la sesión la espera igual).
   if (sencillo) {
-    for (const id of ['sesion-datos', 'in-notas', 'link-guardar']) $(id).classList.add('hidden');
+    // Con ✓ / ✗ (porSerie) se queda el recuadro de notas, por si acaso.
+    for (const id of ['sesion-datos', 'in-notas', 'link-guardar']) if (!(yo.porSerie && id === 'in-notas')) $(id).classList.add('hidden');
     $('btn-finalizar').textContent = 'Terminar por hoy';
   }
 
   if (gm) {
     $('gm-top-ses').hidden = false;
     for (const id of ['dlg-borrador-retomar', 'dlg-borrador-descartar']) $(id).textContent = gm.sinGlifo($(id).textContent!);
+    const notas = $('in-notas') as HTMLTextAreaElement;
+    notas.placeholder = gm.sinGlifo(notas.placeholder);
     $('gm-cap').textContent = `Capítulo ${gm.capitulos(sesiones) + 1}`;
     // Salir no borra nada: la sesión se queda esperando, como en el modo sencillo.
     $('gm-salir').addEventListener('click', () => {

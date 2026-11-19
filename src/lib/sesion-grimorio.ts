@@ -52,6 +52,23 @@ export function lunasAvance(estados: EstadoLuna[], nombres: string[], alTocar: (
   return cont;
 }
 
+// Con ✓ / ✗ por serie: el avance como una barra de tramos, uno por ejercicio
+// (cobre los hechos y el de ahora). Cada tramo lleva a su ejercicio.
+export function barraAvance(estados: EstadoLuna[], nombres: string[], alTocar: (i: number) => void): HTMLElement {
+  const cont = document.createElement('div');
+  cont.className = 'gs-avance';
+  estados.forEach((e, i) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = `gs-tramo gs-tramo-${e}`;
+    b.setAttribute('aria-label', `${nombres[i]}${e === 'llena' ? ', hecho' : e === 'actual' ? ', ahora' : ''}`);
+    if (e === 'actual') b.setAttribute('aria-current', 'step');
+    b.addEventListener('click', () => alTocar(i));
+    cont.append(b);
+  });
+  return cont;
+}
+
 // El peso dentro del círculo rúnico, con − y + a los lados. La fila la monta
 // entreno.astro: [botón −, centro (input + unidad), botón +].
 export function vestirCirculo(fila: HTMLElement): void {
