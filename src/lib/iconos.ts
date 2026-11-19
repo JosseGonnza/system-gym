@@ -1,4 +1,4 @@
-import { hayPatron, svgDot } from './iconos-dot';
+import { hayLinea, svgLinea } from './iconos-linea';
 import { hayTrazo, svgTrazo } from './iconos-trazo';
 
 // Símbolo del día. Si la rutina guardada no trae `icono` (rutinas anteriores al
@@ -11,7 +11,7 @@ export function iconoDeDia(dias: { id: string }[], dia: { id: string; icono?: st
   return SIMBOLOS_DIA[(i < 0 ? 0 : i) % SIMBOLOS_DIA.length];
 }
 
-// Devuelve un <span> con las variantes que puede haber: matriz de puntos (Jose),
+// Devuelve un <span> con las variantes que puede haber: línea fina (Jose),
 // trazo (Yasmina, Grimorio) y emoji de reserva. El CSS decide cuál se ve.
 export function iconoEl(id: string | undefined, emoji: string, px = 22): HTMLElement {
   const span = document.createElement('span');
@@ -23,12 +23,12 @@ export function iconoEl(id: string | undefined, emoji: string, px = 22): HTMLEle
     t.innerHTML = svgTrazo(id!, px);
     span.appendChild(t);
   }
-  if (hayPatron(id)) {
-    span.classList.add('has-dot');
-    const dot = document.createElement('span');
-    dot.className = 'ico-dot-wrap';
-    dot.innerHTML = svgDot(id!, px);
-    span.appendChild(dot);
+  if (hayLinea(id)) {
+    span.classList.add('has-linea');
+    const linea = document.createElement('span');
+    linea.className = 'ico-linea-wrap';
+    linea.innerHTML = svgLinea(id!, px);
+    span.appendChild(linea);
   }
   const em = document.createElement('span');
   em.className = 'ico-emoji';

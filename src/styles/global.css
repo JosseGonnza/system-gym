@@ -2589,24 +2589,41 @@ html[data-perfil='yasmina'] .has-tab-line .tab-trazo {
   vertical-align: middle;
 }
 
-.ico-dot-wrap {
+.ico-linea-wrap {
   display: none;
   line-height: 0;
 }
 
 /* En bloque: si el SVG queda como texto en línea, se apoya en la línea base y
    cae unos píxeles por debajo del texto que lleva al lado. */
-.ico-dot {
+.ico-linea {
   display: block;
 }
 
-html[data-perfil='jose'] .has-dot .ico-emoji {
+html[data-perfil='jose'] .has-linea .ico-emoji {
   display: none;
 }
 
-html[data-perfil='jose'] .has-dot .ico-dot-wrap {
+html[data-perfil='jose'] .has-linea .ico-linea-wrap {
   display: flex;
   align-items: center;
+}
+
+/* Emojis sueltos en textos y botones de Jose, cambiados por su icono de línea. */
+.glifo-linea {
+  display: inline-flex;
+  vertical-align: -0.18em;
+  margin-right: 0.4em;
+  line-height: 0;
+}
+
+.glifo-solo {
+  margin-right: 0;
+}
+
+.glifo-linea svg {
+  width: 1.15em;
+  height: 1.15em;
 }
 
 /* Trazo (Grimorio): oro con un halo suave; dentro de un botón, el color del texto. */

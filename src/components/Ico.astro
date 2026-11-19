@@ -1,5 +1,5 @@
 ---
-import { hayPatron, svgDot } from '../lib/iconos-dot';
+import { hayLinea, svgLinea } from '../lib/iconos-linea';
 import { hayTrazo, svgTrazo } from '../lib/iconos-trazo';
 
 interface Props {
@@ -8,12 +8,12 @@ interface Props {
   px?: number;
 }
 const { id, emoji, px = 22 } = Astro.props;
-const dot = hayPatron(id);
+const linea = hayLinea(id);
 const trazo = hayTrazo(id);
 ---
 
-<span class:list={['ico', { 'has-dot': dot, 'has-trazo': trazo }]}>
+<span class:list={['ico', { 'has-linea': linea, 'has-trazo': trazo }]}>
   {trazo && <span class="ico-trazo-wrap" set:html={svgTrazo(id!, px)} />}
-  {dot && <span class="ico-dot-wrap" set:html={svgDot(id!, px)} />}
+  {linea && <span class="ico-linea-wrap" set:html={svgLinea(id!, px)} />}
   <span class="ico-emoji">{emoji}</span>
 </span>

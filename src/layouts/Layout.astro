@@ -138,6 +138,9 @@ const motas = Array.from({ length: 9 }, (_, i) => ({
         const cv = document.querySelector<HTMLCanvasElement>('.fy-aire');
         if (cv) import('../lib/aire-yasmina').then(({ arrancarAire }) => arrancarAire(cv));
       }
+      if (document.documentElement.dataset.perfil === 'jose') {
+        import('../lib/linea-jose').then(({ arrancarLinea }) => arrancarLinea());
+      }
     </script>
   </body>
 </html>
