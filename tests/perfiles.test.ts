@@ -113,7 +113,7 @@ describe('multi-perfil', () => {
     expect(rutinas.map((r) => r.id)).toEqual(['rutina-yasmina', RUTINA_YASMINA.id]);
     const config = await getConfig();
     expect(config.rutinaActivaId).toBe(RUTINA_YASMINA.id);
-    expect(config.entrenosObjetivoSemana).toBe(3);
+    expect(config.entrenosObjetivoSemana).toBe(4);
     expect(config.puntero.ultimoDiaCompletadoId).toBeNull();
     expect(config.macros.kcal).toBe(1825);
     expect(store.get('yasmina:sesiones')).toEqual([{ id: 'agosto' }]);
