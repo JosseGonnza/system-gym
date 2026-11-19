@@ -2366,8 +2366,7 @@ html[data-perfil='jose'] #cuenta-bar {
   .fj-halo,
   .fj-esquirla,
   html[data-perfil='jose'] .card.glow::after,
-  html[data-perfil='jose'] .glow .btn::after,
-  html[data-perfil='jose'] .tab-on .tab-label {
+  html[data-perfil='jose'] .glow .btn::after {
     animation: none;
   }
 
@@ -2494,9 +2493,8 @@ html[data-perfil='jose'] .has-tab-line .tab-line {
   display: inline-block;
 }
 
-/* Nav de Jose: isla de cristal flotante. La pestaña activa es una pastilla
-   marfil con icono y nombre; el resto, solo icono (el nombre sigue en el
-   aria-label del enlace para los lectores de pantalla). */
+/* Nav de Jose: isla de cristal flotante, solo iconos. La pestaña activa es
+   una pastilla marfil, más ancha que el resto. */
 html[data-perfil='jose'] .tabbar {
   left: 50%;
   right: auto;
@@ -2535,36 +2533,76 @@ html[data-perfil='jose'] .tab {
 }
 
 html[data-perfil='jose'] .tab-on {
-  gap: 10px;
-  padding: 0 18px;
+  min-width: 78px;
   color: #0a0a0a;
+}
+
+.tab-pill {
+  display: none;
+}
+
+/* La pastilla marfil va aparte para que, al cambiar de página, se deslice de
+   la pestaña vieja a la nueva por debajo de los iconos (transición del navegador). */
+html[data-perfil='jose'] .tab {
+  isolation: isolate;
+}
+
+html[data-perfil='jose'] .tab-on .tab-pill {
+  display: block;
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: 12px;
   background: var(--marfil);
   box-shadow: inset 0 1px 0 #fff, 0 6px 22px -6px rgb(212 172 90 / 0.7);
+  view-transition-name: jose-pastilla;
+}
+
+html[data-perfil='jose'] .tab:nth-child(1) .tab-ico { view-transition-name: jose-tab-1; }
+html[data-perfil='jose'] .tab:nth-child(2) .tab-ico { view-transition-name: jose-tab-2; }
+html[data-perfil='jose'] .tab:nth-child(3) .tab-ico { view-transition-name: jose-tab-3; }
+html[data-perfil='jose'] .tab:nth-child(4) .tab-ico { view-transition-name: jose-tab-4; }
+
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-group(root) {
+  animation-duration: 0.18s;
+}
+
+::view-transition-group(*) {
+  animation-duration: 0.36s;
+  animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* Al deslizarse, la pastilla pasa por debajo de los iconos que cruza. */
+::view-transition-group(jose-pastilla) {
+  z-index: 1;
+}
+
+::view-transition-group(jose-tab-1),
+::view-transition-group(jose-tab-2),
+::view-transition-group(jose-tab-3),
+::view-transition-group(jose-tab-4) {
+  z-index: 2;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
 }
 
 html[data-perfil='jose'] .tab-on::before {
   display: none;
 }
 
+/* Sin nombres: el de la página ya sale arriba, y sigue en el aria-label. */
 html[data-perfil='jose'] .tab-label {
   display: none;
-  font-family: var(--font-display);
-  font-size: 0.7rem;
-  font-weight: 800;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  overflow: hidden;
-}
-
-html[data-perfil='jose'] .tab-on .tab-label {
-  display: inline-block;
-  animation: mf-etiqueta 0.5s cubic-bezier(0.65, 0, 0.35, 1) both;
-}
-
-@keyframes mf-etiqueta {
-  from { max-width: 0; opacity: 0; }
-  to { max-width: 120px; opacity: 1; }
 }
 
 html[data-perfil='yasmina'] .has-tab-line .tab-emoji {

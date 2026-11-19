@@ -40,6 +40,7 @@ const activo = (href: string) => (href === '/' ? path === '/' : path.startsWith(
             aria-label={t.label}
             class={`tab ${t.id === 'nav-dieta' ? 'tab-dieta' : ''} ${t.id === 'nav-progreso' ? 'tab-progreso' : ''} ${t.jeik ? 'tab-jeik' : 'has-tab-line'} flex flex-col items-center gap-0.5 py-2.5 text-xs font-semibold ${on ? 'tab-on text-vio-hi' : 'text-mut'}`}
           >
+            <span class="tab-pill" aria-hidden="true" />
             <span class="tab-ico text-2xl leading-none">
               {!t.jeik && <span class="tab-line" set:html={LINEA[t.id]} />}
               {!t.jeik && <span class="tab-trazo" set:html={svgTrazo(t.id, 25)} />}

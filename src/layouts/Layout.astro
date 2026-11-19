@@ -68,6 +68,10 @@ const motas = Array.from({ length: 9 }, (_, i) => ({
           if (m) m.setAttribute('content', tc);
         });
         if (!stored && !esSelector) location.replace('/perfil');
+        if (p !== 'jose')
+          addEventListener('pagereveal', function (e) {
+            if (e.viewTransition) e.viewTransition.skipTransition();
+          });
       })();
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
