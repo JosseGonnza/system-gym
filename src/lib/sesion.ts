@@ -69,7 +69,9 @@ export async function buscarBorrador(): Promise<Sesion | undefined> {
 }
 
 // Borradores con +2h sin actividad se finalizan solos (la última serie hace de fin);
-// los borradores de días pasados sin ninguna serie marcada se eliminan.
+// los borradores de días pasados sin ninguna serie marcada se eliminan. Uno
+// caducado sin nada marcado también: el crono de cardio arrancado y cerrado sin
+// querer deja hora de fin y salía como sesión de 1 minuto.
 export async function cerrarBorradoresCaducados(): Promise<void> {
   const sesiones = await getSesiones();
   const hoy = hoyISO();
@@ -80,7 +82,8 @@ export async function cerrarBorradoresCaducados(): Promise<void> {
       continue;
     }
     if (Date.now() - Date.parse(s.finISO) > CADUCIDAD_MS) {
-      await finalizarSesion(s);
+      const algo = s.ejercicios.some((e) => e.series.some((x) => x.estado !== 'pendiente'));
+      await (algo ? finalizarSesion(s) : descartarSesion(s.id));
     }
   }
 }
