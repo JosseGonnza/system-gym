@@ -1,10 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { PATRONES } from '../src/lib/iconos-dot';
 import { LINEA, hayLinea, partirGlifos, svgLinea } from '../src/lib/iconos-linea';
 
 describe('iconos de línea (perfil de Jose)', () => {
-  it('cubre todos los iconos que antes eran de puntos, más los que caían al emoji', () => {
-    const ids = [...Object.keys(PATRONES), 'borrar', 'camara', 'jor-laboratorio', 'jor-ett', 'jor-libre'];
+  it('cubre todos los iconos del perfil de Jose: días, estados, ajustes y jornadas', () => {
+    const ids = [
+      'dia-empuje', 'dia-hombro', 'dia-pierna', 'dia-bombeo', 'dia-espalda', 'dia-coraza', 'dia-alas', 'dia-raices', 'dia-bomba', 'dia-cardio',
+      'sistema', 'descanso', 'record', 'energia', 'sueno', 'nota', 'alarma', 'medidas', 'superserie', 'rest-timer', 'ajustes', 'fallo',
+      'backup', 'import-export', 'perfil', 'previsto', 'cambiar', 'manana', 'aviso', 'hecho',
+      'borrar', 'camara', 'jor-laboratorio', 'jor-ett', 'jor-libre',
+    ];
     expect(ids.filter((id) => !hayLinea(id))).toEqual([]);
   });
 
