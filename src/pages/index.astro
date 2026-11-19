@@ -671,6 +671,8 @@ import Ico from '../components/Ico.astro';
       hecho: hechosHoy.includes(dia.id),
       sugerido: diaSugerido(config, rutina).id === dia.id,
       pesoDe: pesoSugerido,
+      pesoHoy: (e) => sugerir(e, historialDeRanura(sesiones, e.ranuraId), config.incrementoMinimoKg).peso ?? null,
+      porLado: (e) => catalogo.find((x) => x.id === e.ejercicioId)?.entrada === 'porLado',
       sesiones,
       objetivoSemana: config.entrenosObjetivoSemana,
       entrenosMes: mesHistorial(sesiones, diario, ahora.getFullYear(), ahora.getMonth()).entrenos,

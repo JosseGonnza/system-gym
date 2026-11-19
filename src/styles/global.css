@@ -775,6 +775,139 @@ html[data-perfil='yasmina'] .fondo-yasmina {
   color: var(--salvia);
 }
 
+/* Hoy de Yasmina: la tarjeta del día lleva a su página del Grimorio, y debajo
+   lo que la anima (velas, próximo hito, hechizos que se han fortalecido). */
+.gm-hero-enlace {
+  display: block;
+  color: inherit;
+}
+
+.gm-hero-enlace .gm-titulo {
+  flex: 1;
+}
+
+.gm-flecha {
+  font-family: var(--font-display);
+  font-size: 34px;
+  line-height: 1;
+  color: var(--cobre-hi);
+}
+
+.gm-velas {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--ln);
+}
+
+.gm-velas p {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.4;
+  color: #d9d1bd;
+}
+
+.gm-velas-fila {
+  display: flex;
+  flex-shrink: 0;
+  gap: 5px;
+  align-items: flex-end;
+}
+
+.gm-llama {
+  fill: var(--cobre-hi);
+  transform-origin: 7px 9px;
+  animation: gm-llama 2.4s ease-in-out infinite;
+}
+
+@keyframes gm-llama {
+  50% { transform: scale(0.9, 1.08); opacity: 0.85; }
+}
+
+.gm-hito {
+  position: relative;
+  padding: 20px 18px;
+  border-radius: 18px;
+  border: 1px solid rgb(236 211 152 / 0.45);
+  background: linear-gradient(170deg, rgb(236 211 152 / 0.1), rgb(19 30 24 / 0.85) 60%);
+  box-shadow: inset 0 0 0 5px rgb(10 17 13 / 0.6), inset 0 0 0 6px rgb(207 174 102 / 0.25);
+}
+
+.gm-hito > svg {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  color: var(--oro-hi);
+}
+
+.gm-hito-eyebrow {
+  margin: 0;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 600;
+  font-size: 17px;
+  color: var(--cobre-hi);
+}
+
+.gm-hito-h {
+  margin: 6px 0 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 25px;
+  line-height: 1.15;
+  text-wrap: balance;
+}
+
+.gm-hito-sub {
+  margin: 6px 0 0;
+  font-size: 13.5px;
+  color: var(--color-mut);
+}
+
+.gm-fuertes {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.gm-fuerte {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14.5px;
+}
+
+.gm-fuerte > svg {
+  flex-shrink: 0;
+  color: var(--salvia);
+}
+
+.gm-fuerte-n {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gm-fuerte-de {
+  font-size: 12.5px;
+  color: var(--color-mut);
+}
+
+.gm-fuerte b {
+  font-weight: 800;
+  color: var(--oro-hi);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gm-llama {
+    animation: none;
+  }
+}
+
 /* ── Entreno del Grimorio (lib/vista-grimorio.ts) ── */
 .gm-marcadores {
   display: flex;
