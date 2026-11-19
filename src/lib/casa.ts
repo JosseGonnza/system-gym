@@ -287,16 +287,15 @@ export function pedidos(): Record<Semana, ItemPedido[]> {
     return { id, n, usa, eur: n * p.precio };
   };
   const out: Record<Semana, ItemPedido[]> = { A: [], B: [] };
-  const despensa: ItemPedido[] = [];
   for (const id of ids) {
     if (PRODUCTOS[id].fresco) {
       for (const s of ['A', 'B'] as Semana[]) if (semana[s][id]) out[s].push(item(id, semana[s][id]));
     } else {
-      despensa.push(item(id, (semana.A[id] ?? 0) + (semana.B[id] ?? 0)));
+      // Las dos semanas de golpe, en el pedido de la primera que lo usa: repartirlo
+      // por precio dejaba el atún en el B cuando la A ya lo pedía.
+      out[semana.A[id] ? 'A' : 'B'].push(item(id, (semana.A[id] ?? 0) + (semana.B[id] ?? 0)));
     }
   }
-  const suma = (l: ItemPedido[]) => l.reduce((a, x) => a + x.eur, 0);
-  for (const x of despensa.sort((a, b) => b.eur - a.eur)) (suma(out.A) <= suma(out.B) ? out.A : out.B).push(x);
   return out;
 }
 
