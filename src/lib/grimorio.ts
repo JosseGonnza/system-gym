@@ -1,7 +1,7 @@
 // Lógica pura del Grimorio de Yasmina: lo que pintan sus pantallas sin tocar el
 // DOM, para poder probarlo. Spec en la bóveda: 02_LIB/MUSCULO/Yasmina/APP_GRIMORIO.
 
-import type { DiaDef, Rutina, Sesion } from './types';
+import type { DiaDef, EjercicioDef, Rutina, Sesion } from './types';
 
 // ── Fase de la luna ──
 // Una luna nueva conocida (6/1/2000, 18:14 UTC) y el mes sinódico medio. Error
@@ -216,6 +216,36 @@ export function marca(
   }
   if (!puntos.length) return null;
   return { actual: puntos[puntos.length - 1].v, primera: puntos[0], ultimos: puntos.slice(-6).map((p) => p.v) };
+}
+
+// Próximo hito del día: un récord que hoy cae, uno que se iguala o el que está
+// más cerca. Solo ejercicios con peso; los de tiempo no cuentan.
+export interface Hito {
+  tipo: 'record' | 'igual' | 'cerca';
+  nombre: string;
+  kg: number;
+  falta: number;
+}
+
+export function proximoHito(sesiones: Sesion[], dia: DiaDef, sugerido: (e: EjercicioDef) => number | null): Hito | null {
+  const candidatos: Hito[] = [];
+  for (const e of dia.ejercicios) {
+    if (e.tipoProgresion === 'tiempo') continue;
+    const pesos = finalizadas(sesiones).flatMap((s) =>
+      (s.ejercicios.find((x) => x.ranuraId === e.ranuraId)?.series ?? []).filter((x) => x.estado !== 'pendiente').map((x) => x.peso ?? 0),
+    );
+    const record = Math.max(0, ...pesos);
+    const hoy = sugerido(e);
+    if (!record || hoy == null) continue;
+    const falta = Math.round((record - hoy) * 100) / 100;
+    candidatos.push(
+      falta < 0
+        ? { tipo: 'record', nombre: e.nombre, kg: hoy, falta: 0 }
+        : { tipo: falta === 0 ? 'igual' : 'cerca', nombre: e.nombre, kg: record, falta },
+    );
+  }
+  const orden = { record: 0, igual: 1, cerca: 2 };
+  return candidatos.sort((a, b) => orden[a.tipo] - orden[b.tipo] || a.falta - b.falta)[0] ?? null;
 }
 
 // ── Frases ──
