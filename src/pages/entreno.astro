@@ -5,6 +5,7 @@ import Ico from '../components/Ico.astro';
 
 <Layout title="Entreno">
   <section id="vista-grimorio" class="hidden"></section>
+  <section id="vista-rueda" class="hidden"></section>
   <section id="vista-inicio" class="hidden">
     <div class="card glow border-vio/40">
       <p class="eyebrow">Hoy toca</p>
@@ -136,6 +137,7 @@ import Ico from '../components/Ico.astro';
     formatObjetivo,
     getPerfilActivo,
     patchDia,
+    contarDescansos,
   } from '../lib/db';
   import { perfil } from '../lib/perfiles';
   import { mesHistorial } from '../lib/historial';
@@ -193,7 +195,7 @@ import Ico from '../components/Ico.astro';
   const rutinas = await getRutinas();
   const rutina = rutinas.find((r) => r.id === config.rutinaActivaId) ?? rutinas[0];
   const sesiones = await getSesiones();
-  const diario = await getDiario();
+  let diario = await getDiario();
   const hoy = hoyISO();
 
   let sesion: Sesion | null = null;
@@ -270,8 +272,8 @@ import Ico from '../components/Ico.astro';
     return map;
   }
 
-  function mostrarVista(v: 'inicio' | 'sesion' | 'fin' | 'grimorio') {
-    for (const x of ['inicio', 'sesion', 'fin', 'grimorio']) $(`vista-${x}`).classList.toggle('hidden', x !== v);
+  function mostrarVista(v: 'inicio' | 'sesion' | 'fin' | 'grimorio' | 'rueda') {
+    for (const x of ['inicio', 'sesion', 'fin', 'grimorio', 'rueda']) $(`vista-${x}`).classList.toggle('hidden', x !== v);
     if (grimorio) document.body.classList.toggle('gm-en-sesion', v === 'sesion');
   }
 
@@ -307,9 +309,60 @@ import Ico from '../components/Ico.astro';
     mostrarVista('grimorio');
   }
 
+  // ---------- Rueda (Jose) ----------
+  let selRueda = dia.id;
+
+  function pesoTexto(e: EjercicioDef): string {
+    const s = sugerir(e, historialDeRanura(sesiones, e.ranuraId), config.incrementoMinimoKg);
+    if (s.segundos != null) return `${s.segundos} s`;
+    if (s.lastreKg) return `+${s.lastreKg} kg`;
+    if (e.tipoProgresion === 'pesoCorporal') return 'corporal';
+    if (s.peso == null) return e.tipoProgresion === 'libre' ? '' : 'calibrar';
+    const porLado = catalogoMap.get(e.ejercicioId ?? '')?.entrada === 'porLado';
+    return `${s.peso.toLocaleString('es-ES')} kg${porLado ? '/lado' : ''}`;
+  }
+
+  async function renderRueda() {
+    const { pintarRueda } = await import('../lib/vista-rueda');
+    const hechosHoy = sesiones.filter((s) => s.fecha === hoy && s.estado === 'finalizada').map((s) => s.diaId);
+    pintarRueda($('vista-rueda'), {
+      rutina,
+      sesiones,
+      tocaId: diaSugerido(config, rutina).id,
+      selId: selRueda,
+      hechosHoy,
+      descanso: !!diario[hoy]?.descanso,
+      pesoDe: pesoTexto,
+      objetivo: formatObjetivo,
+      alElegir: (id) => {
+        selRueda = id;
+        void renderRueda();
+      },
+      // Como elegir otro día en Hoy: queda apuntado y la sesión es de ese día.
+      alEmpezar: async (id, maquina) => {
+        const elegido = rutina.dias.find((d) => d.id === id);
+        if (!elegido) return;
+        dia = elegido;
+        if (diario[hoy]?.diaElegidoId !== id) diario = await patchDia(hoy, { diaElegidoId: id });
+        if (maquina) maquinaSel.set(elegido.ejercicios[0].ranuraId, maquina);
+        await empezar();
+      },
+      alDescanso: async () => {
+        const quitar = !!diario[hoy]?.descanso;
+        const max = Math.max(0, 7 - config.entrenosObjetivoSemana);
+        const n = contarDescansos(sesiones, diario, config.fechaInicioPlan);
+        if (!quitar && n >= max && !confirm(`Ya llevas ${n} ${n === 1 ? 'descanso' : 'descansos'} esta semana. ¿Descansas igual?`)) return;
+        diario = await patchDia(hoy, { descanso: !quitar });
+        void renderRueda();
+      },
+    });
+    mostrarVista('rueda');
+  }
+
   // ---------- Vista inicio ----------
   function renderInicio() {
     if (grimorio) return void renderGrimorio();
+    if (yo.trayecto) return void renderRueda();
     const elInicio = $('inicio-dia');
     elInicio.classList.add('flex', 'items-center', 'gap-2');
     elInicio.replaceChildren(iconoEl(iconoDeDia(rutina.dias, dia), dia.emoji, 24), dia.nombre);
