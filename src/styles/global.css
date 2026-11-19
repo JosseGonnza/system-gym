@@ -1760,120 +1760,231 @@ html[data-perfil='selector'] main {
   position: fixed;
   inset: 0;
   z-index: -1;
+  overflow: hidden;
+  background: radial-gradient(120% 70% at 50% 0%, #121110 0%, #050505 60%);
 }
 
-.sel-arriba,
-.sel-abajo {
+/* Tres luces, una por vitrina: oro del Marfil, cobre del Grimorio y azul del Hielo */
+.sel-luz {
   position: absolute;
-  inset: 0;
+  border-radius: 50%;
+  filter: blur(70px);
+  opacity: 0.32;
+}
+.sel-luz-1 { width: 300px; height: 300px; left: -120px; top: 12%; background: #c9a052; }
+.sel-luz-2 { width: 280px; height: 280px; right: -130px; top: 42%; background: #d9733b; opacity: 0.24; }
+.sel-luz-3 { width: 320px; height: 320px; left: -60px; bottom: -120px; background: #4f46e5; opacity: 0.34; }
+
+.sel-cabecera {
+  text-align: center;
+  animation: sel-entra 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
-/* Arriba: identidad System Gym (negro Nothing con matriz de puntos) */
-.sel-arriba {
-  background:
-    radial-gradient(circle, #1f1f1f 1px, transparent 1px) 0 0 / 16px 16px,
-    radial-gradient(120% 75% at 50% 15%, #191919 0%, #000 70%);
-  clip-path: polygon(0 0, 100% 0, 100% 44%, 0 56%);
-}
-
-/* Abajo: Grimorio, noche de musgo con brasa de otoño */
-.sel-abajo {
-  background:
-    radial-gradient(90% 55% at 0% 100%, rgb(217 115 59 / 0.22) 0%, transparent 70%),
-    radial-gradient(70% 40% at 90% 60%, rgb(236 211 152 / 0.1) 0%, transparent 70%),
-    linear-gradient(180deg, #0d1712 0%, #0a110d 100%);
-  clip-path: polygon(0 56%, 100% 44%, 100% 100%, 0 100%);
+.sel-marca {
+  font-family: 'Inter Tight Variable', 'Inter Variable', system-ui, sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.42em;
+  color: #9c968a;
 }
 
 .sel-titulo {
-  text-align: center;
-  font-family: 'Silkscreen', ui-monospace, monospace;
-  font-weight: 400;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #e8e8e8;
-  font-size: 0.85rem;
+  margin-top: 0.35rem;
+  font-family: 'Inter Tight Variable', 'Inter Variable', system-ui, sans-serif;
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  background: linear-gradient(180deg, #fffaf0 0%, #efe4c8 60%, #b9a274 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .sel-cards {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1rem;
 }
 
 .sel-card {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 1.1rem;
   width: 100%;
-  padding: 1.4rem 1.4rem;
+  min-height: 7.25rem;
+  padding: 1.3rem 1.4rem;
   text-align: left;
-  border-radius: 16px;
-  transition: transform 0.12s ease;
+  border-radius: 24px;
+  overflow: hidden;
+  isolation: isolate;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: sel-entra 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
+.sel-card:nth-child(1) { animation-delay: 0.08s; }
+.sel-card:nth-child(2) { animation-delay: 0.16s; }
+.sel-card:nth-child(3) { animation-delay: 0.24s; }
 
 .sel-card:active {
-  transform: scale(0.98);
+  transform: scale(0.97);
 }
 
-.sel-emoji {
-  font-size: 2.4rem;
-  line-height: 1;
-  flex-shrink: 0;
+@keyframes sel-entra {
+  from { opacity: 0; transform: translateY(14px) scale(0.98); }
+  to { opacity: 1; transform: none; }
 }
 
 .sel-glifo {
-  display: flex;
-  align-items: center;
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 3.5rem;
+  height: 3.5rem;
   flex-shrink: 0;
-  color: #d71921;
+}
+
+.sel-textos {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.2rem;
 }
 
 .sel-nombre {
   display: block;
-  font-size: 1.4rem;
+  font-size: 1.6rem;
   font-weight: 800;
+  line-height: 1.05;
 }
 
-.sel-jose {
-  background: #0c0c0c;
-  border: 1px solid #d71921;
-  color: #fafafa;
-  font-family: 'Inter Variable', system-ui, sans-serif;
-}
-
-.sel-jose .sel-nombre {
-  font-family: 'Silkscreen', ui-monospace, monospace;
-  font-size: 1.1rem;
-  font-weight: 400;
-  letter-spacing: 0.06em;
+.sel-quien {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
 }
 
+.sel-flecha {
+  font-size: 1.8rem;
+  line-height: 1;
+  opacity: 0.55;
+}
+
+/* System (Jose): Marfil. Negro, filo de luz marfil y halo de oro */
+.sel-jose {
+  background:
+    linear-gradient(225deg, rgb(239 233 220 / 0.07) 0 34px, transparent 34px),
+    linear-gradient(155deg, rgb(239 233 220 / 0.09), rgb(239 233 220 / 0.02) 45%, rgb(239 233 220 / 0.05)),
+    #0e0d0b;
+  box-shadow: inset 0 1px 0 rgb(255 250 240 / 0.16), 0 24px 48px -26px #000;
+  color: #efe9dc;
+  font-family: 'Inter Tight Variable', 'Inter Variable', system-ui, sans-serif;
+}
+.sel-jose::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(140deg, rgb(255 250 240 / 0.4), rgb(239 233 220 / 0.05) 35%, rgb(239 233 220 / 0.02) 65%, rgb(220 183 104 / 0.35));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  pointer-events: none;
+}
+.sel-jose .sel-glifo {
+  color: #dcb768;
+  filter: drop-shadow(0 0 10px rgb(212 172 90 / 0.55));
+}
+.sel-jose .sel-nombre {
+  font-size: 1.75rem;
+  font-weight: 900;
+  letter-spacing: -0.035em;
+  text-transform: uppercase;
+  background: linear-gradient(180deg, #fffaf0 0%, #efe4c8 58%, #d6bb80 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.sel-jose .sel-quien {
+  color: #9c968a;
+  letter-spacing: 0.3em;
+}
+
+/* Grimorio (Yasmina): noche de musgo, oro y cursiva */
 .sel-yasmina {
-  background: linear-gradient(180deg, rgb(30 46 36 / 0.85), rgb(17 27 21 / 0.85));
+  background:
+    radial-gradient(80% 120% at 100% 100%, rgb(217 115 59 / 0.18), transparent 60%),
+    linear-gradient(180deg, rgb(30 46 36 / 0.92), rgb(17 27 21 / 0.92));
   border: 1px solid rgb(207 174 102 / 0.38);
   color: #f1e7cf;
   box-shadow: 0 0 0 4px rgb(10 17 13 / 0.5), 0 0 0 5px rgb(207 174 102 / 0.1), 0 18px 40px -18px rgb(207 174 102 / 0.35);
-  font-family: 'Cormorant Garamond Variable', Georgia, serif;
+  font-family: 'Nunito Variable', system-ui, sans-serif;
 }
-
 .sel-yasmina .sel-glifo {
   color: #ecd398;
   filter: drop-shadow(0 0 7px rgb(236 211 152 / 0.6));
 }
-
 .sel-yasmina .sel-nombre {
-  font-size: 1.7rem;
+  font-family: 'Cormorant Garamond Variable', Georgia, serif;
+  font-size: 2rem;
   font-style: italic;
   font-weight: 700;
 }
+.sel-yasmina .sel-quien {
+  color: #cfae66;
+}
 
+/* Ascenso (Jeik): Hielo. Cristal claro, prisma y degradado azul-violeta */
 .sel-jeik {
-  background: #161c26;
-  border: 1px solid #e39a4e;
-  color: #e8ecf2;
-  font-family: 'Inter Variable', system-ui, sans-serif;
+  background: linear-gradient(150deg, rgb(255 255 255 / 0.95), rgb(226 233 250 / 0.9));
+  border: 1px solid rgb(255 255 255 / 0.95);
+  box-shadow: 0 1px 0 #fff inset, 0 -1px 0 rgb(148 163 184 / 0.3) inset, 0 22px 44px -18px rgb(79 70 229 / 0.6);
+  color: #0f172a;
+  font-family: 'Manrope Variable', system-ui, sans-serif;
+}
+.sel-jeik .sel-glifo {
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 10px 24px -8px rgb(124 58 237 / 0.5);
+}
+.sel-prisma {
+  position: absolute;
+  inset: -20px;
+  background: conic-gradient(from 0deg, #93c5fd, #c4b5fd, #a5b4fc, #67e8f9, #93c5fd);
+  animation: sel-gira 6s linear infinite;
+}
+.sel-prisma-dentro {
+  position: absolute;
+  inset: 3px;
+  display: grid;
+  place-items: center;
+  border-radius: 15px;
+  background: rgb(255 255 255 / 0.85);
+  color: #1d4ed8;
+}
+@keyframes sel-gira { to { transform: rotate(360deg); } }
+.sel-jeik .sel-nombre {
+  letter-spacing: -0.03em;
+  background: linear-gradient(120deg, #1d4ed8, #4f46e5, #7c3aed);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.sel-jeik .sel-quien {
+  color: #475569;
+}
+.sel-jeik .sel-flecha {
+  color: #4f46e5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sel-cabecera,
+  .sel-card,
+  .sel-prisma {
+    animation: none;
+  }
 }
 
 html {

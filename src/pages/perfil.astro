@@ -1,31 +1,56 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { svgDot } from '../lib/iconos-dot';
 import { svgTrazo } from '../lib/iconos-trazo';
+import { svgHielo } from '../lib/iconos-hielo';
 ---
 
 <Layout title="Elige perfil">
   <div class="sel-fondo" aria-hidden="true">
-    <div class="sel-arriba"></div>
-    <div class="sel-abajo"></div>
+    <span class="sel-luz sel-luz-1"></span>
+    <span class="sel-luz sel-luz-2"></span>
+    <span class="sel-luz sel-luz-3"></span>
   </div>
 
-  <p class="sel-titulo">¿Quién entrena?</p>
+  <header class="sel-cabecera">
+    <p class="sel-marca">GYM</p>
+    <h2 class="sel-titulo">¿Quién entrena?</h2>
+  </header>
 
   <div class="sel-cards">
     <button id="perfil-jose" class="sel-card sel-jose">
-      <span class="sel-glifo" set:html={svgDot('sistema', 42)} />
-      <span class="sel-nombre">System Gym</span>
+      <span class="sel-glifo">
+        <svg viewBox="0 0 48 48" width="44" height="44" fill="none" stroke="currentColor" stroke-linecap="round" aria-hidden="true">
+          <circle cx="24" cy="24" r="17" stroke-width="1.6" stroke-dasharray="78 14" transform="rotate(-62 24 24)"></circle>
+          <circle cx="24" cy="24" r="21.5" stroke-width="0.8" opacity="0.45" stroke-dasharray="40 10 60 25"></circle>
+          <circle cx="24" cy="24" r="2.2" fill="currentColor" stroke="none"></circle>
+        </svg>
+      </span>
+      <span class="sel-textos">
+        <span class="sel-nombre">System</span>
+        <span class="sel-quien">Jose</span>
+      </span>
+      <span class="sel-flecha" aria-hidden="true">›</span>
     </button>
 
     <button id="perfil-yasmina" class="sel-card sel-yasmina">
       <span class="sel-glifo" set:html={svgTrazo('nav-hoy', 42)} />
-      <span class="sel-nombre">Grimorio</span>
+      <span class="sel-textos">
+        <span class="sel-nombre">Grimorio</span>
+        <span class="sel-quien">Yasmina</span>
+      </span>
+      <span class="sel-flecha" aria-hidden="true">›</span>
     </button>
 
     <button id="perfil-jeik" class="sel-card sel-jeik">
-      <span class="sel-emoji">🔶</span>
-      <span class="sel-nombre">Jeik</span>
+      <span class="sel-glifo">
+        <span class="sel-prisma" aria-hidden="true"></span>
+        <span class="sel-prisma-dentro" set:html={svgHielo('nav-entreno', 26)} />
+      </span>
+      <span class="sel-textos">
+        <span class="sel-nombre">Ascenso</span>
+        <span class="sel-quien">Jeik</span>
+      </span>
+      <span class="sel-flecha" aria-hidden="true">›</span>
     </button>
   </div>
 </Layout>
