@@ -32,6 +32,9 @@ export interface Perfil {
   anual?: boolean;
   // Pesar alimentos en Fuera de lista: gramos → kcal y macros (#42).
   alimentos?: boolean;
+  // Cada serie se marca ✓ (llegó) o ✗ (no llegó, y escribe en cuántas se quedó),
+  // con el peso que propone el motor ya puesto.
+  porSerie?: boolean;
   // Hoy como trayecto (día del plan, semana, peso y cintura, motor, récords) y
   // la rutina en Entreno, no en Hoy.
   trayecto?: boolean;
