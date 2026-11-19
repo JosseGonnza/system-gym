@@ -4,6 +4,7 @@ export interface PuntoHistorial {
   fecha: string;
   series: SerieReg[];
   sensacion?: Sensacion;
+  molestia?: boolean;
 }
 
 export interface Sugerencia {
@@ -151,6 +152,9 @@ export function sugerir(e: EjercicioDef, historial: PuntoHistorial[], incremento
     if (paron) {
       return { ...VACIA, peso: pesoUlt, reps: Math.min(hi, Math.max(lo, maxReps)), texto: `Repite: ${fmtKg(pesoUlt)} kg`, aviso: avisoParon };
     }
+    if (ultimo.molestia) {
+      return { ...VACIA, peso: pesoUlt, reps: Math.min(hi, Math.max(lo, maxReps)), texto: 'La última vez hubo molestia: repite peso y reps' };
+    }
     if (todasAlTope(ultimo, e, hi)) {
       const peso = sumar(pesoUlt, incr);
       return { ...VACIA, peso, reps: lo, texto: `Sube peso: ${fmtKg(peso)} kg × ${lo} (+${fmtKg(incr)})` };
@@ -186,7 +190,7 @@ export function historialDeRanura(
   sesiones: {
     fecha: string;
     estado: string;
-    ejercicios: { ranuraId: string; series: SerieReg[]; sensacion?: Sensacion }[];
+    ejercicios: { ranuraId: string; series: SerieReg[]; sensacion?: Sensacion; molestia?: boolean }[];
   }[],
   ranuraId: string,
 ): PuntoHistorial[] {
@@ -195,7 +199,10 @@ export function historialDeRanura(
     .map((s): PuntoHistorial | null => {
       const e = s.ejercicios.find((x) => x.ranuraId === ranuraId);
       if (!e) return null;
-      return e.sensacion ? { fecha: s.fecha, series: e.series, sensacion: e.sensacion } : { fecha: s.fecha, series: e.series };
+      const p: PuntoHistorial = { fecha: s.fecha, series: e.series };
+      if (e.sensacion) p.sensacion = e.sensacion;
+      if (e.molestia) p.molestia = true;
+      return p;
     })
     .filter((x): x is PuntoHistorial => x !== null)
     .sort((a, b) => b.fecha.localeCompare(a.fecha));
