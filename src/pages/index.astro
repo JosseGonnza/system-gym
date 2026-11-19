@@ -6,6 +6,7 @@ import Ico from '../components/Ico.astro';
 <Layout title="Hoy">
   <div id="hoy-grimorio" hidden></div>
   <div id="hoy-clasico">
+  <header id="ty-cabecera" class="mb-4 mt-2 flex flex-col gap-2.5 px-1" hidden></header>
   <p id="fecha" class="-mt-1 mb-4 text-sm font-medium capitalize text-mut"></p>
   <p id="plan-linea" class="-mt-3 mb-4 hidden text-sm text-mut"></p>
   <a id="aviso-domingo" href="/domingo" class="card glow mb-4 hidden border-vio/60">
@@ -34,6 +35,8 @@ import Ico from '../components/Ico.astro';
   <section id="aviso-descarga" class="card mt-4 hidden"></section>
 
   <a id="aviso-medidas" href="/progreso" class="card mt-4 hidden border-vio/40 text-sm font-semibold"></a>
+
+  <div id="ty-cuerpo" hidden></div>
 
   <section id="card-entreno" class="card glow mt-4 border-vio/40">
     <div class="flex items-center justify-between">
@@ -189,6 +192,12 @@ import Ico from '../components/Ico.astro';
   if (grimorio) {
     $('hoy-clasico').hidden = true;
     $('hoy-grimorio').hidden = false;
+  }
+  // Jose: Hoy es su trayecto (lib/vista-trayecto.ts) y la rutina vive en Entreno.
+  if (yo.trayecto) {
+    for (const id of ['fecha', 'card-semana', 'card-entreno']) $(id).hidden = true;
+    $('ty-cabecera').hidden = false;
+    $('ty-cuerpo').hidden = false;
   }
   const { jornadas: JORNADAS, pautas: PAUTAS, alarmas: ALARMAS } = horarioDe(getPerfilActivo());
   await cerrarBorradoresCaducados();
@@ -669,6 +678,35 @@ import Ico from '../components/Ico.astro';
     });
   }
 
+  async function pintarHoyTrayecto() {
+    const { pintarCabeceraTrayecto, pintarTrayecto } = await import('../lib/vista-trayecto');
+    const elegido = diario[hoy]?.diaElegidoId;
+    const ultimoHecho = rutina.dias.find((d) => d.id === hechosHoy[hechosHoy.length - 1]);
+    const dia = elegido ? diaEfectivoHoy() : (ultimoHecho ?? diaEfectivoHoy());
+    const estado = diario[hoy]?.descanso
+      ? 'descanso'
+      : hechosHoy.includes(dia.id)
+        ? 'hecho'
+        : diaSugerido(config, rutina).id === dia.id
+          ? 'toca'
+          : 'elegido';
+    const datos = {
+      hoy,
+      inicioPlan: config.fechaInicioPlan,
+      objetivoSemana: config.entrenosObjetivoSemana,
+      metaPeso: yo.metaPeso,
+      rutina,
+      rutinas,
+      sesiones,
+      mediciones,
+      catalogo,
+      dia,
+      estado,
+    } as const;
+    pintarCabeceraTrayecto($('ty-cabecera'), datos);
+    pintarTrayecto($('ty-cuerpo'), datos);
+  }
+
   function render() {
     if (grimorio) return void pintarGrimorio();
     if (sencillo && yo.seguimiento) void pintarSeguimiento();
@@ -678,10 +716,13 @@ import Ico from '../components/Ico.astro';
       pintarSelector($('sel-jornada-manana'), manana);
       pintarPauta();
     }
-    pintarSemana();
+    if (yo.trayecto) void pintarHoyTrayecto();
+    else {
+      pintarSemana();
+      pintarEntreno();
+      pintarDescansos();
+    }
     pintarAbandono();
-    pintarEntreno();
-    pintarDescansos();
     if (usaJornadas) pintarManana();
   }
 

@@ -32,6 +32,10 @@ export interface Perfil {
   anual?: boolean;
   // Pesar alimentos en Fuera de lista: gramos → kcal y macros (#42).
   alimentos?: boolean;
+  // Hoy como trayecto (día del plan, semana, peso y cintura, motor, récords) y
+  // la rutina en Entreno, no en Hoy.
+  trayecto?: boolean;
+  metaPeso?: [number, number];
 }
 
 export type Implemento = 'barra' | 'barraZ' | 'multipower' | 'mancuerna' | 'maquina' | 'polea' | 'kettlebell' | 'corporal';

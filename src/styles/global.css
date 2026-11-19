@@ -2706,3 +2706,93 @@ html[data-perfil='yasmina'] :is(.btn, .btn-2) .has-trazo .ico-trazo-wrap {
 .tec-fig .fantasma-c { fill: var(--color-vio); opacity: 0.25; }
 .tec-fig .cuerpo { stroke: var(--color-ink); stroke-width: 7; stroke-linecap: round; }
 .tec-fig .cabeza { fill: var(--color-ink); }
+
+/* ── Hoy de Jose: su trayecto (lib/vista-trayecto.ts) ── */
+.ty-dia {
+  font-family: var(--font-display);
+  font-size: 64px;
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+}
+
+.ty-dia-n {
+  background: var(--marfil);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.ty-oro {
+  color: var(--color-vio-hi);
+}
+
+.ty-casilla {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  max-width: 40px;
+  aspect-ratio: 1;
+  border-radius: 10px;
+  border: 1px dashed var(--color-line);
+}
+
+.ty-casilla.ty-hecha {
+  border: 1px solid #57524a;
+  background: var(--color-surface2);
+  color: var(--color-ink);
+}
+
+.ty-casilla.ty-hoy {
+  border: 1.5px solid var(--color-ink);
+  color: var(--color-vio-hi);
+}
+
+.ty-casilla.ty-futura {
+  opacity: 0.6;
+}
+
+.ty-toca {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  border-radius: var(--radius-card);
+  border: 1px solid rgb(220 183 104 / 0.35);
+  background: linear-gradient(180deg, rgb(212 172 90 / 0.14), rgb(212 172 90 / 0.04));
+}
+
+.ty-toca-ico {
+  display: flex;
+  color: var(--color-vio-hi);
+}
+
+.ty-barra {
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #57524a var(--ty-desde), #c9a052 var(--ty-desde), #f1dba6);
+}
+
+.ty-grafica {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.ty-eje {
+  font-family: var(--font-num);
+  font-size: 10px;
+  fill: var(--color-mut);
+}
+
+.ty-ley-peso {
+  width: 14px;
+  height: 2px;
+  background: var(--color-vio-hi);
+}
+
+.ty-ley-cintura {
+  width: 14px;
+  border-top: 1.5px dashed var(--color-ok);
+}
