@@ -207,10 +207,12 @@ describe('compra', () => {
     expect(p.A.some((x) => x.id === 'pollo') && p.B.some((x) => x.id === 'pollo')).toBe(true);
   });
 
-  it('los dos pedidos cuestan parecido', () => {
+  it('lo de despensa va en el pedido de la semana que lo usa primero: nunca falta', () => {
     const p = pedidos();
-    const t = (l: typeof p.A) => l.reduce((a, x) => a + x.eur, 0);
-    expect(Math.abs(t(p.A) - t(p.B))).toBeLessThan(12);
+    const { semana } = consumo();
+    for (const x of p.B.filter((y) => !PRODUCTOS[y.id].fresco)) expect(semana.A[x.id], x.id).toBeUndefined();
+    const atun = p.A.find((x) => x.id === 'atun');
+    expect(atun?.n).toBe(3);
   });
 
   it('se pide un envase de más solo si se gasta más de un 12 % por encima', () => {
