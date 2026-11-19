@@ -7,6 +7,12 @@ import { GATO_DUERME } from './dibujos-grimorio';
 import { capitulos, cielo, marca, mediasSemanales, racha, tendenciaSemanal, type DiaCielo } from './grimorio';
 import { svgTrazo } from './iconos-trazo';
 import { boton, el } from './dom';
+
+const html = <K extends keyof HTMLElementTagNameMap>(tag: K, clase: string, contenido: string) => {
+  const e = el(tag, clase);
+  e.innerHTML = contenido;
+  return e;
+};
 import type { EjercicioDef, Mediciones, Rutina, Sesion } from './types';
 
 export interface DatosDiario {
@@ -23,16 +29,97 @@ export interface DatosDiario {
 const num = (n: number, dec = 1) => n.toLocaleString('es-ES', { maximumFractionDigits: dec });
 const fecha = (iso: string, o: Intl.DateTimeFormatOptions) => new Date(`${iso}T12:00:00`).toLocaleDateString('es-ES', o);
 const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+const MESES_LARGOS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+
+// Posiciones de las estrellas: al azar pero fijas por fecha, para que no
+// bailen cada vez que se pinta (hash de la fecha + mulberry32).
+const azarDe = (f: string) => {
+  let h = 1779033703 ^ f.length;
+  for (let i = 0; i < f.length; i++) {
+    h = Math.imul(h ^ f.charCodeAt(i), 3432918353);
+    h = (h << 13) | (h >>> 19);
+  }
+  let a = Math.imul(h ^ (h >>> 16), 2246822507) ^ Math.imul(h ^ (h >>> 13), 3266489909);
+  return () => {
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+};
+
+// La rueda del año: 12 porciones con su mes escrito; dentro, una estrella por
+// día entrenado (oro) o de cardio (cobre). El mes en curso, con borde cobre.
+function ruedaAnio(meses: DiaCielo[][], mesHoy: number, abierto: number | null): string {
+  const C = 160;
+  const R1 = 58;
+  const R2 = 150;
+  const pol = (r: number, a: number) => [C + r * Math.cos(a), C + r * Math.sin(a)];
+  const ang = (i: number) => -Math.PI / 2 + (i * Math.PI) / 6;
+  const porcion = (i: number) => {
+    const [x1, y1] = pol(R1, ang(i));
+    const [x2, y2] = pol(R2, ang(i));
+    const [x3, y3] = pol(R2, ang(i + 1));
+    const [x4, y4] = pol(R1, ang(i + 1));
+    return `M${x1.toFixed(1)} ${y1.toFixed(1)}L${x2.toFixed(1)} ${y2.toFixed(1)}A${R2} ${R2} 0 0 1 ${x3.toFixed(1)} ${y3.toFixed(1)}L${x4.toFixed(1)} ${y4.toFixed(1)}A${R1} ${R1} 0 0 0 ${x1.toFixed(1)} ${y1.toFixed(1)}Z`;
+  };
+  let svg = `<circle cx="${C}" cy="${C}" r="${R2}" class="gm-r-borde"/>`;
+  meses.forEach((dias, i) => {
+    const n = dias.filter((x) => x.tipo !== 'nada').length;
+    const clase = `gm-r-mes${i === mesHoy ? ' gm-r-hoy' : ''}${i === abierto ? ' gm-r-abierto' : ''}`;
+    svg += `<path d="${porcion(i)}" class="${clase}" data-mes="${i}" role="button" tabindex="0" aria-label="${MESES_LARGOS[i]}: ${n} ${n === 1 ? 'entreno' : 'entrenos'}"/>`;
+  });
+  // Repartidas por toda la porción (radio con raíz para que no se amontonen
+  // dentro) y sin pisarse: hasta 30 intentos por estrella.
+  const rMin = R1 + 10;
+  const rMax = R2 - 26;
+  meses.forEach((dias, i) => {
+    const puestas: [number, number][] = [];
+    for (const x of dias) {
+      if (x.tipo === 'nada') continue;
+      const azar = azarDe(x.fecha);
+      let mejor: [number, number] = [0, 0];
+      for (let intento = 0, lejos = -1; intento < 30; intento++) {
+        const a = ang(i) + 0.07 + azar() * (Math.PI / 6 - 0.14);
+        const r = Math.sqrt(rMin * rMin + azar() * (rMax * rMax - rMin * rMin));
+        const p = pol(r, a) as [number, number];
+        const d = Math.min(Infinity, ...puestas.map(([qx, qy]) => Math.hypot(qx - p[0], qy - p[1])));
+        if (d > lejos) [mejor, lejos] = [p, d];
+        if (d >= 11) break;
+      }
+      puestas.push(mejor);
+      svg += `<circle cx="${mejor[0].toFixed(1)}" cy="${mejor[1].toFixed(1)}" r="${(1.8 + azar() * 1.4).toFixed(1)}" fill="${x.tipo === 'suave' ? '#ee9a5f' : '#ecd398'}"/>`;
+    }
+    const [tx, ty] = pol(R2 - 15, ang(i) + Math.PI / 12);
+    svg += `<text x="${tx.toFixed(1)}" y="${(ty + 4.5).toFixed(1)}" class="gm-r-txt${i === mesHoy ? ' gm-r-txt-hoy' : ''}">${MESES[i]}</text>`;
+  });
+  svg += `<circle cx="${C}" cy="${C}" r="38" class="gm-r-centro"/><path d="M172 167A15 15 0 0 1 153 148a15 15 0 1 0 19 19z" fill="#ecd398"/>`;
+  return `<svg viewBox="0 0 320 320" width="100%" aria-label="Tu año en una rueda">${svg}</svg>`;
+}
+
+// El tarro: una estrella por día entrenado del año, de abajo arriba y por orden;
+// las del mes en curso, en cobre.
+function tarroEstrellas(meses: DiaCielo[][], mesHoy: number): string {
+  const dias = meses.flatMap((ds, m) => ds.filter((x) => x.tipo !== 'nada').map((x) => ({ ...x, m })));
+  const POR_FILA = 7;
+  const filas = Math.max(1, Math.ceil(dias.length / POR_FILA));
+  const alto = Math.min(12, 160 / filas);
+  const tam = Math.max(2.5, Math.min(5.5, alto * 0.48));
+  const estrella = (cx: number, cy: number, r: number) =>
+    `M${cx} ${cy - r}l${r * 0.3} ${r * 0.7} ${r * 0.7} ${r * 0.3}-${r * 0.7} ${r * 0.3}-${r * 0.3} ${r * 0.7}-${r * 0.3}-${r * 0.7}-${r * 0.7}-${r * 0.3} ${r * 0.7}-${r * 0.3}z`;
+  const estrellas = dias
+    .map((x, k) => {
+      const azar = azarDe(x.fecha);
+      const fila = Math.floor(k / POR_FILA);
+      const cx = 36 + (k % POR_FILA) * 13 + (fila % 2) * 5 + azar() * 3;
+      const cy = 194 - fila * alto - azar() * 2;
+      return `<path d="${estrella(+cx.toFixed(1), +cy.toFixed(1), +(tam + azar()).toFixed(1))}" fill="${x.m === mesHoy ? '#ee9a5f' : '#ecd398'}"/>`;
+    })
+    .join('');
+  return `<svg viewBox="0 0 150 210" width="130" height="182" aria-hidden="true"><rect x="52" y="6" width="46" height="16" rx="4" fill="#6b5226" stroke="#a8823f"/><path d="M48 24h54v10c18 8 26 22 26 40v108a20 20 0 0 1-20 20H42a20 20 0 0 1-20-20V74c0-18 8-32 26-40z" fill="rgb(236 211 152 / .05)" stroke="rgb(236 211 152 / .45)" stroke-width="1.5"/>${estrellas}<path d="M34 80c0-12 6-22 16-28" fill="none" stroke="rgb(255 250 240 / .25)" stroke-width="3" stroke-linecap="round"/></svg>`;
+}
 const NUMEROS = ['cero', 'un', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete'];
 const fila = (izq: string, der: Node | string) => el('div', 'gm-fila', el('span', 'eyebrow', izq), typeof der === 'string' ? el('span', 'gm-meta', der) : der);
-
-const ESTRELLA = (x: number) => `<path d="M${x} 0.6l.9 2.6 2.6.8-2.6.8-.9 2.6-.9-2.6-2.6-.8 2.6-.8z" fill="#ecd398"/>`;
-
-function puntoCielo(d: DiaCielo, x: number): string {
-  if (d.tipo === 'entreno') return ESTRELLA(x);
-  if (d.tipo === 'suave') return `<circle cx="${x}" cy="4" r="2" fill="#ee9a5f"/>`;
-  return `<circle cx="${x}" cy="4" r="${d.futuro ? 0.8 : 1.1}" fill="rgb(207 174 102 / ${d.futuro ? 0.12 : 0.22})"/>`;
-}
 
 // Un mes abierto en grande: su calendario de lunes a domingo
 function mesGrande(dias: DiaCielo[]): HTMLElement {
@@ -46,7 +133,7 @@ function mesGrande(dias: DiaCielo[]): HTMLElement {
         ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2l1.8 7.2L21 12l-7.2 1.8L12 21l-1.8-7.2L3 12l7.2-1.8z"/></svg>'
         : '';
     c.append(el('small', '', String(Number(d.fecha.slice(-2)))));
-    c.title = `${fecha(d.fecha, { day: 'numeric', month: 'long' })}${d.tipo === 'entreno' ? ' · entreno' : d.tipo === 'suave' ? ' · día suave' : ''}`;
+    c.title = `${fecha(d.fecha, { day: 'numeric', month: 'long' })}${d.tipo === 'entreno' ? ' · entreno' : d.tipo === 'suave' ? ' · cardio' : ''}`;
     rejilla.append(c);
   }
   return rejilla;
@@ -141,21 +228,51 @@ export function pintarDiario(cont: HTMLElement, d: DatosDiario): void {
     );
     tarjetaRacha.insertAdjacentHTML('afterbegin', GATO_DUERME);
 
-    // ── Tu año en estrellas ──
+    // ── Tu año: la rueda (un mes por porción, una estrella por entreno) ──
     const meses = cielo(d.sesiones, d.rutinas, anio, d.hoy);
-    const filas = meses.flatMap((dias, m) => {
-      const b = boton(`gm-mesfila${m === mesHoy ? ' gm-actual' : ''}${est.mes === m ? ' gm-abierta' : ''}`, el('span', '', MESES[m]), () => {
+    const rueda = el('div', 'gm-rueda');
+    rueda.innerHTML = ruedaAnio(meses, mesHoy, est.mes);
+    rueda.querySelectorAll<SVGPathElement>('[data-mes]').forEach((p) => {
+      const m = Number(p.dataset.mes);
+      const abrir = () => {
         est.mes = est.mes === m ? null : m;
         pintar();
+      };
+      p.addEventListener('click', abrir);
+      p.addEventListener('keydown', (ev) => {
+        if (ev.key === 'Enter' || ev.key === ' ') {
+          ev.preventDefault();
+          abrir();
+        }
       });
-      b.setAttribute('aria-expanded', String(est.mes === m));
-      b.setAttribute('aria-label', `${MESES[m]}: ${dias.filter((x) => x.tipo === 'entreno').length} entrenos`);
-      b.insertAdjacentHTML('beforeend', `<svg viewBox="0 0 266 8" preserveAspectRatio="xMinYMid meet" aria-hidden="true">${dias.map((x, i) => puntoCielo(x, 4 + i * 8.4)).join('')}</svg>`);
-      return est.mes === m ? [b, mesGrande(dias)] : [b];
     });
     const leyenda = el('div', 'gm-leyenda');
-    leyenda.innerHTML = '<span><i style="background:#ecd398"></i>entreno</span><span><i style="background:#ee9a5f"></i>día suave</span><span><i style="background:rgb(207 174 102 / .3)"></i>descanso</span>';
-    const tarjetaCielo = el('section', 'card', fila(`Tu ${anio} en estrellas`, 'toca un mes'), el('div', 'gm-cielo', ...filas), leyenda);
+    leyenda.innerHTML = '<span><i style="background:#ecd398"></i>entreno</span><span><i style="background:#ee9a5f"></i>cardio</span>';
+    const tarjetaCielo = el(
+      'section',
+      'card',
+      fila(`Tu ${anio}`, 'toca un mes'),
+      rueda,
+      est.mes != null ? el('div', 'gm-cielo', el('p', 'gm-mes-abierto', MESES_LARGOS[est.mes]), mesGrande(meses[est.mes])) : null,
+      leyenda,
+    );
+
+    // ── El tarro: todos los entrenos del año ──
+    const total = meses.flat().filter((x) => x.tipo !== 'nada').length;
+    const tarro = html('div', 'gm-tarro-svg', tarroEstrellas(meses, mesHoy));
+    const tarjetaTarro = el(
+      'section',
+      'card gm-tarro',
+      tarro,
+      el(
+        'div',
+        'gm-tarro-txt',
+        el('p', 'gm-tarro-t', `Tu ${anio}`),
+        el('p', 'gm-tarro-n', String(total)),
+        el('p', '', total === 1 ? 'estrella en el tarro. Una por cada entreno.' : 'estrellas en el tarro. Una por cada entreno.'),
+        meses[mesHoy].some((x) => x.tipo !== 'nada') ? el('p', 'gm-tarro-sub', `Las cobrizas son de ${MESES_LARGOS[mesHoy].toLowerCase()}.`) : null,
+      ),
+    );
 
     // ── Peso / cintura ──
     const entradas =
@@ -204,7 +321,7 @@ export function pintarDiario(cont: HTMLElement, d: DatosDiario): void {
     });
     const tarjetaMarcas = el('section', 'card', fila('Marcas', ''), sel, ej ? marcaEl(ej) : el('p', 'gm-graf-vacia', 'Sin ejercicios.'));
 
-    cont.replaceChildren(sub, el('div', 'gm-cont gm-cont-diario', tarjetaRacha, tarjetaCielo, tarjetaMedidas, tarjetaDieta, tarjetaMarcas), hoja);
+    cont.replaceChildren(sub, el('div', 'gm-cont gm-cont-diario', tarjetaRacha, tarjetaCielo, tarjetaTarro, tarjetaMedidas, tarjetaDieta, tarjetaMarcas), hoja);
   };
 
   function marcaEl(e: EjercicioDef): HTMLElement {
