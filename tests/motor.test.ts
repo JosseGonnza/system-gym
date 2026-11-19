@@ -101,6 +101,21 @@ describe('progresión doble', () => {
     ]);
     expect(sugerir(cuatro, [tres], INCR_MIN).peso).toBe(40);
   });
+
+  it('con molestia la última vez no sube nada: mismo peso y mismas reps', () => {
+    const tope = sesionDe(4, [serie(40, 12, 'completada'), serie(40, 12, 'completada'), serie(40, 12, 'completada')]);
+    const medio = sesionDe(4, [serie(40, 10, 'completada'), serie(40, 10, 'completada'), serie(40, 10, 'completada')]);
+    const alTope = sugerir(doble, [{ ...tope, molestia: true }], INCR_MIN);
+    expect(alTope).toMatchObject({ peso: 40, reps: 12 });
+    expect(alTope.texto).toMatch(/molestia/i);
+    expect(sugerir(doble, [{ ...medio, molestia: true }], INCR_MIN)).toMatchObject({ peso: 40, reps: 10 });
+  });
+
+  it('el historial lleva la molestia de cada sesión', () => {
+    const series = [serie(40, 10, 'completada')];
+    const h = historialDeRanura([{ fecha: '2026-11-12', estado: 'finalizada', ejercicios: [{ ranuraId: 'x', series, molestia: true }] }], 'x');
+    expect(h[0].molestia).toBe(true);
+  });
 });
 
 describe('peso corporal', () => {
