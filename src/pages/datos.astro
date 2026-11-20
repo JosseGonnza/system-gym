@@ -68,6 +68,86 @@ const PISTA = { fecha: 'aaaa-mm', num: '>8', texto: 'contiene…', bool: 'sí / 
         <div class="kpi"><span class="kpi-t">Al fallo</span><b id="k-fallo"></b><small>%</small></div>
       </div>
 
+      <div class="controles">
+        <div class="pestanas" role="tablist" aria-label="Vista">
+          <button type="button" role="tab" id="tab-panel" aria-selected="true" aria-controls="vista-panel">Panel</button>
+          <button type="button" role="tab" id="tab-series" aria-selected="false" aria-controls="vista-series">Series</button>
+          <button type="button" role="tab" id="tab-dieta" aria-selected="false" aria-controls="vista-dieta">Dieta</button>
+        </div>
+        <div class="rapidos">
+          <div class="seg" id="periodo" role="group" aria-label="Periodo">
+            <button type="button" data-sem="0" aria-pressed="true">Todo</button>
+            <button type="button" data-sem="12" aria-pressed="false">12 semanas</button>
+            <button type="button" data-sem="4" aria-pressed="false">4 semanas</button>
+          </div>
+          <label class="sel solo-entreno">Ejercicio <select id="f-ejercicio"><option value="">Todos</option></select></label>
+          <label class="sel solo-entreno">Músculo <select id="f-musculo"><option value="">Todos</option></select></label>
+          <button type="button" class="btn btn-mini" id="limpiar2" hidden>Quitar filtros</button>
+        </div>
+      </div>
+
+      <section class="graficas" id="vista-panel" role="tabpanel" aria-labelledby="tab-panel">
+        <article class="gcard">
+          <header><h3>Tonelaje por semana</h3><p id="s-ton"></p></header>
+          <div class="gcaja" id="g-ton"></div>
+          <p class="gpie">Toca una semana para filtrarla.</p>
+        </article>
+        <article class="gcard">
+          <header><h3>Días entrenados por semana</h3><p id="s-dias"></p></header>
+          <div class="gcaja" id="g-dias"></div>
+        </article>
+        <article class="gcard">
+          <header><h3 id="t-fuerza">Fuerza</h3><p id="s-fuerza"></p></header>
+          <div class="gcaja" id="g-fuerza"></div>
+          <p class="gpie">1RM estimado (Epley, kg real) del mejor set de cada sesión. Los puntos son récords.</p>
+        </article>
+        <article class="gcard">
+          <header><h3>Récords</h3><p>Lo más pesado y el mejor 1RM de cada ejercicio</p></header>
+          <div class="records" id="g-records"></div>
+        </article>
+        <article class="gcard">
+          <header><h3>Series por semana y músculo</h3><p id="s-musculo"></p></header>
+          <div class="gcaja" id="g-musculo"></div>
+          <p class="gpie">Músculo principal de cada ejercicio. La franja es lo recomendable para crecer: 10–20 a la semana. Toca uno para filtrarlo.</p>
+        </article>
+        <article class="gcard">
+          <header><h3>Cuerpo</h3><p id="s-cuerpo"></p></header>
+          <p class="gsub">Peso · los puntos son cada pesada, la línea la media de 7 días</p>
+          <div class="gcaja" id="g-peso"></div>
+          <p class="gsub">Cintura</p>
+          <div class="gcaja" id="g-cintura"></div>
+        </article>
+        <article class="gcard ancho">
+          <header><h3>Tu año</h3><p id="s-calor"></p></header>
+          <div class="gcaja" id="g-calor"></div>
+          <p class="gpie">Cada cuadro es un día; el tono, el tonelaje. Toca uno para ver sus series.</p>
+        </article>
+      </section>
+
+      <section class="graficas" id="vista-dieta" role="tabpanel" aria-labelledby="tab-dieta" hidden>
+        <div class="kpis ancho" id="d-kpis"></div>
+        <article class="gcard">
+          <header><h3>Calorías por día</h3><p id="ds-kcal"></p></header>
+          <p class="leyenda"><span><i class="ley-oro"></i>Comidas del plan</span><span><i class="ley-marfil"></i>Fuera de lista</span><span><i class="ley-obj"></i>Objetivo</span></p>
+          <div class="gcaja" id="dg-kcal"></div>
+        </article>
+        <article class="gcard">
+          <header><h3>Proteína por día</h3><p id="ds-prot"></p></header>
+          <div class="gcaja" id="dg-prot"></div>
+        </article>
+        <article class="gcard">
+          <header><h3>Macros de media al día</h3><p id="ds-macros"></p></header>
+          <div class="gcaja" id="dg-macros"></div>
+          <p class="gpie" id="dp-macros"></p>
+        </article>
+        <article class="gcard">
+          <header><h3>Fuera de lista</h3><p id="ds-fuera"></p></header>
+          <div class="gcaja" id="dg-fuera"></div>
+          <p class="gpie">Lo que más calorías suma en el periodo. Agrupado por nombre.</p>
+        </article>
+      </section>
+
+      <section class="series" id="vista-series" role="tabpanel" aria-labelledby="tab-series" hidden>
       <div class="barra">
         <h2>Series</h2>
         <span class="cuenta" id="cuenta"></span>
@@ -123,6 +203,7 @@ const PISTA = { fecha: 'aaaa-mm', num: '>8', texto: 'contiene…', bool: 'sí / 
         <p class="nada" id="nada" hidden>Ninguna serie cumple los filtros.</p>
       </div>
       <div id="listas" hidden></div>
+      </section>
     </main>
 
     <div class="soltar" id="soltar" aria-hidden="true"><p>Suelta para cargar</p></div>
@@ -131,6 +212,11 @@ const PISTA = { fecha: 'aaaa-mm', num: '>8', texto: 'contiene…', bool: 'sí / 
       import { createStore, get, set } from 'idb-keyval';
       import { filasSeries, validarBackup, type FilaSerie } from '../lib/datos';
       import { COLUMNAS, aCSV, filtrar, ordenar, resumen, type Clave, type Columna } from '../lib/tabla';
+      import { barrasH, calor, columnas, linea, ocultarTip } from '../lib/graficas-datos';
+      import { fuerzaEjercicio, mediaMovil, musculoSemanal, porDia, records, semanal } from '../lib/panel-datos';
+      import { diasDieta, fueraDeLista } from '../lib/dieta-datos';
+      import { CARTA } from '../lib/casa';
+      import { perfil } from '../lib/perfiles';
       import type { BackupV2 } from '../lib/types';
 
       const almacen = createStore('gym-datos', 'backup');
@@ -138,6 +224,14 @@ const PISTA = { fecha: 'aaaa-mm', num: '>8', texto: 'contiene…', bool: 'sí / 
 
       let filas: FilaSerie[] = [];
       let vista: FilaSerie[] = [];
+      let backup: BackupV2 | null = null;
+      let periodoSem = 0;
+      type Tab = 'panel' | 'series' | 'dieta';
+      let tab: Tab = 'panel';
+      try {
+        const t = localStorage.getItem('datos-tab');
+        if (t === 'series' || t === 'dieta') tab = t;
+      } catch {}
       const filtros: Partial<Record<Clave, string>> = {};
       let orden: { key: Clave; dir: 'asc' | 'desc' } = { key: 'fecha', dir: 'desc' };
 
@@ -179,10 +273,317 @@ const PISTA = { fecha: 'aaaa-mm', num: '>8', texto: 'contiene…', bool: 'sí / 
         const activos = Object.values(filtros).some((e) => e?.trim());
         $('#cuenta').textContent = activos ? `${fmt(vista.length, 0)} de ${fmt(filas.length, 0)}` : `${fmt(filas.length, 0)} en total`;
         $('#limpiar').hidden = !activos;
+        $('#limpiar2').hidden = !activos;
+        sincronizarRapidos();
+        if (tab === 'panel') pintarPanel();
+        if (tab === 'dieta') pintarDieta();
         document.querySelectorAll<HTMLElement>('tr.cab th').forEach((th) => {
           const k = th.dataset.key;
           th.setAttribute('aria-sort', k === orden.key ? (orden.dir === 'asc' ? 'ascending' : 'descending') : 'none');
         });
+      }
+
+      // ── Panel: las gráficas, siempre sobre las filas filtradas ──
+      const DIA = 86_400_000;
+      const sumarDias = (f: string, n: number) => new Date(Date.parse(`${f}T12:00:00Z`) + n * DIA).toISOString().slice(0, 10);
+      const fechaLarga = (f: string) => new Date(`${f}T12:00:00`).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+      const firmado = (n: number, dec = 1) => `${n > 0 ? '+' : n < 0 ? '−' : '±'}${fmt(Math.abs(n), dec)}`;
+      const exacto = (k: Clave) => ((filtros[k] ?? '').startsWith('=') ? filtros[k]!.slice(1) : '');
+
+      function ponerFiltro(k: Clave, v: string) {
+        filtros[k] = v;
+        const inp = document.querySelector<HTMLInputElement>(`tr.filtros input[data-key="${k}"]`);
+        if (inp) inp.value = v;
+        if (k === 'fecha') periodoSem = -1;
+        pintar();
+      }
+
+      function desdePeriodo(sem: number): string {
+        const ultima = filas.length ? filas[filas.length - 1].fecha : new Date().toISOString().slice(0, 10);
+        return sumarDias(ultima, -(sem * 7 - 1));
+      }
+
+      function sincronizarRapidos() {
+        const ej = $<HTMLSelectElement>('#f-ejercicio');
+        ej.value = exacto('ejercicio');
+        if (ej.value !== exacto('ejercicio')) ej.value = '';
+        const mu = $<HTMLSelectElement>('#f-musculo');
+        mu.value = exacto('musculo');
+        if (mu.value !== exacto('musculo')) mu.value = '';
+        const f = filtros.fecha ?? '';
+        const actual = !f.trim() ? 0 : periodoSem > 0 && f === `>=${desdePeriodo(periodoSem)}` ? periodoSem : -1;
+        document.querySelectorAll<HTMLButtonElement>('#periodo button').forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.sem) === actual)));
+      }
+
+      function pintarRecords() {
+        const rs = records(vista);
+        const caja = $('#g-records');
+        if (!rs.length) {
+          caja.replaceChildren(Object.assign(document.createElement('p'), { className: 'g-vacio', textContent: 'Sin datos con estos filtros.' }));
+          return;
+        }
+        const tabla = document.createElement('table');
+        const cab = document.createElement('tr');
+        for (const t of ['Ejercicio', 'Más pesado', '1RM est.', 'Sesiones']) cab.append(Object.assign(document.createElement('th'), { textContent: t }));
+        tabla.append(Object.assign(document.createElement('thead'), {}), document.createElement('tbody'));
+        tabla.tHead!.append(cab);
+        for (const r of rs) {
+          const tr = document.createElement('tr');
+          tr.tabIndex = 0;
+          tr.title = 'Ver solo este ejercicio';
+          const td = (t: string, clase = '', sub = '') => {
+            const c = document.createElement('td');
+            if (clase) c.className = clase;
+            c.textContent = t;
+            if (sub) c.append(Object.assign(document.createElement('small'), { textContent: sub }));
+            return c;
+          };
+          tr.append(
+            td(r.ejercicio),
+            td(`${fmt(r.kg)} kg${r.kgReps != null ? ` × ${r.kgReps}` : ''}`, 'num', fechaLarga(r.kgFecha)),
+            td(r.e1rm != null ? `${fmt(r.e1rm, 1)} kg` : '—', 'num oro', r.e1rmFecha ? fechaLarga(r.e1rmFecha) : ''),
+            td(String(r.sesiones), 'num'),
+          );
+          const elegir = () => ponerFiltro('ejercicio', `=${r.ejercicio}`);
+          tr.addEventListener('click', elegir);
+          tr.addEventListener('keydown', (ev) => {
+            if (ev.key === 'Enter') elegir();
+          });
+          tabla.tBodies[0].append(tr);
+        }
+        caja.replaceChildren(tabla);
+      }
+
+      function pintarPanel() {
+        if (!backup) return;
+        ocultarTip();
+        const ultima = filas.length ? filas[filas.length - 1].fecha : undefined;
+        const sem = periodoSem > 0 && filtros.fecha === `>=${desdePeriodo(periodoSem)}` ? semanal(vista, desdePeriodo(periodoSem), ultima) : semanal(vista);
+        const titulo = (l: string) => `Semana del ${fechaLarga(l)}`;
+        columnas(
+          $('#g-ton'),
+          sem.map((x) => ({
+            x: fechaLarga(x.lunes),
+            y: x.tonelaje,
+            titulo: titulo(x.lunes),
+            filas: [
+              { valor: `${fmt(x.tonelaje, 0)} kg`, etiqueta: 'tonelaje' },
+              { valor: fmt(x.series, 0), etiqueta: 'series' },
+            ],
+          })),
+          { alPulsar: (i) => ponerFiltro('fecha', `${sem[i].lunes}..${sumarDias(sem[i].lunes, 6)}`) },
+        );
+        const conCarga = sem.filter((x) => x.tonelaje > 0);
+        $('#s-ton').textContent = conCarga.length
+          ? `media ${fmt(conCarga.reduce((n, x) => n + x.tonelaje, 0) / conCarga.length, 0)} kg en las semanas con entreno`
+          : '';
+
+        const obj = backup.config.entrenosObjetivoSemana;
+        columnas(
+          $('#g-dias'),
+          sem.map((x) => ({ x: fechaLarga(x.lunes), y: x.dias, titulo: titulo(x.lunes), filas: [{ valor: fmt(x.dias, 0), etiqueta: x.dias === 1 ? 'día' : 'días' }] })),
+          { objetivo: obj, objetivoTxt: `objetivo ${obj}` },
+        );
+        $('#s-dias').textContent = sem.length ? `${sem.filter((x) => x.dias >= obj).length} de ${sem.length} semanas llegando a ${obj}` : '';
+
+        const sesionesCon1rm = new Map<string, Set<string>>();
+        for (const f of vista) if (f.e1rm != null) sesionesCon1rm.set(f.ejercicio, (sesionesCon1rm.get(f.ejercicio) ?? new Set()).add(f.sesionId));
+        const elegido = exacto('ejercicio');
+        const ej = elegido || [...sesionesCon1rm].sort((a, b) => b[1].size - a[1].size)[0]?.[0] || '';
+        const pts = ej ? fuerzaEjercicio(vista, ej) : [];
+        $('#t-fuerza').textContent = ej ? `Fuerza · ${ej}` : 'Fuerza';
+        $('#s-fuerza').textContent = pts.length
+          ? `${fmt(pts[0].e1rm, 1)} → ${fmt(pts[pts.length - 1].e1rm, 1)} kg (${firmado(pts[pts.length - 1].e1rm - pts[0].e1rm)})${elegido ? '' : ' · el más hecho; elige otro arriba'}`
+          : 'Sin series con 1RM estimado';
+        linea(
+          $('#g-fuerza'),
+          pts.map((p) => ({
+            fecha: p.fecha,
+            y: p.e1rm,
+            destacar: p.record,
+            titulo: fechaLarga(p.fecha),
+            filas: [
+              { valor: `${fmt(p.e1rm, 1)} kg`, etiqueta: '1RM estimado' },
+              { valor: `${p.kg != null ? fmt(p.kg) : '?'} × ${p.reps ?? '?'}`, etiqueta: p.record ? 'récord' : 'mejor serie' },
+            ],
+          })),
+          { unidad: ' kg' },
+        );
+
+        pintarRecords();
+
+
+        // Cuerpo: con el periodo o una fecha filtrada, solo esas fechas.
+        const fechas = vista.map((f) => f.fecha);
+        const acotar = !!(filtros.fecha ?? '').trim() && fechas.length > 0;
+        const [d0, d1] = acotar ? [fechas.reduce((a, b) => (b < a ? b : a)), fechas.reduce((a, b) => (b > a ? b : a))] : ['', '9999'];
+        const dentro = (f: string) => f >= d0 && f <= d1;
+        const pesos = backup.mediciones.peso.filter((p) => dentro(p.fecha)).map((p) => ({ fecha: p.fecha, v: p.kg }));
+        const media = mediaMovil(pesos);
+        linea(
+          $('#g-peso'),
+          media.map((p) => ({
+            fecha: p.fecha,
+            y: p.v,
+            titulo: fechaLarga(p.fecha),
+            filas: [
+              { valor: `${fmt(p.v, 1)} kg`, etiqueta: 'media 7 días' },
+              { valor: `${fmt(pesos.find((q) => q.fecha === p.fecha)?.v ?? 0, 1)} kg`, etiqueta: 'pesada' },
+            ],
+          })),
+          { fondo: pesos.map((p) => ({ fecha: p.fecha, y: p.v })), unidad: ' kg', banda: perfil('jose').metaPeso },
+        );
+        const cinturas = backup.mediciones.cintura.filter((c) => dentro(c.fecha)).sort((a, b) => a.fecha.localeCompare(b.fecha));
+        linea(
+          $('#g-cintura'),
+          cinturas.map((c) => ({ fecha: c.fecha, y: c.cm, titulo: fechaLarga(c.fecha), filas: [{ valor: `${fmt(c.cm, 1)} cm`, etiqueta: 'cintura' }] })),
+          { unidad: ' cm' },
+        );
+        const partes: string[] = [];
+        if (media.length > 1) partes.push(`peso ${firmado(media[media.length - 1].v - media[0].v)} kg`);
+        if (cinturas.length > 1) partes.push(`cintura ${firmado(cinturas[cinturas.length - 1].cm - cinturas[0].cm)} cm`);
+        $('#s-cuerpo').textContent = partes.length ? `${partes.join(' · ')} en el periodo` : '';
+
+        // Después de Cuerpo: su tarjeta marca el alto de la fila y las barras lo llenan.
+        const mus = musculoSemanal(vista);
+        barrasH(
+          $('#g-musculo'),
+          mus.map((m) => ({ nombre: m.musculo, valor: m.media, detalle: `${fmt(m.media, 1)} series/semana · ${fmt(m.total, 0)} en total` })),
+          { franja: [10, 20], franjaTxt: '10–20', alPulsar: (n) => ponerFiltro('musculo', `=${n}`) },
+        );
+        $('#s-musculo').textContent = mus.length ? `media semanal del periodo · ${mus.filter((m) => m.media >= 10).length} de ${mus.length} músculos en 10 o más` : '';
+
+        const dias = porDia(vista);
+        const hasta = backup.exportadoISO.slice(0, 10);
+        calor($('#g-calor'), dias, hasta, (f) => {
+          ponerFiltro('fecha', f);
+          mostrarTab('series');
+        });
+        const haceUnAno = sumarDias(hasta, -364);
+        $('#s-calor').textContent = `${[...dias.keys()].filter((f) => f >= haceUnAno).length} días entrenados en el último año`;
+      }
+
+      function mostrarTab(t: Tab) {
+        tab = t;
+        try {
+          localStorage.setItem('datos-tab', t);
+        } catch {}
+        for (const x of ['panel', 'series', 'dieta'] as const) {
+          $(`#vista-${x}`).hidden = t !== x;
+          $(`#tab-${x}`).setAttribute('aria-selected', String(t === x));
+        }
+        document.querySelectorAll<HTMLElement>('.solo-entreno').forEach((e) => (e.hidden = t === 'dieta'));
+        ocultarTip();
+        if (t === 'panel') pintarPanel();
+        if (t === 'dieta') pintarDieta();
+      }
+
+      // ── Dieta: lo apuntado en la app (comidas del plan de casa y fuera de lista) ──
+      function pintarDieta() {
+        if (!backup) return;
+        ocultarTip();
+        const comidas = backup.comidas ?? {};
+        const fin = backup.exportadoISO.slice(0, 10);
+        const desde = periodoSem > 0 ? sumarDias(fin, -(periodoSem * 7 - 1)) : '';
+        const dias = diasDieta(comidas, desde);
+        const obj = CARTA.personas.jose;
+        const n = dias.length;
+        const media = (k: 'kcal' | 'p' | 'hc' | 'grasa', parte: 'total' | 'plan' | 'fuera' = 'total') => (n ? dias.reduce((a, d) => a + d[parte][k], 0) / n : 0);
+        const hechas = dias.reduce((a, d) => a + d.hechas.length, 0);
+        const kpi = (t: string, v: string, u: string, sub: string) => {
+          const k = document.createElement('div');
+          k.className = 'kpi';
+          k.append(
+            Object.assign(document.createElement('span'), { className: 'kpi-t', textContent: t }),
+            Object.assign(document.createElement('b'), { textContent: v }),
+            Object.assign(document.createElement('small'), { textContent: u }),
+          );
+          if (sub) k.append(Object.assign(document.createElement('p'), { className: 'kpi-sub', textContent: sub }));
+          return k;
+        };
+        const kcalMedia = media('kcal');
+        const kcalFuera = media('kcal', 'fuera');
+        $('#d-kpis').replaceChildren(
+          kpi('Días apuntados', fmt(n, 0), '', n ? `${fechaLarga(dias[0].fecha)} → ${fechaLarga(dias[n - 1].fecha)}` : 'aún nada'),
+          kpi('Kcal al día', fmt(kcalMedia, 0), 'kcal', `objetivo ${fmt(obj.kcal, 0)}`),
+          kpi('Proteína al día', fmt(media('p'), 0), 'g', `objetivo ${fmt(obj.prot, 0)}`),
+          kpi('Hidratos al día', fmt(media('hc'), 0), 'g', ''),
+          kpi('Grasa al día', fmt(media('grasa'), 0), 'g', ''),
+          kpi('Comidas del plan', fmt(n ? (hechas / (n * 4)) * 100 : 0, 0), '%', `${fmt(kcalMedia ? (kcalFuera / kcalMedia) * 100 : 0, 0)} % de las kcal, de fuera`),
+        );
+        if (!n) {
+          for (const id of ['#dg-kcal', '#dg-prot', '#dg-macros', '#dg-fuera']) {
+            $(id).replaceChildren(Object.assign(document.createElement('p'), { className: 'g-vacio', textContent: 'No hay comidas apuntadas en este periodo.' }));
+          }
+          return;
+        }
+        const titulo = (f: string) => new Date(`${f}T12:00:00`).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+        columnas(
+          $('#dg-kcal'),
+          dias.map((d) => ({
+            x: fechaLarga(d.fecha),
+            y: Math.round(d.plan.kcal),
+            y2: Math.round(d.fuera.kcal),
+            titulo: titulo(d.fecha),
+            filas: [
+              { valor: `${fmt(d.total.kcal, 0)} kcal`, etiqueta: 'en total' },
+              { valor: fmt(d.plan.kcal, 0), etiqueta: `del plan (${d.hechas.length} de 4 comidas)` },
+              { valor: fmt(d.fuera.kcal, 0), etiqueta: 'fuera de lista' },
+            ],
+          })),
+          { objetivo: obj.kcal, objetivoTxt: `objetivo ${fmt(obj.kcal, 0)}` },
+        );
+        const enObj = dias.filter((d) => Math.abs(d.total.kcal - obj.kcal) <= obj.kcal * 0.1).length;
+        $('#ds-kcal').textContent = `${enObj} de ${n} días a ±10 % del objetivo`;
+        columnas(
+          $('#dg-prot'),
+          dias.map((d) => ({ x: fechaLarga(d.fecha), y: Math.round(d.total.p), titulo: titulo(d.fecha), filas: [{ valor: `${fmt(d.total.p, 0)} g`, etiqueta: 'proteína' }] })),
+          { objetivo: obj.prot, objetivoTxt: `objetivo ${fmt(obj.prot, 0)} g` },
+        );
+        $('#ds-prot').textContent = `${dias.filter((d) => d.total.p >= obj.prot).length} de ${n} días llegando`;
+        const kp = media('p') * 4;
+        const kh = media('hc') * 4;
+        const kg = media('grasa') * 9;
+        const totalK = kp + kh + kg || 1;
+        const pct = (x: number) => fmt((x / totalK) * 100, 0);
+        barrasH(
+          $('#dg-macros'),
+          [
+            { nombre: 'Proteína', valor: Math.round(media('p')), detalle: `${fmt(media('p'), 0)} g · ${pct(kp)} % de las kcal` },
+            { nombre: 'Hidratos', valor: Math.round(media('hc')), detalle: `${fmt(media('hc'), 0)} g · ${pct(kh)} % de las kcal` },
+            { nombre: 'Grasa', valor: Math.round(media('grasa')), detalle: `${fmt(media('grasa'), 0)} g · ${pct(kg)} % de las kcal` },
+          ],
+          { unidad: ' g' },
+        );
+        $('#ds-macros').textContent = `proteína ${pct(kp)} % · hidratos ${pct(kh)} % · grasa ${pct(kg)} % de las kcal`;
+        const sin = dias.reduce((a, d) => a + d.sinMacros, 0);
+        $('#dp-macros').textContent = sin
+          ? `Ojo: ${sin} ${sin === 1 ? 'cosa' : 'cosas'} de fuera de lista se apuntaron sin hidratos ni grasa, así que esos dos se quedan algo cortos. Lo que apuntas con «Pesar» sí los trae.`
+          : 'Comidas del plan por sus ingredientes; lo de fuera, como lo apuntaste.';
+        const fuera = fueraDeLista(comidas, desde).filter((x) => x.kcal > 0).slice(0, 10);
+        barrasH(
+          $('#dg-fuera'),
+          fuera.map((x) => ({
+            nombre: x.nombre.length > 22 ? `${x.nombre.slice(0, 21)}…` : x.nombre,
+            valor: Math.round(x.kcal),
+            detalle: `${x.veces} ${x.veces === 1 ? 'vez' : 'veces'} · ${fmt(x.kcal, 0)} kcal · ${fmt(x.p, 0)} g de proteína`,
+          })),
+          { unidad: ' kcal' },
+        );
+        $('#ds-fuera').textContent = `${fmt(kcalFuera, 0)} kcal al día de media`;
+      }
+
+      function rapidos() {
+        const col = new Intl.Collator('es');
+        const cuenta = (k: 'ejercicio' | 'musculo') => {
+          const m = new Map<string, number>();
+          for (const f of filas) if (f[k]) m.set(f[k], (m.get(f[k]) ?? 0) + 1);
+          return [...m.keys()].sort(col.compare);
+        };
+        for (const [id, k] of [['#f-ejercicio', 'ejercicio'], ['#f-musculo', 'musculo']] as const) {
+          const sel = $<HTMLSelectElement>(id);
+          sel.replaceChildren(new Option('Todos', ''), ...cuenta(k).map((v) => new Option(v, v)));
+        }
       }
 
       function listas() {
@@ -205,7 +606,10 @@ const PISTA = { fecha: 'aaaa-mm', num: '>8', texto: 'contiene…', bool: 'sí / 
         $('#vacio').hidden = true;
         $('#panel').hidden = false;
         $('#error').textContent = '';
+        backup = b;
         listas();
+        rapidos();
+        mostrarTab(tab);
         pintar();
       }
 
@@ -299,10 +703,39 @@ const PISTA = { fecha: 'aaaa-mm', num: '>8', texto: 'contiene…', bool: 'sí / 
         });
       });
 
-      $('#limpiar').addEventListener('click', () => {
+      const limpiarTodo = () => {
         document.querySelectorAll<HTMLInputElement>('tr.filtros input').forEach((i) => (i.value = ''));
         for (const k of Object.keys(filtros)) delete filtros[k as Clave];
+        periodoSem = 0;
         pintar();
+      };
+      $('#limpiar').addEventListener('click', limpiarTodo);
+      $('#limpiar2').addEventListener('click', limpiarTodo);
+
+      $('#tab-panel').addEventListener('click', () => mostrarTab('panel'));
+      $('#tab-series').addEventListener('click', () => mostrarTab('series'));
+      $('#tab-dieta').addEventListener('click', () => mostrarTab('dieta'));
+      document.querySelectorAll<HTMLButtonElement>('#periodo button').forEach((b) =>
+        b.addEventListener('click', () => {
+          const sem = Number(b.dataset.sem);
+          filtros.fecha = sem ? `>=${desdePeriodo(sem)}` : '';
+          $<HTMLInputElement>('tr.filtros input[data-key="fecha"]').value = filtros.fecha;
+          periodoSem = sem;
+          pintar();
+        }),
+      );
+      $<HTMLSelectElement>('#f-ejercicio').addEventListener('change', (e) => {
+        const v = (e.currentTarget as HTMLSelectElement).value;
+        ponerFiltro('ejercicio', v ? `=${v}` : '');
+      });
+      $<HTMLSelectElement>('#f-musculo').addEventListener('change', (e) => {
+        const v = (e.currentTarget as HTMLSelectElement).value;
+        ponerFiltro('musculo', v ? `=${v}` : '');
+      });
+      let redimensionar = 0;
+      addEventListener('resize', () => {
+        clearTimeout(redimensionar);
+        redimensionar = window.setTimeout(() => (tab === 'panel' ? pintarPanel() : tab === 'dieta' ? pintarDieta() : undefined), 150);
       });
 
       $('#csv').addEventListener('click', () => {
