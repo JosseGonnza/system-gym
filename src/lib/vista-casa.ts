@@ -392,12 +392,14 @@ export async function dietaCasa(root: HTMLElement, yo: Persona, gm = false): Pro
       if (num) i.inputMode = 'numeric';
       return i;
     };
-    const txt = campo('extra-txt', 'Plato o ingrediente', 'col-span-3');
+    const txt = campo('extra-txt', 'Plato o ingrediente', 'col-span-4');
     const kc = campo('extra-kcal', 'kcal', 'num text-right', true);
-    const pr = campo('extra-prot', 'prot g', 'num text-right', true);
-    const add = el('button', 'rounded-lg bg-vio-hi px-3 text-sm font-bold text-bg', 'Añadir');
+    const pr = campo('extra-prot', 'prot', 'num text-right', true);
+    const hc = campo('extra-hc', 'hc', 'num text-right', true);
+    const gr = campo('extra-grasa', 'grasa', 'num text-right', true);
+    const add = el('button', 'col-span-4 rounded-lg bg-vio-hi px-3 py-2 text-sm font-bold text-bg', 'Añadir');
     add.type = 'submit';
-    const f = el('form', 'grid grid-cols-3 gap-2', txt, kc, pr, add);
+    const f = el('form', 'grid grid-cols-4 gap-2', txt, kc, pr, hc, gr, add);
     f.addEventListener('submit', (e) => {
       e.preventDefault();
       const t = txt.value.trim();
@@ -408,9 +410,14 @@ export async function dietaCasa(root: HTMLElement, yo: Persona, gm = false): Pro
       const p = n(pr);
       if (k) x.kcal = k;
       if (p) x.p = p;
+      // Hidratos y grasa también con 0: «sin grasa» es un dato, no un hueco.
+      const h = hc.value.trim() === '' ? undefined : parseInt(hc.value, 10);
+      const g = gr.value.trim() === '' ? undefined : parseInt(gr.value, 10);
+      if (Number.isFinite(h)) x.hc = h;
+      if (Number.isFinite(g)) x.grasa = g;
       poner(x);
     });
-    panel.append(f, el('p', 'text-xs text-mut', 'Las kcal son opcionales: si no las sabes se guarda igual. Lo que lleva kcal suma al día.'));
+    panel.append(f, el('p', 'text-xs text-mut', 'Solo el nombre es obligatorio. Proteína, hidratos y grasa en gramos. Con kcal suma al día; con hidratos y grasa sale también en las gráficas de macros.'));
     return card;
   }
 

@@ -45,6 +45,8 @@ export interface Atajo {
   t: string;
   kcal: number;
   p: number;
+  hc?: number;
+  grasa?: number;
 }
 
 export interface PersonaDef {
