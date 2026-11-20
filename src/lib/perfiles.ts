@@ -2,7 +2,7 @@ import type { Perfil, PerfilId } from './types';
 
 export const PERFILES: Perfil[] = [
   { id: 'jose', nombre: 'Jose', tema: 'nothing', emoji: '🔴', usaJornadas: false, modoSencillo: false, casa: true, anual: true, alimentos: true, trayecto: true, metaPeso: [74, 75] },
-  { id: 'yasmina', nombre: 'Yasmina', tema: 'grimorio', emoji: '🍂', usaJornadas: false, modoSencillo: true, casa: true, anual: true, porSerie: true },
+  { id: 'yasmina', nombre: 'Yasmina', tema: 'grimorio', emoji: '🍂', usaJornadas: false, modoSencillo: true, casa: true, anual: true, porSerie: true, alimentos: true },
   { id: 'jeik', nombre: 'Jeik', tema: 'pizarra', emoji: '🔶', usaJornadas: false, modoSencillo: true, proximaVez: true, dibujos: true, seguimiento: true },
 ];
 
